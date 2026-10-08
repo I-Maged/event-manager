@@ -12,6 +12,18 @@
       "sourceType": "github",
       "skillPath": "skills/neon-postgres/SKILL.md",
       "computedHash": "2e367b4b436500b7d28aba2b4318b1a2a4f7bacd94f1c045ba62751b95b578fe"
+    },
+    "prisma-cli": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-cli/SKILL.md",
+      "computedHash": "f1e28c22e9dd3457eebc05c53a7921f96f8b9fdcf50edb93a0b1de73b78fa2c5"
+    },
+    "prisma-client-api": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-client-api/SKILL.md",
+      "computedHash": "5dcc0793337151efa73a444e5adbc7e1c24180778e83b4fe94c9109c391bd333"
     }
   }
 }
