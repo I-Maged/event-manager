@@ -47,7 +47,7 @@ export default function SignInPage() {
           </div>
 
           {state?.error && (
-            <div className="rounded-md px-3 py-2 text-sm text-red-400 bg-red-950/50 border border-red-900">
+            <div className="alert-error">
               {state.error}
             </div>
           )}

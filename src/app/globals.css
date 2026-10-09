@@ -1,31 +1,57 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #0b1120; /* Deep navy blue background */
-  --color-primary: #3b82f6; /* Soft sky blue (used in buttons and highlights) */
-  --color-secondary: #06b6d4; /* Cyan accent (used in code highlights and icons) */
-  --color-foreground: #f1f5f9; /* Light text color */
-  --color-muted: #94a3b8; /* Muted slate (used for secondary text) */
+  --color-background: #fafaf9; /* stone-50 page background */
+  --color-surface: #ffffff; /* card / nav surface */
+  --color-border: #e7e5e4; /* stone-200 borders */
+  --color-foreground: #1c1917; /* stone-900 body text */
+  --color-muted: #57534e; /* stone-600 secondary text (6:1 on white) */
+  --color-primary: #4f46e5; /* indigo-600 brand */
+  --color-secondary: #7c3aed; /* violet-600 accent */
+  --color-ring: #a5b4fc; /* indigo-300 focus ring */
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
 }
 
 @layer components {
   .card {
-    @apply bg-slate-800 border border-slate-700 rounded-lg shadow-lg;
+    @apply bg-surface border border-border rounded-xl shadow-sm;
   }
 
   .input-field {
-    @apply w-full px-3 py-2 border border-slate-600 rounded-md bg-slate-800 text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary;
+    @apply w-full px-3 py-2 border border-border rounded-md bg-surface text-foreground placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary;
   }
 
   .btn-primary {
-    @apply bg-primary text-background px-4 py-2 rounded-md font-medium hover:bg-primary/90 transition-colors cursor-pointer;
+    @apply inline-flex items-center justify-center min-h-[44px] bg-primary text-white px-4 py-2 rounded-md font-medium hover:bg-indigo-700 transition-colors cursor-pointer disabled:opacity-60;
   }
 
   .btn-secondary {
-    @apply bg-secondary text-background px-4 py-2 rounded-md font-medium hover:bg-secondary/90 transition-colors cursor-pointer;
+    @apply inline-flex items-center justify-center min-h-[44px] bg-secondary text-white px-4 py-2 rounded-md font-medium hover:bg-violet-700 transition-colors cursor-pointer disabled:opacity-60;
   }
 
   .btn-danger {
-    @apply bg-red-600 text-white px-4 py-2 rounded-md font-medium hover:bg-red-700 transition-colors cursor-pointer;
+    @apply inline-flex items-center justify-center min-h-[44px] bg-red-600 text-white px-4 py-2 rounded-md font-medium hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-60;
+  }
+
+  .alert-error {
+    @apply rounded-md px-3 py-2 text-sm text-red-700 bg-red-50 border border-red-200;
   }
 }

@@ -51,7 +51,7 @@ async function NavbarAuth() {
 
 const Navbar = () => {
   return (
-    <nav className="bg-slate-800 border-b border-slate-700 shadow-lg">
+    <nav className="bg-surface border-b border-border shadow-sm">
       <div className="max-w-7xl mx-auto px-4">
         <div className="h-16 flex justify-between">
           <div className="flex items-center gap-6">
