@@ -54,4 +54,41 @@
   .alert-error {
     @apply rounded-md px-3 py-2 text-sm text-red-700 bg-red-50 border border-red-200;
   }
+
+  .badge-own {
+    @apply shrink-0 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1 text-xs font-medium;
+  }
+
+  .badge-organizer {
+    @apply shrink-0 rounded-full border border-border px-2.5 py-1 text-xs text-muted;
+  }
+
+  /* Per-organizer card accents (see organizerAccentClass in lib/events.ts). */
+  .own-event-accent {
+    @apply border-l-4 border-l-primary;
+  }
+
+  .organizer-accent-0 {
+    @apply border-l-4 border-l-indigo-500;
+  }
+
+  .organizer-accent-1 {
+    @apply border-l-4 border-l-violet-500;
+  }
+
+  .organizer-accent-2 {
+    @apply border-l-4 border-l-emerald-500;
+  }
+
+  .organizer-accent-3 {
+    @apply border-l-4 border-l-amber-500;
+  }
+
+  .organizer-accent-4 {
+    @apply border-l-4 border-l-rose-500;
+  }
+
+  .organizer-accent-5 {
+    @apply border-l-4 border-l-sky-500;
+  }
 }

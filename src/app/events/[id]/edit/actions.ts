@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/db';
 import { auth } from '@/lib/auth/server';
 import { parseEventForm } from '@/lib/event-validation';
+import { resolveOrganizerName } from '@/lib/events';
 
 async function requireOrganizer(eventId: string) {
   const { data: session } = await auth.getSession();
@@ -15,7 +16,7 @@ async function requireOrganizer(eventId: string) {
     select: { userId: true },
   });
   if (!event || event.userId !== userId) redirect('/events');
-  return userId;
+  return { userId, organizerName: resolveOrganizerName(session?.user) };
 }
 
 export async function updateEvent(
@@ -24,7 +25,7 @@ export async function updateEvent(
 ) {
   const eventId = formData.get('eventId') as string;
   if (!eventId) return { error: 'Missing event id.' };
-  await requireOrganizer(eventId);
+  const { organizerName } = await requireOrganizer(eventId);
 
   const parsed = parseEventForm(formData, { requireFutureDate: false });
   if (!parsed.ok) return { error: parsed.error };
@@ -43,7 +44,7 @@ export async function updateEvent(
 
   await prisma.event.update({
     where: { id: eventId },
-    data: parsed.data,
+    data: { ...parsed.data, organizerName },
   });
 
   revalidatePath('/events');

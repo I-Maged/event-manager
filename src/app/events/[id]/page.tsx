@@ -5,13 +5,16 @@ import { connection } from 'next/server';
 import { RsvpControls } from '@/components/RsvpControls';
 import { auth } from '@/lib/auth/server';
 // Session-gated visibility + live RSVP counts: render on demand.
-export const instant = false;import {
+export const instant = false;
+
+import {
   canViewEvent,
   formatEventDate,
   getEventById,
   getRsvpCounts,
-  getUserRsvpStatus,
+  getUserRsvp,
   getWaitlistPosition,
+  getWishlist,
   spotsLeft,
 } from '@/lib/events';
 
@@ -53,7 +56,8 @@ async function RsvpSection({ eventId }: { eventId: string }) {
     );
   }
 
-  const status = await getUserRsvpStatus(eventId, userId);
+  const rsvp = await getUserRsvp(eventId, userId);
+  const status = rsvp?.status ?? null;
   const waitlistPosition =
     status === 'WAITLISTED'
       ? await getWaitlistPosition(eventId, userId)
@@ -65,8 +69,43 @@ async function RsvpSection({ eventId }: { eventId: string }) {
       currentStatus={status}
       isPast={isPast}
       isFull={left !== null && left <= 0}
+      isCapped={event.maxAttendees != null}
       waitlistPosition={waitlistPosition}
+      wasPromoted={rsvp?.promotedAt != null}
     />
+  );
+}
+
+async function OrganizerWishlistPanel({ eventId }: { eventId: string }) {
+  const wishlist = await getWishlist(eventId);
+  if (wishlist.length === 0) return null;
+  return (
+    <div className="card p-6 space-y-3">
+      <h2 className="font-semibold">
+        Wishlist ({wishlist.length})
+      </h2>
+      <p className="text-sm text-muted">
+        If a spot opens, #1 moves up automatically.
+      </p>
+      <ol className="space-y-2">
+        {wishlist.map((entry, i) => (
+          <li
+            key={entry.userId}
+            className="flex items-center justify-between gap-3 text-sm border-b border-border pb-2 last:border-0 last:pb-0"
+          >
+            <span className="font-medium">#{i + 1}</span>
+            <span className="text-muted">
+              joined{' '}
+              {entry.createdAt.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }
 
@@ -97,6 +136,11 @@ export default async function EventDetailPage({
       </Link>
 
       <div className="card p-8 space-y-4">
+        {isOrganizer && (
+          <p className="rounded-md px-3 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 border border-indigo-200">
+            Your event — you&apos;re hosting this.
+          </p>
+        )}
         <div className="flex items-start justify-between gap-3">
           <h1 className="text-3xl font-bold">{event.title}</h1>
           {!event.isPublic && (
@@ -105,13 +149,24 @@ export default async function EventDetailPage({
             </span>
           )}
         </div>
+        {!isOrganizer && event.organizerName && (
+          <p className="text-sm text-muted">
+            Organized by {event.organizerName} ·{' '}
+            <Link
+              href={`/events?organizer=${event.userId}`}
+              className="text-primary hover:underline"
+            >
+              More by {event.organizerName}
+            </Link>
+          </p>
+        )}
         <p className="text-sm text-muted">
           {formatEventDate(event.date)} · {event.location}
         </p>
         <p className="whitespace-pre-wrap">{event.description}</p>
         <p className="text-sm text-muted">
           {counts.GOING} going · {counts.MAYBE} maybe · {counts.WAITLISTED}{' '}
-          waitlisted
+          on the wishlist
           {event.maxAttendees != null &&
             (left !== null && left > 0
               ? ` · ${left} of ${event.maxAttendees} spots left`
@@ -137,6 +192,12 @@ export default async function EventDetailPage({
       >
         <RsvpSection eventId={event.id} />
       </Suspense>
+
+      {isOrganizer && event.maxAttendees != null && (
+        <Suspense fallback={null}>
+          <OrganizerWishlistPanel eventId={event.id} />
+        </Suspense>
+      )}
     </div>
   );
 }

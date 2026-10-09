@@ -130,7 +130,8 @@ exports.Prisma.EventScalarFieldEnum = {
   isPublic: 'isPublic',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  userId: 'userId'
+  userId: 'userId',
+  organizerName: 'organizerName'
 };
 
 exports.Prisma.RSVPScalarFieldEnum = {
@@ -138,6 +139,7 @@ exports.Prisma.RSVPScalarFieldEnum = {
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  promotedAt: 'promotedAt',
   userId: 'userId',
   eventId: 'eventId'
 };

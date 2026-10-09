@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/db';
 import { auth } from '@/lib/auth/server';
 import { parseEventForm } from '@/lib/event-validation';
+import { resolveOrganizerName } from '@/lib/events';
 
 export async function createEvent(
   _prevState: { error: string } | null,
@@ -18,7 +19,11 @@ export async function createEvent(
   if (!parsed.ok) return { error: parsed.error };
 
   const event = await prisma.event.create({
-    data: { ...parsed.data, userId },
+    data: {
+      ...parsed.data,
+      userId,
+      organizerName: resolveOrganizerName(session?.user),
+    },
     select: { id: true },
   });
 

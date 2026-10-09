@@ -10,12 +10,20 @@ async function NavbarSession() {
   return (
     <>
       {user && (
-        <Link
-          href="/account"
-          className="text-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
-        >
-          Account
-        </Link>
+        <>
+          <Link
+            href="/account"
+            className="text-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Account
+          </Link>
+          <Link
+            href="/wishlist"
+            className="text-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Wishlist
+          </Link>
+        </>
       )}
     </>
   );

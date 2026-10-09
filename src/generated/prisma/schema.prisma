@@ -25,6 +25,10 @@ model Event {
   // Managed Auth user id of the organizer
   userId String
 
+  // Denormalized display name stamped at create/update (Managed Auth has
+  // no user-lookup API, so the id alone can't render a name).
+  organizerName String?
+
   rsvps RSVP[]
 
   @@index([userId])
@@ -35,6 +39,10 @@ model RSVP {
   status    RSVPStatus
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+
+  // Set when a WAITLISTED row is auto-promoted to GOING. Null otherwise.
+  // Powers the "You got in!" banner; cleared on dismiss.
+  promotedAt DateTime?
 
   // Managed Auth user id of the attendee
   userId  String
