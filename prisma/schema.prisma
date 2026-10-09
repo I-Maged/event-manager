@@ -32,7 +32,7 @@ model Event {
 
 model RSVP {
   id        String     @id @default(cuid())
-  status    RVSPStatus
+  status    RSVPStatus
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
@@ -43,10 +43,12 @@ model RSVP {
 
   @@unique([userId, eventId])
   @@index([userId])
+  @@index([eventId])
 }
 
-enum RVSPStatus {
+enum RSVPStatus {
   GOING
   NOT_GOING
   MAYBE
+  WAITLISTED
 }

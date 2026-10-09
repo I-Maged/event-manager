@@ -28,19 +28,20 @@ export type RSVP = $Result.DefaultSelection<Prisma.$RSVPPayload>
  * Enums
  */
 export namespace $Enums {
-  export const RVSPStatus: {
+  export const RSVPStatus: {
   GOING: 'GOING',
   NOT_GOING: 'NOT_GOING',
-  MAYBE: 'MAYBE'
+  MAYBE: 'MAYBE',
+  WAITLISTED: 'WAITLISTED'
 };
 
-export type RVSPStatus = (typeof RVSPStatus)[keyof typeof RVSPStatus]
+export type RSVPStatus = (typeof RSVPStatus)[keyof typeof RSVPStatus]
 
 }
 
-export type RVSPStatus = $Enums.RVSPStatus
+export type RSVPStatus = $Enums.RSVPStatus
 
-export const RVSPStatus: typeof $Enums.RVSPStatus
+export const RSVPStatus: typeof $Enums.RSVPStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -2219,7 +2220,7 @@ export namespace Prisma {
 
   export type RSVPMinAggregateOutputType = {
     id: string | null
-    status: $Enums.RVSPStatus | null
+    status: $Enums.RSVPStatus | null
     createdAt: Date | null
     updatedAt: Date | null
     userId: string | null
@@ -2228,7 +2229,7 @@ export namespace Prisma {
 
   export type RSVPMaxAggregateOutputType = {
     id: string | null
-    status: $Enums.RVSPStatus | null
+    status: $Enums.RSVPStatus | null
     createdAt: Date | null
     updatedAt: Date | null
     userId: string | null
@@ -2348,7 +2349,7 @@ export namespace Prisma {
 
   export type RSVPGroupByOutputType = {
     id: string
-    status: $Enums.RVSPStatus
+    status: $Enums.RSVPStatus
     createdAt: Date
     updatedAt: Date
     userId: string
@@ -2429,7 +2430,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      status: $Enums.RVSPStatus
+      status: $Enums.RSVPStatus
       createdAt: Date
       updatedAt: Date
       userId: string
@@ -2859,7 +2860,7 @@ export namespace Prisma {
    */
   interface RSVPFieldRefs {
     readonly id: FieldRef<"RSVP", 'String'>
-    readonly status: FieldRef<"RSVP", 'RVSPStatus'>
+    readonly status: FieldRef<"RSVP", 'RSVPStatus'>
     readonly createdAt: FieldRef<"RSVP", 'DateTime'>
     readonly updatedAt: FieldRef<"RSVP", 'DateTime'>
     readonly userId: FieldRef<"RSVP", 'String'>
@@ -3404,16 +3405,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'RVSPStatus'
+   * Reference to a field of type 'RSVPStatus'
    */
-  export type EnumRVSPStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RVSPStatus'>
+  export type EnumRSVPStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RSVPStatus'>
     
 
 
   /**
-   * Reference to a field of type 'RVSPStatus[]'
+   * Reference to a field of type 'RSVPStatus[]'
    */
-  export type ListEnumRVSPStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RVSPStatus[]'>
+  export type ListEnumRSVPStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RSVPStatus[]'>
     
 
 
@@ -3521,7 +3522,7 @@ export namespace Prisma {
     OR?: RSVPWhereInput[]
     NOT?: RSVPWhereInput | RSVPWhereInput[]
     id?: StringFilter<"RSVP"> | string
-    status?: EnumRVSPStatusFilter<"RSVP"> | $Enums.RVSPStatus
+    status?: EnumRSVPStatusFilter<"RSVP"> | $Enums.RSVPStatus
     createdAt?: DateTimeFilter<"RSVP"> | Date | string
     updatedAt?: DateTimeFilter<"RSVP"> | Date | string
     userId?: StringFilter<"RSVP"> | string
@@ -3545,7 +3546,7 @@ export namespace Prisma {
     AND?: RSVPWhereInput | RSVPWhereInput[]
     OR?: RSVPWhereInput[]
     NOT?: RSVPWhereInput | RSVPWhereInput[]
-    status?: EnumRVSPStatusFilter<"RSVP"> | $Enums.RVSPStatus
+    status?: EnumRSVPStatusFilter<"RSVP"> | $Enums.RSVPStatus
     createdAt?: DateTimeFilter<"RSVP"> | Date | string
     updatedAt?: DateTimeFilter<"RSVP"> | Date | string
     userId?: StringFilter<"RSVP"> | string
@@ -3570,7 +3571,7 @@ export namespace Prisma {
     OR?: RSVPScalarWhereWithAggregatesInput[]
     NOT?: RSVPScalarWhereWithAggregatesInput | RSVPScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"RSVP"> | string
-    status?: EnumRVSPStatusWithAggregatesFilter<"RSVP"> | $Enums.RVSPStatus
+    status?: EnumRSVPStatusWithAggregatesFilter<"RSVP"> | $Enums.RSVPStatus
     createdAt?: DateTimeWithAggregatesFilter<"RSVP"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"RSVP"> | Date | string
     userId?: StringWithAggregatesFilter<"RSVP"> | string
@@ -3674,7 +3675,7 @@ export namespace Prisma {
 
   export type RSVPCreateInput = {
     id?: string
-    status: $Enums.RVSPStatus
+    status: $Enums.RSVPStatus
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -3683,7 +3684,7 @@ export namespace Prisma {
 
   export type RSVPUncheckedCreateInput = {
     id?: string
-    status: $Enums.RVSPStatus
+    status: $Enums.RSVPStatus
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -3692,7 +3693,7 @@ export namespace Prisma {
 
   export type RSVPUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumRVSPStatusFieldUpdateOperationsInput | $Enums.RVSPStatus
+    status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -3701,7 +3702,7 @@ export namespace Prisma {
 
   export type RSVPUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumRVSPStatusFieldUpdateOperationsInput | $Enums.RVSPStatus
+    status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -3710,7 +3711,7 @@ export namespace Prisma {
 
   export type RSVPCreateManyInput = {
     id?: string
-    status: $Enums.RVSPStatus
+    status: $Enums.RSVPStatus
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -3719,7 +3720,7 @@ export namespace Prisma {
 
   export type RSVPUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumRVSPStatusFieldUpdateOperationsInput | $Enums.RVSPStatus
+    status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -3727,7 +3728,7 @@ export namespace Prisma {
 
   export type RSVPUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumRVSPStatusFieldUpdateOperationsInput | $Enums.RVSPStatus
+    status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -3894,11 +3895,11 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
-  export type EnumRVSPStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.RVSPStatus | EnumRVSPStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.RVSPStatus[] | ListEnumRVSPStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RVSPStatus[] | ListEnumRVSPStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumRVSPStatusFilter<$PrismaModel> | $Enums.RVSPStatus
+  export type EnumRSVPStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRSVPStatusFilter<$PrismaModel> | $Enums.RSVPStatus
   }
 
   export type EventScalarRelationFilter = {
@@ -3938,14 +3939,14 @@ export namespace Prisma {
     eventId?: SortOrder
   }
 
-  export type EnumRVSPStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.RVSPStatus | EnumRVSPStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.RVSPStatus[] | ListEnumRVSPStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RVSPStatus[] | ListEnumRVSPStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumRVSPStatusWithAggregatesFilter<$PrismaModel> | $Enums.RVSPStatus
+  export type EnumRSVPStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRSVPStatusWithAggregatesFilter<$PrismaModel> | $Enums.RSVPStatus
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumRVSPStatusFilter<$PrismaModel>
-    _max?: NestedEnumRVSPStatusFilter<$PrismaModel>
+    _min?: NestedEnumRSVPStatusFilter<$PrismaModel>
+    _max?: NestedEnumRSVPStatusFilter<$PrismaModel>
   }
 
   export type RSVPCreateNestedManyWithoutEventInput = {
@@ -4016,8 +4017,8 @@ export namespace Prisma {
     connect?: EventWhereUniqueInput
   }
 
-  export type EnumRVSPStatusFieldUpdateOperationsInput = {
-    set?: $Enums.RVSPStatus
+  export type EnumRSVPStatusFieldUpdateOperationsInput = {
+    set?: $Enums.RSVPStatus
   }
 
   export type EventUpdateOneRequiredWithoutRsvpsNestedInput = {
@@ -4146,26 +4147,26 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
-  export type NestedEnumRVSPStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.RVSPStatus | EnumRVSPStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.RVSPStatus[] | ListEnumRVSPStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RVSPStatus[] | ListEnumRVSPStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumRVSPStatusFilter<$PrismaModel> | $Enums.RVSPStatus
+  export type NestedEnumRSVPStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRSVPStatusFilter<$PrismaModel> | $Enums.RSVPStatus
   }
 
-  export type NestedEnumRVSPStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.RVSPStatus | EnumRVSPStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.RVSPStatus[] | ListEnumRVSPStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RVSPStatus[] | ListEnumRVSPStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumRVSPStatusWithAggregatesFilter<$PrismaModel> | $Enums.RVSPStatus
+  export type NestedEnumRSVPStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRSVPStatusWithAggregatesFilter<$PrismaModel> | $Enums.RSVPStatus
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumRVSPStatusFilter<$PrismaModel>
-    _max?: NestedEnumRVSPStatusFilter<$PrismaModel>
+    _min?: NestedEnumRSVPStatusFilter<$PrismaModel>
+    _max?: NestedEnumRSVPStatusFilter<$PrismaModel>
   }
 
   export type RSVPCreateWithoutEventInput = {
     id?: string
-    status: $Enums.RVSPStatus
+    status: $Enums.RSVPStatus
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -4173,7 +4174,7 @@ export namespace Prisma {
 
   export type RSVPUncheckedCreateWithoutEventInput = {
     id?: string
-    status: $Enums.RVSPStatus
+    status: $Enums.RSVPStatus
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -4210,7 +4211,7 @@ export namespace Prisma {
     OR?: RSVPScalarWhereInput[]
     NOT?: RSVPScalarWhereInput | RSVPScalarWhereInput[]
     id?: StringFilter<"RSVP"> | string
-    status?: EnumRVSPStatusFilter<"RSVP"> | $Enums.RVSPStatus
+    status?: EnumRSVPStatusFilter<"RSVP"> | $Enums.RSVPStatus
     createdAt?: DateTimeFilter<"RSVP"> | Date | string
     updatedAt?: DateTimeFilter<"RSVP"> | Date | string
     userId?: StringFilter<"RSVP"> | string
@@ -4287,7 +4288,7 @@ export namespace Prisma {
 
   export type RSVPCreateManyEventInput = {
     id?: string
-    status: $Enums.RVSPStatus
+    status: $Enums.RSVPStatus
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -4295,7 +4296,7 @@ export namespace Prisma {
 
   export type RSVPUpdateWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumRVSPStatusFieldUpdateOperationsInput | $Enums.RVSPStatus
+    status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -4303,7 +4304,7 @@ export namespace Prisma {
 
   export type RSVPUncheckedUpdateWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumRVSPStatusFieldUpdateOperationsInput | $Enums.RVSPStatus
+    status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -4311,7 +4312,7 @@ export namespace Prisma {
 
   export type RSVPUncheckedUpdateManyWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumRVSPStatusFieldUpdateOperationsInput | $Enums.RVSPStatus
+    status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string

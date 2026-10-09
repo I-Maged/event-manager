@@ -156,10 +156,11 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
-exports.RVSPStatus = exports.$Enums.RVSPStatus = {
+exports.RSVPStatus = exports.$Enums.RSVPStatus = {
   GOING: 'GOING',
   NOT_GOING: 'NOT_GOING',
-  MAYBE: 'MAYBE'
+  MAYBE: 'MAYBE',
+  WAITLISTED: 'WAITLISTED'
 };
 
 exports.Prisma.ModelName = {
