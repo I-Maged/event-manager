@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { connection } from 'next/server';
 import { RsvpControls } from '@/components/RsvpControls';
+import { InviteLinkManager } from './InviteLinkManager';
 import { auth } from '@/lib/auth/server';
 // Session-gated visibility + live RSVP counts: render on demand.
 export const instant = false;
@@ -10,7 +11,9 @@ export const instant = false;
 import {
   canViewEvent,
   formatEventDate,
+  getAttendees,
   getEventById,
+  getInviteToken,
   getRsvpCounts,
   getUserRsvp,
   getWaitlistPosition,
@@ -109,6 +112,68 @@ async function OrganizerWishlistPanel({ eventId }: { eventId: string }) {
   );
 }
 
+const STATUS_LABEL: Record<string, string> = {
+  GOING: 'Going',
+  MAYBE: 'Maybe',
+  NOT_GOING: "Can't go",
+  WAITLISTED: 'Wishlist',
+};
+
+async function OrganizerRosterPanel({ eventId }: { eventId: string }) {
+  const attendees = await getAttendees(eventId);
+  if (attendees.length === 0) {
+    return (
+      <div className="card p-6 space-y-2">
+        <h2 className="font-semibold">Attendees (0)</h2>
+        <p className="text-sm text-muted">
+          No RSVPs yet. Share your event or invite link to fill seats.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="card p-6 space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-semibold">Attendees ({attendees.length})</h2>
+        <a
+          href={`/api/events/${eventId}/attendees`}
+          className="text-sm text-primary hover:underline"
+        >
+          Export CSV
+        </a>
+      </div>
+      <ul className="space-y-2">
+        {attendees.map((a, i) => (
+          <li
+            key={a.userId}
+            className="flex items-center justify-between gap-3 text-sm border-b border-border pb-2 last:border-0 last:pb-0"
+          >
+            <span className="font-medium truncate">
+              {a.attendeeName ?? `Guest #${i + 1}`}
+            </span>
+            <span className="flex items-center gap-2 shrink-0">
+              <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted">
+                {STATUS_LABEL[a.status] ?? a.status}
+              </span>
+              <span className="text-xs text-muted hidden sm:inline">
+                {a.createdAt.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+async function OrganizerInvitePanel({ eventId }: { eventId: string }) {
+  const token = await getInviteToken(eventId);
+  return <InviteLinkManager eventId={eventId} initialToken={token} />;
+}
+
 export default async function EventDetailPage({
   params,
 }: {
@@ -196,6 +261,24 @@ export default async function EventDetailPage({
       {isOrganizer && event.maxAttendees != null && (
         <Suspense fallback={null}>
           <OrganizerWishlistPanel eventId={event.id} />
+        </Suspense>
+      )}
+
+      {isOrganizer && (
+        <Suspense
+          fallback={
+            <div className="card p-6 text-center">
+              <p className="text-sm text-muted">Loading attendees…</p>
+            </div>
+          }
+        >
+          <OrganizerRosterPanel eventId={event.id} />
+        </Suspense>
+      )}
+
+      {isOrganizer && !event.isPublic && (
+        <Suspense fallback={null}>
+          <OrganizerInvitePanel eventId={event.id} />
         </Suspense>
       )}
     </div>

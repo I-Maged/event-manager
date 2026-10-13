@@ -102,6 +102,39 @@ export async function getWishlist(
   });
 }
 
+export type AttendeeRow = {
+  userId: string;
+  attendeeName: string | null;
+  status: RSVPStatus;
+  createdAt: Date;
+};
+
+/** Full attendee roster for organizers, oldest first. Names are stamped on RSVP write. */
+export async function getAttendees(eventId: string): Promise<AttendeeRow[]> {
+  return prisma.rSVP.findMany({
+    where: { eventId },
+    orderBy: { createdAt: 'asc' },
+    select: { userId: true, attendeeName: true, status: true, createdAt: true },
+  });
+}
+
+/** Active reusable invite token for an event (null when none/revoked). */
+export async function getInviteToken(eventId: string): Promise<string | null> {
+  const row = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { inviteToken: true },
+  });
+  return row?.inviteToken ?? null;
+}
+
+/** Resolve an event from a reusable invite token (null when unknown/revoked). */
+export async function getEventByInviteToken(
+  token: string,
+): Promise<Event | null> {
+  if (!token) return null;
+  return prisma.event.findUnique({ where: { inviteToken: token } });
+}
+
 export type WishlistEntry = {
   id: string;
   status: RSVPStatus;

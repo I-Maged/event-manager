@@ -2,9 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { randomUUID } from 'crypto';
 import { prisma } from '@/db';
 import type { Prisma, RSVPStatus } from '@/generated/prisma';
 import { auth } from '@/lib/auth/server';
+import { resolveOrganizerName } from '@/lib/events';
 
 type Tx = Prisma.TransactionClient;
 
@@ -19,6 +21,25 @@ async function requireUserId(): Promise<string> {
   const { data: session } = await auth.getSession();
   const userId = session?.user?.id;
   if (!userId) redirect('/auth/sign-in');
+  return userId;
+}
+
+async function requireUser(): Promise<{ userId: string; attendeeName: string | null }> {
+  const { data: session } = await auth.getSession();
+  const userId = session?.user?.id;
+  if (!userId) redirect('/auth/sign-in');
+  return { userId, attendeeName: resolveOrganizerName(session?.user) };
+}
+
+async function requireOrganizer(eventId: string): Promise<string> {
+  const { data: session } = await auth.getSession();
+  const userId = session?.user?.id;
+  if (!userId) redirect('/auth/sign-in');
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { userId: true },
+  });
+  if (!event || event.userId !== userId) redirect('/events');
   return userId;
 }
 
@@ -60,6 +81,7 @@ async function upsertRsvp(
   userId: string,
   eventId: string,
   status: SettableStatus,
+  attendeeName?: string | null,
 ): Promise<SetRsvpResult> {
   const result = await prisma.$transaction(async (tx) => {
     const event = await tx.event.findUnique({ where: { id: eventId } });
@@ -84,8 +106,8 @@ async function upsertRsvp(
 
     const row = await tx.rSVP.upsert({
       where: { userId_eventId: { userId, eventId } },
-      create: { eventId, userId, status: target },
-      update: { status: target },
+      create: { eventId, userId, status: target, attendeeName: attendeeName ?? null },
+      update: { status: target, attendeeName: attendeeName ?? null },
       select: { id: true, status: true, createdAt: true },
     });
 
@@ -135,8 +157,8 @@ export async function setRsvp(
   if (!SETTABLE_STATUSES.includes(status)) {
     return { ok: false, error: 'Invalid RSVP status.' };
   }
-  const userId = await requireUserId();
-  return upsertRsvp(userId, eventId, status);
+  const { userId, attendeeName } = await requireUser();
+  return upsertRsvp(userId, eventId, status, attendeeName);
 }
 
 /**
@@ -145,7 +167,7 @@ export async function setRsvp(
  * where a wishlist is meaningless.
  */
 export async function joinWishlist(eventId: string): Promise<SetRsvpResult> {
-  const userId = await requireUserId();
+  const { userId, attendeeName } = await requireUser();
   const event = await prisma.event.findUnique({
     where: { id: eventId },
     select: { maxAttendees: true, date: true },
@@ -157,7 +179,7 @@ export async function joinWishlist(eventId: string): Promise<SetRsvpResult> {
   if (event.date < new Date()) {
     return { ok: false, error: 'This event has ended.' };
   }
-  return upsertRsvp(userId, eventId, 'GOING');
+  return upsertRsvp(userId, eventId, 'GOING', attendeeName);
 }
 
 /** Remove the caller's RSVP entirely, promoting the wishlist if needed. */
@@ -193,4 +215,93 @@ export async function dismissPromotion(
   });
   revalidateEvent(eventId);
   return { ok: true };
+}
+
+export type InviteLinkResult =
+  | { ok: true; token: string }
+  | { ok: false; error: string };
+
+function newInviteToken(): string {
+  return randomUUID().replace(/-/g, '');
+}
+
+/**
+ * Reusable invite link for a private event. Idempotent: returns the existing
+ * token when one is already active so refreshes don't invalidate shared links.
+ */
+export async function createInviteLink(
+  eventId: string,
+): Promise<InviteLinkResult> {
+  await requireOrganizer(eventId);
+  const existing = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { inviteToken: true, isPublic: true },
+  });
+  if (!existing) return { ok: false, error: 'Event not found.' };
+  if (existing.isPublic) {
+    return { ok: false, error: 'Public events do not need invite links.' };
+  }
+  if (existing.inviteToken) return { ok: true, token: existing.inviteToken };
+  const token = newInviteToken();
+  await prisma.event.update({ where: { id: eventId }, data: { inviteToken: token } });
+  revalidateEvent(eventId);
+  return { ok: true, token };
+}
+
+/** Replace the active invite link (invalidates the previously shared URL). */
+export async function regenerateInviteLink(
+  eventId: string,
+): Promise<InviteLinkResult> {
+  await requireOrganizer(eventId);
+  const existing = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { id: true, isPublic: true },
+  });
+  if (!existing) return { ok: false, error: 'Event not found.' };
+  if (existing.isPublic) {
+    return { ok: false, error: 'Public events do not need invite links.' };
+  }
+  const token = newInviteToken();
+  await prisma.event.update({ where: { id: eventId }, data: { inviteToken: token } });
+  revalidateEvent(eventId);
+  return { ok: true, token };
+}
+
+/** Revoke the invite link (previously shared URLs stop working). Idempotent. */
+export async function revokeInviteLink(
+  eventId: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  await requireOrganizer(eventId);
+  const existing = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { id: true },
+  });
+  if (!existing) return { ok: false, error: 'Event not found.' };
+  await prisma.event.update({ where: { id: eventId }, data: { inviteToken: null } });
+  revalidateEvent(eventId);
+  return { ok: true };
+}
+
+/**
+ * Accept a reusable invite link. Creates a GOING RSVP (falling back to
+ * WAITLISTED when the cap is full) so the private event becomes visible via
+ * the existing canViewEvent rule.
+ */
+export async function acceptInvite(
+  token: string,
+): Promise<SetRsvpResult & { eventId?: string }> {
+  const { userId, attendeeName } = await requireUser();
+  const event = await prisma.event.findUnique({
+    where: { inviteToken: token },
+  });
+  if (!event) return { ok: false, error: 'This invite link is invalid or revoked.' };
+  if (event.date < new Date()) {
+    return { ok: false, error: 'This event has ended.' };
+  }
+  if (event.userId === userId) {
+    return { ok: false, error: 'You are hosting this event.', eventId: event.id };
+  }
+  const result = await upsertRsvp(userId, event.id, 'GOING', attendeeName);
+  if (!result.ok) return result;
+  return { ...result, eventId: event.id };
 }

@@ -1066,6 +1066,7 @@ export namespace Prisma {
     updatedAt: Date | null
     userId: string | null
     organizerName: string | null
+    inviteToken: string | null
   }
 
   export type EventMaxAggregateOutputType = {
@@ -1080,6 +1081,7 @@ export namespace Prisma {
     updatedAt: Date | null
     userId: string | null
     organizerName: string | null
+    inviteToken: string | null
   }
 
   export type EventCountAggregateOutputType = {
@@ -1094,6 +1096,7 @@ export namespace Prisma {
     updatedAt: number
     userId: number
     organizerName: number
+    inviteToken: number
     _all: number
   }
 
@@ -1118,6 +1121,7 @@ export namespace Prisma {
     updatedAt?: true
     userId?: true
     organizerName?: true
+    inviteToken?: true
   }
 
   export type EventMaxAggregateInputType = {
@@ -1132,6 +1136,7 @@ export namespace Prisma {
     updatedAt?: true
     userId?: true
     organizerName?: true
+    inviteToken?: true
   }
 
   export type EventCountAggregateInputType = {
@@ -1146,6 +1151,7 @@ export namespace Prisma {
     updatedAt?: true
     userId?: true
     organizerName?: true
+    inviteToken?: true
     _all?: true
   }
 
@@ -1247,6 +1253,7 @@ export namespace Prisma {
     updatedAt: Date
     userId: string
     organizerName: string | null
+    inviteToken: string | null
     _count: EventCountAggregateOutputType | null
     _avg: EventAvgAggregateOutputType | null
     _sum: EventSumAggregateOutputType | null
@@ -1280,6 +1287,7 @@ export namespace Prisma {
     updatedAt?: boolean
     userId?: boolean
     organizerName?: boolean
+    inviteToken?: boolean
     rsvps?: boolean | Event$rsvpsArgs<ExtArgs>
     _count?: boolean | EventCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["event"]>
@@ -1296,6 +1304,7 @@ export namespace Prisma {
     updatedAt?: boolean
     userId?: boolean
     organizerName?: boolean
+    inviteToken?: boolean
   }, ExtArgs["result"]["event"]>
 
   export type EventSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -1310,6 +1319,7 @@ export namespace Prisma {
     updatedAt?: boolean
     userId?: boolean
     organizerName?: boolean
+    inviteToken?: boolean
   }, ExtArgs["result"]["event"]>
 
   export type EventSelectScalar = {
@@ -1324,9 +1334,10 @@ export namespace Prisma {
     updatedAt?: boolean
     userId?: boolean
     organizerName?: boolean
+    inviteToken?: boolean
   }
 
-  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "date" | "location" | "maxAttendees" | "isPublic" | "createdAt" | "updatedAt" | "userId" | "organizerName", ExtArgs["result"]["event"]>
+  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "date" | "location" | "maxAttendees" | "isPublic" | "createdAt" | "updatedAt" | "userId" | "organizerName" | "inviteToken", ExtArgs["result"]["event"]>
   export type EventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rsvps?: boolean | Event$rsvpsArgs<ExtArgs>
     _count?: boolean | EventCountOutputTypeDefaultArgs<ExtArgs>
@@ -1351,6 +1362,7 @@ export namespace Prisma {
       updatedAt: Date
       userId: string
       organizerName: string | null
+      inviteToken: string | null
     }, ExtArgs["result"]["event"]>
     composites: {}
   }
@@ -1786,6 +1798,7 @@ export namespace Prisma {
     readonly updatedAt: FieldRef<"Event", 'DateTime'>
     readonly userId: FieldRef<"Event", 'String'>
     readonly organizerName: FieldRef<"Event", 'String'>
+    readonly inviteToken: FieldRef<"Event", 'String'>
   }
     
 
@@ -2237,6 +2250,7 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     promotedAt: Date | null
+    attendeeName: string | null
     userId: string | null
     eventId: string | null
   }
@@ -2247,6 +2261,7 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     promotedAt: Date | null
+    attendeeName: string | null
     userId: string | null
     eventId: string | null
   }
@@ -2257,6 +2272,7 @@ export namespace Prisma {
     createdAt: number
     updatedAt: number
     promotedAt: number
+    attendeeName: number
     userId: number
     eventId: number
     _all: number
@@ -2269,6 +2285,7 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     promotedAt?: true
+    attendeeName?: true
     userId?: true
     eventId?: true
   }
@@ -2279,6 +2296,7 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     promotedAt?: true
+    attendeeName?: true
     userId?: true
     eventId?: true
   }
@@ -2289,6 +2307,7 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     promotedAt?: true
+    attendeeName?: true
     userId?: true
     eventId?: true
     _all?: true
@@ -2372,6 +2391,7 @@ export namespace Prisma {
     createdAt: Date
     updatedAt: Date
     promotedAt: Date | null
+    attendeeName: string | null
     userId: string
     eventId: string
     _count: RSVPCountAggregateOutputType | null
@@ -2399,6 +2419,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     promotedAt?: boolean
+    attendeeName?: boolean
     userId?: boolean
     eventId?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
@@ -2410,6 +2431,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     promotedAt?: boolean
+    attendeeName?: boolean
     userId?: boolean
     eventId?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
@@ -2421,6 +2443,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     promotedAt?: boolean
+    attendeeName?: boolean
     userId?: boolean
     eventId?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
@@ -2432,11 +2455,12 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     promotedAt?: boolean
+    attendeeName?: boolean
     userId?: boolean
     eventId?: boolean
   }
 
-  export type RSVPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "createdAt" | "updatedAt" | "promotedAt" | "userId" | "eventId", ExtArgs["result"]["rSVP"]>
+  export type RSVPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "createdAt" | "updatedAt" | "promotedAt" | "attendeeName" | "userId" | "eventId", ExtArgs["result"]["rSVP"]>
   export type RSVPInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventDefaultArgs<ExtArgs>
   }
@@ -2458,6 +2482,7 @@ export namespace Prisma {
       createdAt: Date
       updatedAt: Date
       promotedAt: Date | null
+      attendeeName: string | null
       userId: string
       eventId: string
     }, ExtArgs["result"]["rSVP"]>
@@ -2889,6 +2914,7 @@ export namespace Prisma {
     readonly createdAt: FieldRef<"RSVP", 'DateTime'>
     readonly updatedAt: FieldRef<"RSVP", 'DateTime'>
     readonly promotedAt: FieldRef<"RSVP", 'DateTime'>
+    readonly attendeeName: FieldRef<"RSVP", 'String'>
     readonly userId: FieldRef<"RSVP", 'String'>
     readonly eventId: FieldRef<"RSVP", 'String'>
   }
@@ -3335,7 +3361,8 @@ export namespace Prisma {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     userId: 'userId',
-    organizerName: 'organizerName'
+    organizerName: 'organizerName',
+    inviteToken: 'inviteToken'
   };
 
   export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
@@ -3347,6 +3374,7 @@ export namespace Prisma {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     promotedAt: 'promotedAt',
+    attendeeName: 'attendeeName',
     userId: 'userId',
     eventId: 'eventId'
   };
@@ -3478,6 +3506,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     userId?: StringFilter<"Event"> | string
     organizerName?: StringNullableFilter<"Event"> | string | null
+    inviteToken?: StringNullableFilter<"Event"> | string | null
     rsvps?: RSVPListRelationFilter
   }
 
@@ -3493,11 +3522,13 @@ export namespace Prisma {
     updatedAt?: SortOrder
     userId?: SortOrder
     organizerName?: SortOrderInput | SortOrder
+    inviteToken?: SortOrderInput | SortOrder
     rsvps?: RSVPOrderByRelationAggregateInput
   }
 
   export type EventWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    inviteToken?: string
     AND?: EventWhereInput | EventWhereInput[]
     OR?: EventWhereInput[]
     NOT?: EventWhereInput | EventWhereInput[]
@@ -3512,7 +3543,7 @@ export namespace Prisma {
     userId?: StringFilter<"Event"> | string
     organizerName?: StringNullableFilter<"Event"> | string | null
     rsvps?: RSVPListRelationFilter
-  }, "id">
+  }, "id" | "inviteToken">
 
   export type EventOrderByWithAggregationInput = {
     id?: SortOrder
@@ -3526,6 +3557,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     userId?: SortOrder
     organizerName?: SortOrderInput | SortOrder
+    inviteToken?: SortOrderInput | SortOrder
     _count?: EventCountOrderByAggregateInput
     _avg?: EventAvgOrderByAggregateInput
     _max?: EventMaxOrderByAggregateInput
@@ -3548,6 +3580,7 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     userId?: StringWithAggregatesFilter<"Event"> | string
     organizerName?: StringNullableWithAggregatesFilter<"Event"> | string | null
+    inviteToken?: StringNullableWithAggregatesFilter<"Event"> | string | null
   }
 
   export type RSVPWhereInput = {
@@ -3559,6 +3592,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"RSVP"> | Date | string
     updatedAt?: DateTimeFilter<"RSVP"> | Date | string
     promotedAt?: DateTimeNullableFilter<"RSVP"> | Date | string | null
+    attendeeName?: StringNullableFilter<"RSVP"> | string | null
     userId?: StringFilter<"RSVP"> | string
     eventId?: StringFilter<"RSVP"> | string
     event?: XOR<EventScalarRelationFilter, EventWhereInput>
@@ -3570,6 +3604,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     promotedAt?: SortOrderInput | SortOrder
+    attendeeName?: SortOrderInput | SortOrder
     userId?: SortOrder
     eventId?: SortOrder
     event?: EventOrderByWithRelationInput
@@ -3585,6 +3620,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"RSVP"> | Date | string
     updatedAt?: DateTimeFilter<"RSVP"> | Date | string
     promotedAt?: DateTimeNullableFilter<"RSVP"> | Date | string | null
+    attendeeName?: StringNullableFilter<"RSVP"> | string | null
     userId?: StringFilter<"RSVP"> | string
     eventId?: StringFilter<"RSVP"> | string
     event?: XOR<EventScalarRelationFilter, EventWhereInput>
@@ -3596,6 +3632,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     promotedAt?: SortOrderInput | SortOrder
+    attendeeName?: SortOrderInput | SortOrder
     userId?: SortOrder
     eventId?: SortOrder
     _count?: RSVPCountOrderByAggregateInput
@@ -3612,6 +3649,7 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"RSVP"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"RSVP"> | Date | string
     promotedAt?: DateTimeNullableWithAggregatesFilter<"RSVP"> | Date | string | null
+    attendeeName?: StringNullableWithAggregatesFilter<"RSVP"> | string | null
     userId?: StringWithAggregatesFilter<"RSVP"> | string
     eventId?: StringWithAggregatesFilter<"RSVP"> | string
   }
@@ -3628,6 +3666,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     userId: string
     organizerName?: string | null
+    inviteToken?: string | null
     rsvps?: RSVPCreateNestedManyWithoutEventInput
   }
 
@@ -3643,6 +3682,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     userId: string
     organizerName?: string | null
+    inviteToken?: string | null
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
   }
 
@@ -3658,6 +3698,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
   }
 
@@ -3673,6 +3714,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
   }
 
@@ -3688,6 +3730,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     userId: string
     organizerName?: string | null
+    inviteToken?: string | null
   }
 
   export type EventUpdateManyMutationInput = {
@@ -3702,6 +3745,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type EventUncheckedUpdateManyInput = {
@@ -3716,6 +3760,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type RSVPCreateInput = {
@@ -3724,6 +3769,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     promotedAt?: Date | string | null
+    attendeeName?: string | null
     userId: string
     event: EventCreateNestedOneWithoutRsvpsInput
   }
@@ -3734,6 +3780,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     promotedAt?: Date | string | null
+    attendeeName?: string | null
     userId: string
     eventId: string
   }
@@ -3744,6 +3791,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     event?: EventUpdateOneRequiredWithoutRsvpsNestedInput
   }
@@ -3754,6 +3802,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     eventId?: StringFieldUpdateOperationsInput | string
   }
@@ -3764,6 +3813,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     promotedAt?: Date | string | null
+    attendeeName?: string | null
     userId: string
     eventId: string
   }
@@ -3774,6 +3824,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -3783,6 +3834,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
     eventId?: StringFieldUpdateOperationsInput | string
   }
@@ -3871,6 +3923,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     userId?: SortOrder
     organizerName?: SortOrder
+    inviteToken?: SortOrder
   }
 
   export type EventAvgOrderByAggregateInput = {
@@ -3889,6 +3942,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     userId?: SortOrder
     organizerName?: SortOrder
+    inviteToken?: SortOrder
   }
 
   export type EventMinOrderByAggregateInput = {
@@ -3903,6 +3957,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     userId?: SortOrder
     organizerName?: SortOrder
+    inviteToken?: SortOrder
   }
 
   export type EventSumOrderByAggregateInput = {
@@ -4017,6 +4072,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     promotedAt?: SortOrder
+    attendeeName?: SortOrder
     userId?: SortOrder
     eventId?: SortOrder
   }
@@ -4027,6 +4083,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     promotedAt?: SortOrder
+    attendeeName?: SortOrder
     userId?: SortOrder
     eventId?: SortOrder
   }
@@ -4037,6 +4094,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     promotedAt?: SortOrder
+    attendeeName?: SortOrder
     userId?: SortOrder
     eventId?: SortOrder
   }
@@ -4350,6 +4408,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     promotedAt?: Date | string | null
+    attendeeName?: string | null
     userId: string
   }
 
@@ -4359,6 +4418,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     promotedAt?: Date | string | null
+    attendeeName?: string | null
     userId: string
   }
 
@@ -4397,6 +4457,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"RSVP"> | Date | string
     updatedAt?: DateTimeFilter<"RSVP"> | Date | string
     promotedAt?: DateTimeNullableFilter<"RSVP"> | Date | string | null
+    attendeeName?: StringNullableFilter<"RSVP"> | string | null
     userId?: StringFilter<"RSVP"> | string
     eventId?: StringFilter<"RSVP"> | string
   }
@@ -4413,6 +4474,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     userId: string
     organizerName?: string | null
+    inviteToken?: string | null
   }
 
   export type EventUncheckedCreateWithoutRsvpsInput = {
@@ -4427,6 +4489,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     userId: string
     organizerName?: string | null
+    inviteToken?: string | null
   }
 
   export type EventCreateOrConnectWithoutRsvpsInput = {
@@ -4457,6 +4520,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type EventUncheckedUpdateWithoutRsvpsInput = {
@@ -4471,6 +4535,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type RSVPCreateManyEventInput = {
@@ -4479,6 +4544,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     promotedAt?: Date | string | null
+    attendeeName?: string | null
     userId: string
   }
 
@@ -4488,6 +4554,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -4497,6 +4564,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -4506,6 +4574,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: StringFieldUpdateOperationsInput | string
   }
 

@@ -29,6 +29,10 @@ model Event {
   // no user-lookup API, so the id alone can't render a name).
   organizerName String?
 
+  // Reusable private-invite token. Null = no active link. Unique so
+  // /invite/[token] can resolve the event in one lookup.
+  inviteToken String? @unique
+
   rsvps RSVP[]
 
   @@index([userId])
@@ -43,6 +47,10 @@ model RSVP {
   // Set when a WAITLISTED row is auto-promoted to GOING. Null otherwise.
   // Powers the "You got in!" banner; cleared on dismiss.
   promotedAt DateTime?
+
+  // Denormalized display name stamped on RSVP write (same pattern as
+  // Event.organizerName — Managed Auth has no user-lookup API).
+  attendeeName String?
 
   // Managed Auth user id of the attendee
   userId  String
