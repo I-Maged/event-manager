@@ -240,6 +240,16 @@ export default async function EventDetailPage({
         </p>
 
         {isOrganizer && (
+          <p className="rounded-md px-3 py-2 text-sm text-muted bg-surface border border-border">
+            Going {counts.GOING} · Maybe {counts.MAYBE} · Can&apos;t go{' '}
+            {counts.NOT_GOING} · Wishlist {counts.WAITLISTED}
+            {event.maxAttendees != null && event.maxAttendees > 0
+              ? ` · Fill ${Math.round((counts.GOING / event.maxAttendees) * 100)}% (${counts.GOING}/${event.maxAttendees})`
+              : ' · Uncapped'}
+          </p>
+        )}
+
+        {isOrganizer && (
           <div className="flex gap-3 pt-2">
             <Link href={`/events/${event.id}/edit`} className="btn-secondary text-sm">
               Edit event

@@ -54,6 +54,58 @@ export async function getGoingCounts(
   return counts;
 }
 
+export type OrganizerEventStats = {
+  event: Event;
+  counts: RsvpCounts;
+  fillRate: number | null;
+};
+
+/** Organizer's events with per-event RSVP funnels, split upcoming/past. */
+export async function getOrganizerEvents(
+  userId: string,
+): Promise<{ upcoming: OrganizerEventStats[]; past: OrganizerEventStats[] }> {
+  // Current-time split: always render at request time.
+  await connection();
+  const empty = { upcoming: [], past: [] } as {
+    upcoming: OrganizerEventStats[];
+    past: OrganizerEventStats[];
+  };
+  if (!userId) return empty;
+  const events = await prisma.event.findMany({
+    where: { userId },
+    orderBy: { date: 'asc' },
+  });
+  if (events.length === 0) return empty;
+
+  const groups = await prisma.rSVP.groupBy({
+    by: ['eventId', 'status'],
+    where: { eventId: { in: events.map((e) => e.id) } },
+    _count: { status: true },
+  });
+  const countsByEvent = new Map<string, RsvpCounts>();
+  for (const g of groups) {
+    const counts = countsByEvent.get(g.eventId) ?? { ...EMPTY_COUNTS };
+    counts[g.status] = g._count.status;
+    countsByEvent.set(g.eventId, counts);
+  }
+
+  const now = new Date();
+  const upcoming: OrganizerEventStats[] = [];
+  const past: OrganizerEventStats[] = [];
+  for (const event of events) {
+    const counts = countsByEvent.get(event.id) ?? { ...EMPTY_COUNTS };
+    const fillRate =
+      event.maxAttendees != null && event.maxAttendees > 0
+        ? counts.GOING / event.maxAttendees
+        : null;
+    const row = { event, counts, fillRate };
+    if (event.date >= now) upcoming.push(row);
+    else past.push(row);
+  }
+  past.reverse();
+  return { upcoming, past };
+}
+
 export async function getEventById(id: string): Promise<Event | null> {
   return prisma.event.findUnique({ where: { id } });
 }
