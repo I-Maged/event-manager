@@ -1,61 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { auth } from "@/lib/auth/server";
-import { SignOutButton } from "./SignOutButton";
-
-async function NavbarSession() {
-  const { data: session } = await auth.getSession();
-  const user = session?.user;
-
-  return (
-    <>
-      {user && (
-        <>
-          <Link
-            href="/account"
-            className="text-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
-          >
-            Account
-          </Link>
-          <Link
-            href="/wishlist"
-            className="text-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
-          >
-            Wishlist
-          </Link>
-        </>
-      )}
-    </>
-  );
-}
-
-async function NavbarAuth() {
-  const { data: session } = await auth.getSession();
-  const user = session?.user;
-
-  if (user) {
-    return (
-      <>
-        <span className="text-sm text-muted">{user.email}</span>
-        <SignOutButton />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <Link
-        href="/auth/sign-in"
-        className="text-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
-      >
-        Sign in
-      </Link>
-      <Link href="/auth/sign-up" className="btn-primary text-sm">
-        Sign up
-      </Link>
-    </>
-  );
-}
+import { NavbarAuthClient } from "./NavbarAuthClient";
+import { NavbarSessionClient } from "./NavbarSessionClient";
 
 const Navbar = () => {
   return (
@@ -73,7 +19,7 @@ const Navbar = () => {
               Events
             </Link>
             <Suspense fallback={null}>
-              <NavbarSession />
+              <NavbarSessionClient />
             </Suspense>
           </div>
 
@@ -83,7 +29,7 @@ const Navbar = () => {
                 <span className="text-sm text-muted">Loading...</span>
               }
             >
-              <NavbarAuth />
+              <NavbarAuthClient />
             </Suspense>
           </div>
         </div>

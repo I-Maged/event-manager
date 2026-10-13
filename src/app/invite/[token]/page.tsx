@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { connection } from 'next/server';
 import { auth } from '@/lib/auth/server';
 import { formatEventDate, getEventByInviteToken } from '@/lib/events';
 import { AcceptInviteButton } from './AcceptInviteButton';
@@ -18,6 +19,8 @@ export default async function InvitePage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+  // Current-time comparison (isPast below) + session read: render on demand.
+  await connection();
   const event = await getEventByInviteToken(token);
 
   if (!event) {
