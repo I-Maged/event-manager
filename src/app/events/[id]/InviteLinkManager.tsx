@@ -54,6 +54,9 @@ export function InviteLinkManager({ eventId, initialToken }: Props) {
         setToken((result as { token: string }).token);
         setMessage(kind === 'regenerate' ? 'New invite link generated.' : 'Invite link ready.');
       }
+    } catch {
+      setMessage('Something went wrong. Please retry.');
+      setIsError(true);
     } finally {
       setPending(null);
     }

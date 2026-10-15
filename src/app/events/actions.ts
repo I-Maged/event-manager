@@ -305,3 +305,68 @@ export async function acceptInvite(
   if (!result.ok) return result;
   return { ...result, eventId: event.id };
 }
+
+export type CheckInResult =
+  | { ok: true; checkedInAt: string | null }
+  | { ok: false; error: string };
+
+/**
+ * Check in a GOING attendee. Organizer-only, idempotent. No time-window
+ * enforcement (v1): organizers can check in before/after the event.
+ * Never throws for DB failures: returns { ok: false } so the client can
+ * revert optimistic UI instead of surfacing an uncaught ErrorEvent.
+ */
+export async function checkInAttendee(
+  eventId: string,
+  attendeeUserId: string,
+): Promise<CheckInResult> {
+  await requireOrganizer(eventId);
+  try {
+    const rsvp = await prisma.rSVP.findUnique({
+      where: { userId_eventId: { userId: attendeeUserId, eventId } },
+      select: { id: true, status: true, checkedInAt: true },
+    });
+    if (!rsvp) return { ok: false, error: 'Attendee not found.' };
+    if (rsvp.status !== 'GOING') {
+      return { ok: false, error: 'Only Going attendees can be checked in.' };
+    }
+    if (rsvp.checkedInAt)
+      return { ok: true, checkedInAt: rsvp.checkedInAt.toISOString() };
+    const updated = await prisma.rSVP.update({
+      where: { id: rsvp.id },
+      data: { checkedInAt: new Date() },
+      select: { checkedInAt: true },
+    });
+    revalidateEvent(eventId);
+    return { ok: true, checkedInAt: updated.checkedInAt?.toISOString() ?? null };
+  } catch (error) {
+    console.error('checkInAttendee failed', { eventId, attendeeUserId, error });
+    return { ok: false, error: 'Check-in failed. Please retry.' };
+  }
+}
+
+/** Undo a check-in. Organizer-only, idempotent. */
+export async function undoCheckIn(
+  eventId: string,
+  attendeeUserId: string,
+): Promise<CheckInResult> {
+  await requireOrganizer(eventId);
+  try {
+    const rsvp = await prisma.rSVP.findUnique({
+      where: { userId_eventId: { userId: attendeeUserId, eventId } },
+      select: { id: true, checkedInAt: true },
+    });
+    if (!rsvp) return { ok: false, error: 'Attendee not found.' };
+    if (!rsvp.checkedInAt) return { ok: true, checkedInAt: null };
+    const updated = await prisma.rSVP.update({
+      where: { id: rsvp.id },
+      data: { checkedInAt: null },
+      select: { checkedInAt: true },
+    });
+    revalidateEvent(eventId);
+    return { ok: true, checkedInAt: updated.checkedInAt?.toISOString() ?? null };
+  } catch (error) {
+    console.error('undoCheckIn failed', { eventId, attendeeUserId, error });
+    return { ok: false, error: 'Undo check-in failed. Please retry.' };
+  }
+}

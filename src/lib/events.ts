@@ -159,6 +159,7 @@ export type AttendeeRow = {
   attendeeName: string | null;
   status: RSVPStatus;
   createdAt: Date;
+  checkedInAt: Date | null;
 };
 
 /** Full attendee roster for organizers, oldest first. Names are stamped on RSVP write. */
@@ -166,7 +167,13 @@ export async function getAttendees(eventId: string): Promise<AttendeeRow[]> {
   return prisma.rSVP.findMany({
     where: { eventId },
     orderBy: { createdAt: 'asc' },
-    select: { userId: true, attendeeName: true, status: true, createdAt: true },
+    select: {
+      userId: true,
+      attendeeName: true,
+      status: true,
+      createdAt: true,
+      checkedInAt: true,
+    },
   });
 }
 

@@ -22,13 +22,14 @@ export async function GET(
     return new Response('Not found', { status: 404 });
   }
   const attendees = await getAttendees(id);
-  const lines = ['status,name,joined_at'];
+  const lines = ['status,name,joined_at,checked_in'];
   for (const a of attendees) {
     lines.push(
       [
         csvCell(a.status),
         csvCell(a.attendeeName ?? ''),
         csvCell(a.createdAt.toISOString()),
+        csvCell(a.checkedInAt?.toISOString() ?? ''),
       ].join(','),
     );
   }

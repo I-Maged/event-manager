@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { connection } from 'next/server';
 import { RsvpControls } from '@/components/RsvpControls';
 import { InviteLinkManager } from './InviteLinkManager';
+import { RosterCheckInButton } from './RosterCheckInButton';
 import { auth } from '@/lib/auth/server';
 // Session-gated visibility + live RSVP counts: render on demand.
 export const instant = false;
@@ -26,6 +27,8 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  // Session + DB read below must run at request time, not during prerender.
+  await connection();
   const { id } = await params;
   const event = await getEventById(id);
   if (!event) return { title: 'Event not found' };
@@ -131,6 +134,10 @@ async function OrganizerRosterPanel({ eventId }: { eventId: string }) {
       </div>
     );
   }
+  const going = attendees.filter((a) => a.status === 'GOING');
+  const checkedIn = going.filter((a) => a.checkedInAt != null).length;
+  const checkInPct =
+    going.length > 0 ? Math.round((checkedIn / going.length) * 100) : 0;
   return (
     <div className="card p-6 space-y-3">
       <div className="flex items-center justify-between gap-3">
@@ -142,6 +149,26 @@ async function OrganizerRosterPanel({ eventId }: { eventId: string }) {
           Export CSV
         </a>
       </div>
+      {going.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-sm text-muted">
+            Checked in {checkedIn}/{going.length} going ({checkInPct}%)
+          </p>
+          <div
+            role="progressbar"
+            aria-valuenow={checkInPct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Check-in progress"
+            className="h-2 w-full overflow-hidden rounded-full bg-border"
+          >
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${checkInPct}%` }}
+            />
+          </div>
+        </div>
+      )}
       <ul className="space-y-2">
         {attendees.map((a, i) => (
           <li
@@ -155,6 +182,13 @@ async function OrganizerRosterPanel({ eventId }: { eventId: string }) {
               <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted">
                 {STATUS_LABEL[a.status] ?? a.status}
               </span>
+              {a.status === 'GOING' && (
+                <RosterCheckInButton
+                  eventId={eventId}
+                  attendeeUserId={a.userId}
+                  initialCheckedIn={a.checkedInAt != null}
+                />
+              )}
               <span className="text-xs text-muted hidden sm:inline">
                 {a.createdAt.toLocaleDateString('en-US', {
                   month: 'short',

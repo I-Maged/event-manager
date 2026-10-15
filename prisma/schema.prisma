@@ -52,6 +52,9 @@ model RSVP {
   // Event.organizerName — Managed Auth has no user-lookup API).
   attendeeName String?
 
+  // Set when the organizer checks the attendee in. Null = not checked in.
+  checkedInAt DateTime?
+
   // Managed Auth user id of the attendee
   userId  String
   eventId String
