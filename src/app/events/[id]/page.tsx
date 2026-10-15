@@ -14,6 +14,7 @@ import {
   canViewEvent,
   formatEventDate,
   getAttendees,
+  getComments,
   getEventById,
   getInviteToken,
   getRsvpCounts,
@@ -22,6 +23,8 @@ import {
   getWishlist,
   spotsLeft,
 } from '@/lib/events';
+import { CommentForm } from './comments/CommentForm';
+import { CommentDeleteButton } from './comments/CommentDeleteButton';
 
 export async function generateMetadata({
   params,
@@ -80,6 +83,79 @@ async function RsvpSection({ eventId }: { eventId: string }) {
       waitlistPosition={waitlistPosition}
       wasPromoted={rsvp?.promotedAt != null}
     />
+  );
+}
+
+async function CommentSection({ eventId }: { eventId: string }) {
+  // Session + visibility check: render at request time.
+  await connection();
+  const { data: session } = await auth.getSession();
+  const viewerId = session?.user?.id ?? null;
+  const event = await getEventById(eventId);
+  if (!event) return null;
+  if (!(await canViewEvent(event, viewerId))) return null;
+
+  const comments = await getComments(eventId);
+  const isPast = event.date < new Date();
+
+  return (
+    <div className="card p-6 space-y-4">
+      <h2 className="font-semibold">Comments ({comments.length})</h2>
+      {comments.length === 0 ? (
+        <p className="text-sm text-muted">
+          No comments yet. Ask a question or share details.
+        </p>
+      ) : (
+        <ul className="space-y-3">
+          {comments.map((comment) => {
+            const isOrganizer = comment.userId === event.userId;
+            const canDelete =
+              viewerId !== null &&
+              (viewerId === comment.userId || viewerId === event.userId);
+            return (
+              <li
+                key={comment.id}
+                className="space-y-1 border-b border-border pb-3 last:border-0 last:pb-0"
+              >
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-medium">
+                    {comment.authorName ?? 'Guest'}
+                  </span>
+                  {isOrganizer && (
+                    <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted">
+                      Organizer
+                    </span>
+                  )}
+                  <span className="text-xs text-muted">
+                    {comment.createdAt.toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </div>
+                <p className="text-sm whitespace-pre-wrap">{comment.body}</p>
+                {canDelete && <CommentDeleteButton commentId={comment.id} />}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {!viewerId ? (
+        <p className="text-sm text-muted">
+          <Link href="/auth/sign-in" className="text-primary hover:underline">
+            Sign in
+          </Link>{' '}
+          to join the discussion.
+        </p>
+      ) : isPast ? (
+        <p className="text-sm text-muted">
+          This event has ended — comments are read-only.
+        </p>
+      ) : (
+        <CommentForm eventId={eventId} />
+      )}
+    </div>
   );
 }
 
@@ -306,6 +382,16 @@ export default async function EventDetailPage({
         }
       >
         <RsvpSection eventId={event.id} />
+      </Suspense>
+
+      <Suspense
+        fallback={
+          <div className="card p-6 text-center">
+            <p className="text-sm text-muted">Loading comments…</p>
+          </div>
+        }
+      >
+        <CommentSection eventId={event.id} />
       </Suspense>
 
       {isOrganizer && event.maxAttendees != null && (

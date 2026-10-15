@@ -147,6 +147,26 @@ exports.Prisma.RSVPScalarFieldEnum = {
   eventId: 'eventId'
 };
 
+exports.Prisma.CommentScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  userId: 'userId',
+  authorName: 'authorName',
+  body: 'body',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  eventId: 'eventId',
+  type: 'type',
+  title: 'title',
+  body: 'body',
+  readAt: 'readAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -168,9 +188,19 @@ exports.RSVPStatus = exports.$Enums.RSVPStatus = {
   WAITLISTED: 'WAITLISTED'
 };
 
+exports.NotificationType = exports.$Enums.NotificationType = {
+  PROMOTION: 'PROMOTION',
+  EVENT_UPDATED: 'EVENT_UPDATED',
+  EVENT_CANCELLED: 'EVENT_CANCELLED',
+  COMMENT: 'COMMENT',
+  REMINDER: 'REMINDER'
+};
+
 exports.Prisma.ModelName = {
   Event: 'Event',
-  RSVP: 'RSVP'
+  RSVP: 'RSVP',
+  Comment: 'Comment',
+  Notification: 'Notification'
 };
 
 /**

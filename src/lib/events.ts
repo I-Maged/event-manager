@@ -154,6 +154,39 @@ export async function getWishlist(
   });
 }
 
+export type CommentRow = {
+  id: string;
+  userId: string;
+  authorName: string | null;
+  body: string;
+  createdAt: Date;
+};
+
+/** Event comments, oldest first. Caller must gate with canViewEvent. */
+export async function getComments(
+  eventId: string,
+  limit = 50,
+): Promise<CommentRow[]> {
+  const take = Math.min(Math.max(limit, 1), 100);
+  return prisma.comment.findMany({
+    where: { eventId },
+    orderBy: { createdAt: 'asc' },
+    take,
+    select: {
+      id: true,
+      userId: true,
+      authorName: true,
+      body: true,
+      createdAt: true,
+    },
+  });
+}
+
+/** Comment count for badges (0 when none). */
+export async function getCommentCount(eventId: string): Promise<number> {
+  return prisma.comment.count({ where: { eventId } });
+}
+
 export type AttendeeRow = {
   userId: string;
   attendeeName: string | null;

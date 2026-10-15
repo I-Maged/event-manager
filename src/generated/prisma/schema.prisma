@@ -33,7 +33,9 @@ model Event {
   // /invite/[token] can resolve the event in one lookup.
   inviteToken String? @unique
 
-  rsvps RSVP[]
+  rsvps         RSVP[]
+  comments      Comment[]
+  notifications Notification[]
 
   @@index([userId])
 }
@@ -70,4 +72,39 @@ enum RSVPStatus {
   NOT_GOING
   MAYBE
   WAITLISTED
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  eventId    String
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId     String
+  authorName String?
+  body       String
+  createdAt  DateTime @default(now())
+
+  @@index([eventId, createdAt])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  eventId   String?
+  event     Event?           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  body      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+}
+
+enum NotificationType {
+  PROMOTION
+  EVENT_UPDATED
+  EVENT_CANCELLED
+  COMMENT
+  REMINDER
 }
