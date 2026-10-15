@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { connection } from 'next/server';
 import { RsvpControls } from '@/components/RsvpControls';
+import { CalendarLinks } from '@/components/CalendarLinks';
 import { InviteLinkManager } from './InviteLinkManager';
 import { RosterCheckInButton } from './RosterCheckInButton';
 import { auth } from '@/lib/auth/server';
@@ -290,6 +291,11 @@ export default async function EventDetailPage({
             </Link>
           </div>
         )}
+
+        <p className="text-sm text-muted">
+          Add to calendar:{' '}
+          <CalendarLinks event={event} className="inline-flex flex-wrap gap-x-3" />
+        </p>
       </div>
 
       <Suspense

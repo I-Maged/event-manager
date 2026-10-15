@@ -6,6 +6,7 @@ import {
   getOrganizerEvents,
   type OrganizerEventStats,
 } from '@/lib/events';
+import { CalendarLinks } from '@/components/CalendarLinks';
 
 export const metadata = {
   title: 'My events | EventPlanner',
@@ -68,6 +69,7 @@ function EventCard({ row }: { row: OrganizerEventStats }) {
         >
           Export CSV
         </a>
+        <CalendarLinks event={event} />
       </div>
     </li>
   );

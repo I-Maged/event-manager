@@ -7,6 +7,7 @@ import {
   getUserWishlist,
 } from '@/lib/events';
 import { DismissPromotionButton, LeaveWishlistButton } from './WishlistButtons';
+import { CalendarLinks } from '@/components/CalendarLinks';
 
 export const metadata = {
   title: 'Wishlist | EventPlanner',
@@ -94,7 +95,10 @@ export default async function WishlistPage() {
                 <p className="text-sm text-muted">
                   {formatEventDate(entry.event.date)} · {entry.event.location}
                 </p>
-                <LeaveWishlistButton eventId={entry.event.id} />
+                <div className="flex flex-wrap items-center gap-3 pt-1 text-sm">
+                  <LeaveWishlistButton eventId={entry.event.id} />
+                  <CalendarLinks event={entry.event} />
+                </div>
               </li>
             ))}
           </ul>
