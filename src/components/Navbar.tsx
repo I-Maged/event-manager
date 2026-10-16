@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { NavbarAuthClient } from "./NavbarAuthClient";
 import { NavbarSessionClient } from "./NavbarSessionClient";
+import { NavbarNotificationsLink } from "./NavbarNotificationsLink";
 
 const Navbar = () => {
   return (
@@ -20,6 +21,7 @@ const Navbar = () => {
             </Link>
             <Suspense fallback={null}>
               <NavbarSessionClient />
+              <NavbarNotificationsLink />
             </Suspense>
           </div>
 
