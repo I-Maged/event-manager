@@ -82,6 +82,7 @@ async function RsvpSection({ eventId }: { eventId: string }) {
       isCapped={event.maxAttendees != null}
       waitlistPosition={waitlistPosition}
       wasPromoted={rsvp?.promotedAt != null}
+      initialNotifyOnUpdate={rsvp?.notifyOnUpdate ?? true}
     />
   );
 }

@@ -6,6 +6,7 @@ import {
   cancelRsvp,
   dismissPromotion,
   joinWishlist,
+  setNotifyOnUpdate,
   setRsvp,
   type SettableStatus,
 } from '@/app/events/actions';
@@ -18,6 +19,7 @@ type Props = {
   isCapped: boolean;
   waitlistPosition: number | null;
   wasPromoted: boolean;
+  initialNotifyOnUpdate: boolean;
 };
 
 const BUTTONS: { status: SettableStatus; label: string }[] = [
@@ -36,10 +38,12 @@ export function RsvpControls({
   isCapped,
   waitlistPosition,
   wasPromoted,
+  initialNotifyOnUpdate,
 }: Props) {
   const [status, setStatus] = useState<RSVPStatus | null>(currentStatus);
   const [position, setPosition] = useState<number | null>(waitlistPosition);
   const [promoted, setPromoted] = useState(wasPromoted);
+  const [notify, setNotify] = useState(initialNotifyOnUpdate);
   const [pending, setPending] = useState<Pending>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
@@ -108,6 +112,16 @@ export function RsvpControls({
     const result = await dismissPromotion(eventId);
     setPending(null);
     if (result.ok) setPromoted(false);
+  }
+
+  async function handleNotifyChange(next: boolean) {
+    setNotify(next);
+    try {
+      const result = await setNotifyOnUpdate(eventId, next);
+      if (!result.ok) setNotify(!next);
+    } catch {
+      setNotify(!next);
+    }
   }
 
   if (isPast) {
@@ -187,6 +201,18 @@ export function RsvpControls({
             ))}
           </div>
         </>
+      )}
+
+      {status && (
+        <label className="flex items-center gap-2 text-sm text-muted cursor-pointer">
+          <input
+            type="checkbox"
+            checked={notify}
+            onChange={(e) => handleNotifyChange(e.target.checked)}
+            className="h-4 w-4 accent-current cursor-pointer"
+          />
+          Notify me about updates and reminders
+        </label>
       )}
 
       {status && (

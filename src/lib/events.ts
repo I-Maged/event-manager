@@ -132,15 +132,62 @@ export async function getUserRsvpStatus(
   return rsvp?.status ?? null;
 }
 
-/** Caller's RSVP row with promotion flag (for the "You got in!" banner). */
+/** Caller's RSVP row with promotion flag and notify preference. */
 export async function getUserRsvp(
   eventId: string,
   userId: string,
-): Promise<{ status: RSVPStatus; promotedAt: Date | null } | null> {
+): Promise<{
+  status: RSVPStatus;
+  promotedAt: Date | null;
+  notifyOnUpdate: boolean;
+} | null> {
   return prisma.rSVP.findUnique({
     where: { userId_eventId: { userId, eventId } },
-    select: { status: true, promotedAt: true },
+    select: { status: true, promotedAt: true, notifyOnUpdate: true },
   });
+}
+
+export type UpcomingRsvp = {
+  id: string;
+  status: RSVPStatus;
+  notifyOnUpdate: boolean;
+  event: Event;
+};
+
+/** Caller's upcoming RSVPs (going/maybe/waitlisted), soonest event first. */
+export async function getUpcomingRsvps(
+  userId: string,
+  limit = 5,
+): Promise<UpcomingRsvp[]> {
+  const take = Math.min(Math.max(limit, 1), 20);
+  if (!userId) return [];
+  return prisma.rSVP.findMany({
+    where: {
+      userId,
+      status: { in: ['GOING', 'MAYBE', 'WAITLISTED'] },
+      event: { date: { gte: new Date() } },
+    },
+    include: { event: true },
+    orderBy: { event: { date: 'asc' } },
+    take,
+  });
+}
+
+/** "Today" / "Tomorrow" / "In N days" label for an upcoming event date. */
+export function startsInLabel(date: Date): string {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfDay = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
+  const days = Math.round(
+    (startOfDay.getTime() - startOfToday.getTime()) / (24 * 60 * 60 * 1000),
+  );
+  if (days <= 0) return 'Today';
+  if (days === 1) return 'Tomorrow';
+  return `In ${days} days`;
 }
 
 /** Ordered wishlist queue (oldest first). No identities: userIds are opaque. */

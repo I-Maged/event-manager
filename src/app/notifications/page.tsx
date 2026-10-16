@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 import { auth } from '@/lib/auth/server';
 import { formatEventDate } from '@/lib/events';
 import { getNotifications } from '@/lib/notifications';
 import type { NotificationType } from '@/generated/prisma';
 import { MarkAllReadButton, MarkReadButton } from './NotificationButtons';
+import { UpcomingWidget } from './UpcomingWidget';
 
 export const metadata = {
   title: 'Notifications | EventPlanner',
@@ -59,6 +61,10 @@ export default async function NotificationsPage() {
         </h1>
         <MarkAllReadButton disabled={unreadCount === 0} />
       </div>
+
+      <Suspense fallback={null}>
+        <UpcomingWidget userId={userId} />
+      </Suspense>
 
       <ul className="space-y-3">
         {notifications.map((n) => {

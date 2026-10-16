@@ -65,3 +65,56 @@ export async function notifyUsers(items: NotifyInput[]): Promise<void> {
     })),
   });
 }
+
+/** Events within this window get a lazy REMINDER when the widget renders. */
+export const REMINDER_WINDOW_MS = 48 * 60 * 60 * 1000;
+/** Suppress repeat REMINDERs within this window (idempotency key). */
+export const REMINDER_DEDUP_MS = 24 * 60 * 60 * 1000;
+
+export type ReminderCandidate = {
+  id: string;
+  notifyOnUpdate: boolean;
+  event: { id: string; title: string; date: Date };
+};
+
+/**
+ * Lazily write REMINDER notifications for due candidates (cron substitute).
+ * Skips opted-out rows, far-future events, and events reminded recently.
+ * Never throws: a notify failure must not break the rendering widget.
+ */
+export async function ensureDueReminders(
+  userId: string,
+  rows: ReminderCandidate[],
+): Promise<void> {
+  if (!userId || rows.length === 0) return;
+  const now = new Date();
+  try {
+    const due = rows.filter(
+      (row) =>
+        row.notifyOnUpdate && row.event.date.getTime() - now.getTime() <= REMINDER_WINDOW_MS,
+    );
+    for (const row of due) {
+      const recent = await prisma.notification.findFirst({
+        where: {
+          userId,
+          eventId: row.event.id,
+          type: 'REMINDER',
+          createdAt: { gte: new Date(now.getTime() - REMINDER_DEDUP_MS) },
+        },
+        select: { id: true },
+      });
+      if (recent) continue;
+      await notifyUsers([
+        {
+          userId,
+          eventId: row.event.id,
+          type: 'REMINDER',
+          title: `Upcoming: ${row.event.title}`,
+          body: 'Your event is coming up soon.',
+        },
+      ]);
+    }
+  } catch (error) {
+    console.error('ensureDueReminders failed', { userId, error });
+  }
+}

@@ -217,6 +217,24 @@ export async function dismissPromotion(
   return { ok: true };
 }
 
+/**
+ * Toggle in-app update/reminder notifications for the caller's RSVP.
+ * No-op when the caller has no RSVP row. Does not affect promotions
+ * or comments, which are always delivered.
+ */
+export async function setNotifyOnUpdate(
+  eventId: string,
+  value: boolean,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const userId = await requireUserId();
+  await prisma.rSVP.updateMany({
+    where: { eventId, userId },
+    data: { notifyOnUpdate: value },
+  });
+  revalidateEvent(eventId);
+  return { ok: true };
+}
+
 export type InviteLinkResult =
   | { ok: true; token: string }
   | { ok: false; error: string };
