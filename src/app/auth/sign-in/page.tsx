@@ -1,12 +1,33 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { signInWithEmail } from './actions';
+import { useRouter } from 'next/navigation';
+import { authClient } from '@/lib/auth/client';
 import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 
 export default function SignInPage() {
-  const [state, formAction, isPending] = useActionState(signInWithEmail, null);
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, setIsPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setIsPending(true);
+    const formData = new FormData(e.currentTarget);
+    const { error } = await authClient.signIn.email({
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+    });
+    if (error) {
+      setError(error.message || 'Failed to sign in. Try again');
+      setIsPending(false);
+      return;
+    }
+    router.push('/');
+    router.refresh();
+  }
 
   return (
     <div className="flex justify-center py-12">
@@ -17,7 +38,7 @@ export default function SignInPage() {
 
         <div className="text-center text-sm text-muted">or continue with email</div>
 
-        <form action={formAction} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <label htmlFor="email" className="block text-sm font-medium">
               Email address
@@ -46,9 +67,9 @@ export default function SignInPage() {
             />
           </div>
 
-          {state?.error && (
+          {error && (
             <div className="alert-error">
-              {state.error}
+              {error}
             </div>
           )}
 

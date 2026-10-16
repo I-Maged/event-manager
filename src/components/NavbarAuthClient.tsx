@@ -1,16 +1,27 @@
 'use client';
 
 import Link from 'next/link';
+import { useSyncExternalStore } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { SignOutButton } from './SignOutButton';
 
+function useMounted() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
+
 export function NavbarAuthClient() {
   const { data: session, isPending } = authClient.useSession();
-  const user = session?.user;
+  const mounted = useMounted();
 
-  if (isPending) {
+  if (!mounted || isPending) {
     return <span className="text-sm text-muted">Loading...</span>;
   }
+
+  const user = session?.user;
 
   if (user) {
     return (

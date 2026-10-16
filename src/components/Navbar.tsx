@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { NavbarAuthClient } from "./NavbarAuthClient";
-import { NavbarSessionClient } from "./NavbarSessionClient";
-import { NavbarNotificationsLink } from "./NavbarNotificationsLink";
+import { NavbarSessionLinks } from "./NavbarSessionLinks";
 
 const Navbar = () => {
   return (
@@ -20,8 +19,7 @@ const Navbar = () => {
               Events
             </Link>
             <Suspense fallback={null}>
-              <NavbarSessionClient />
-              <NavbarNotificationsLink />
+              <NavbarSessionLinks />
             </Suspense>
           </div>
 

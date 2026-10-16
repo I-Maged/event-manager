@@ -1,12 +1,49 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { signUpWithEmail } from './actions';
+import { useRouter } from 'next/navigation';
+import { authClient } from '@/lib/auth/client';
 import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 
 export default function SignUpPage() {
-  const [state, formAction, isPending] = useActionState(signUpWithEmail, null);
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, setIsPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    if (!email) {
+      setError('Email address must be provided.');
+      return;
+    }
+    if (!password) {
+      setError('Password must be provided.');
+      return;
+    }
+
+    setIsPending(true);
+    const { error } = await authClient.signUp.email({
+      email,
+      name,
+      password,
+    });
+
+    if (error) {
+      setError(error.message || 'Failed to create account');
+      setIsPending(false);
+      return;
+    }
+
+    router.push('/');
+    router.refresh();
+  }
 
   return (
     <div className="flex justify-center py-12">
@@ -17,7 +54,7 @@ export default function SignUpPage() {
 
         <div className="text-center text-sm text-muted">or continue with email</div>
 
-        <form action={formAction} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <label htmlFor="name" className="block text-sm font-medium">
               Name
@@ -61,9 +98,9 @@ export default function SignUpPage() {
             />
           </div>
 
-          {state?.error && (
+          {error && (
             <div className="alert-error">
-              {state.error}
+              {error}
             </div>
           )}
 
