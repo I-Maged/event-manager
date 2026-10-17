@@ -128,6 +128,7 @@ exports.Prisma.EventScalarFieldEnum = {
   location: 'location',
   maxAttendees: 'maxAttendees',
   isPublic: 'isPublic',
+  category: 'category',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   userId: 'userId',
@@ -182,6 +183,19 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.EventCategory = exports.$Enums.EventCategory = {
+  MUSIC: 'MUSIC',
+  SPORTS: 'SPORTS',
+  TECH: 'TECH',
+  ARTS: 'ARTS',
+  FOOD: 'FOOD',
+  WELLNESS: 'WELLNESS',
+  COMMUNITY: 'COMMUNITY',
+  BUSINESS: 'BUSINESS',
+  EDUCATION: 'EDUCATION',
+  OTHER: 'OTHER'
+};
+
 exports.RSVPStatus = exports.$Enums.RSVPStatus = {
   GOING: 'GOING',
   NOT_GOING: 'NOT_GOING',

@@ -37,6 +37,7 @@ export default async function EditEventPage({
           maxAttendees:
             event.maxAttendees != null ? String(event.maxAttendees) : '',
           isPublic: event.isPublic,
+          category: event.category,
         }}
       />
     </div>

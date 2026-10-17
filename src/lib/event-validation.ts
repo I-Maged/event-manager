@@ -1,3 +1,6 @@
+import type { EventCategory } from '@/generated/prisma';
+import { DEFAULT_CATEGORY, isEventCategory } from '@/lib/categories';
+
 export type ParsedEventForm =
   | {
       ok: true;
@@ -8,6 +11,7 @@ export type ParsedEventForm =
         location: string;
         maxAttendees: number | null;
         isPublic: boolean;
+        category: EventCategory;
       };
     }
   | { ok: false; error: string };
@@ -28,6 +32,10 @@ export function parseEventForm(
   const dateRaw = (formData.get('date') as string | null) ?? '';
   const maxRaw = (formData.get('maxAttendees') as string | null)?.trim() ?? '';
   const isPublic = formData.get('isPublic') === 'on';
+  const categoryRaw = (formData.get('category') as string | null) ?? '';
+  const category: EventCategory = isEventCategory(categoryRaw)
+    ? categoryRaw
+    : DEFAULT_CATEGORY;
 
   if (title.length === 0) return { ok: false, error: 'Title is required.' };
   if (title.length > 200)
@@ -59,7 +67,7 @@ export function parseEventForm(
 
   return {
     ok: true,
-    data: { title, description, date, location, maxAttendees, isPublic },
+    data: { title, description, date, location, maxAttendees, isPublic, category },
   };
 }
 

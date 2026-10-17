@@ -7,6 +7,7 @@ import { CalendarLinks } from '@/components/CalendarLinks';
 import { InviteLinkManager } from './InviteLinkManager';
 import { RosterCheckInButton } from './RosterCheckInButton';
 import { auth } from '@/lib/auth/server';
+import { categoryLabel } from '@/lib/categories';
 // Session-gated visibility + live RSVP counts: render on demand.
 export const instant = false;
 
@@ -320,11 +321,19 @@ export default async function EventDetailPage({
         )}
         <div className="flex items-start justify-between gap-3">
           <h1 className="text-3xl font-bold">{event.title}</h1>
-          {!event.isPublic && (
-            <span className="shrink-0 rounded-full border border-border px-2.5 py-1 text-xs text-muted">
-              Private
-            </span>
-          )}
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+            <Link
+              href={`/events?category=${event.category}`}
+              className="badge-organizer hover:underline"
+            >
+              {categoryLabel(event.category)}
+            </Link>
+            {!event.isPublic && (
+              <span className="shrink-0 rounded-full border border-border px-2.5 py-1 text-xs text-muted">
+                Private
+              </span>
+            )}
+          </div>
         </div>
         {!isOrganizer && event.organizerName && (
           <p className="text-sm text-muted">

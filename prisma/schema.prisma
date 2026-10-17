@@ -12,15 +12,16 @@ datasource db {
 // (plain String, no FK) so auth state branches with the database.
 
 model Event {
-  id           String   @id @default(cuid())
+  id           String        @id @default(cuid())
   title        String
   description  String
   date         DateTime
   location     String
   maxAttendees Int?
-  isPublic     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  isPublic     Boolean       @default(true)
+  category     EventCategory @default(OTHER)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   // Managed Auth user id of the organizer
   userId String
@@ -37,7 +38,22 @@ model Event {
   comments Comment[]
   notifications Notification[]
 
-  @@index([userId])
+  @@index([userId, date])
+  @@index([isPublic, date])
+  @@index([category, date])
+}
+
+enum EventCategory {
+  MUSIC
+  SPORTS
+  TECH
+  ARTS
+  FOOD
+  WELLNESS
+  COMMUNITY
+  BUSINESS
+  EDUCATION
+  OTHER
 }
 
 model RSVP {

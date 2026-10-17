@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import Link from 'next/link';
+import { EVENT_CATEGORIES, DEFAULT_CATEGORY } from '@/lib/categories';
 import { createEvent } from './actions';
 
 export default function NewEventPage() {
@@ -84,6 +85,25 @@ export default function NewEventPage() {
               placeholder="Leave empty for unlimited"
               className="input-field"
             />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="category" className="block text-sm font-medium">
+              Category
+            </label>
+            <select
+              id="category"
+              name="category"
+              required
+              defaultValue={DEFAULT_CATEGORY}
+              className="input-field"
+            >
+              {EVENT_CATEGORIES.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="flex items-center gap-2">

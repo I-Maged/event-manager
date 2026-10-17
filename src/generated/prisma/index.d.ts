@@ -38,7 +38,23 @@ export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
  * Enums
  */
 export namespace $Enums {
-  export const RSVPStatus: {
+  export const EventCategory: {
+  MUSIC: 'MUSIC',
+  SPORTS: 'SPORTS',
+  TECH: 'TECH',
+  ARTS: 'ARTS',
+  FOOD: 'FOOD',
+  WELLNESS: 'WELLNESS',
+  COMMUNITY: 'COMMUNITY',
+  BUSINESS: 'BUSINESS',
+  EDUCATION: 'EDUCATION',
+  OTHER: 'OTHER'
+};
+
+export type EventCategory = (typeof EventCategory)[keyof typeof EventCategory]
+
+
+export const RSVPStatus: {
   GOING: 'GOING',
   NOT_GOING: 'NOT_GOING',
   MAYBE: 'MAYBE',
@@ -59,6 +75,10 @@ export const NotificationType: {
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
 
 }
+
+export type EventCategory = $Enums.EventCategory
+
+export const EventCategory: typeof $Enums.EventCategory
 
 export type RSVPStatus = $Enums.RSVPStatus
 
@@ -1277,6 +1297,7 @@ export namespace Prisma {
     location: string | null
     maxAttendees: number | null
     isPublic: boolean | null
+    category: $Enums.EventCategory | null
     createdAt: Date | null
     updatedAt: Date | null
     userId: string | null
@@ -1292,6 +1313,7 @@ export namespace Prisma {
     location: string | null
     maxAttendees: number | null
     isPublic: boolean | null
+    category: $Enums.EventCategory | null
     createdAt: Date | null
     updatedAt: Date | null
     userId: string | null
@@ -1307,6 +1329,7 @@ export namespace Prisma {
     location: number
     maxAttendees: number
     isPublic: number
+    category: number
     createdAt: number
     updatedAt: number
     userId: number
@@ -1332,6 +1355,7 @@ export namespace Prisma {
     location?: true
     maxAttendees?: true
     isPublic?: true
+    category?: true
     createdAt?: true
     updatedAt?: true
     userId?: true
@@ -1347,6 +1371,7 @@ export namespace Prisma {
     location?: true
     maxAttendees?: true
     isPublic?: true
+    category?: true
     createdAt?: true
     updatedAt?: true
     userId?: true
@@ -1362,6 +1387,7 @@ export namespace Prisma {
     location?: true
     maxAttendees?: true
     isPublic?: true
+    category?: true
     createdAt?: true
     updatedAt?: true
     userId?: true
@@ -1464,6 +1490,7 @@ export namespace Prisma {
     location: string
     maxAttendees: number | null
     isPublic: boolean
+    category: $Enums.EventCategory
     createdAt: Date
     updatedAt: Date
     userId: string
@@ -1498,6 +1525,7 @@ export namespace Prisma {
     location?: boolean
     maxAttendees?: boolean
     isPublic?: boolean
+    category?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     userId?: boolean
@@ -1517,6 +1545,7 @@ export namespace Prisma {
     location?: boolean
     maxAttendees?: boolean
     isPublic?: boolean
+    category?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     userId?: boolean
@@ -1532,6 +1561,7 @@ export namespace Prisma {
     location?: boolean
     maxAttendees?: boolean
     isPublic?: boolean
+    category?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     userId?: boolean
@@ -1547,6 +1577,7 @@ export namespace Prisma {
     location?: boolean
     maxAttendees?: boolean
     isPublic?: boolean
+    category?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     userId?: boolean
@@ -1554,7 +1585,7 @@ export namespace Prisma {
     inviteToken?: boolean
   }
 
-  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "date" | "location" | "maxAttendees" | "isPublic" | "createdAt" | "updatedAt" | "userId" | "organizerName" | "inviteToken", ExtArgs["result"]["event"]>
+  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "date" | "location" | "maxAttendees" | "isPublic" | "category" | "createdAt" | "updatedAt" | "userId" | "organizerName" | "inviteToken", ExtArgs["result"]["event"]>
   export type EventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rsvps?: boolean | Event$rsvpsArgs<ExtArgs>
     comments?: boolean | Event$commentsArgs<ExtArgs>
@@ -1579,6 +1610,7 @@ export namespace Prisma {
       location: string
       maxAttendees: number | null
       isPublic: boolean
+      category: $Enums.EventCategory
       createdAt: Date
       updatedAt: Date
       userId: string
@@ -2017,6 +2049,7 @@ export namespace Prisma {
     readonly location: FieldRef<"Event", 'String'>
     readonly maxAttendees: FieldRef<"Event", 'Int'>
     readonly isPublic: FieldRef<"Event", 'Boolean'>
+    readonly category: FieldRef<"Event", 'EventCategory'>
     readonly createdAt: FieldRef<"Event", 'DateTime'>
     readonly updatedAt: FieldRef<"Event", 'DateTime'>
     readonly userId: FieldRef<"Event", 'String'>
@@ -5852,6 +5885,7 @@ export namespace Prisma {
     location: 'location',
     maxAttendees: 'maxAttendees',
     isPublic: 'isPublic',
+    category: 'category',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     userId: 'userId',
@@ -5983,6 +6017,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'EventCategory'
+   */
+  export type EnumEventCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EventCategory'>
+    
+
+
+  /**
+   * Reference to a field of type 'EventCategory[]'
+   */
+  export type ListEnumEventCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EventCategory[]'>
+    
+
+
+  /**
    * Reference to a field of type 'RSVPStatus'
    */
   export type EnumRSVPStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RSVPStatus'>
@@ -6038,6 +6086,7 @@ export namespace Prisma {
     location?: StringFilter<"Event"> | string
     maxAttendees?: IntNullableFilter<"Event"> | number | null
     isPublic?: BoolFilter<"Event"> | boolean
+    category?: EnumEventCategoryFilter<"Event"> | $Enums.EventCategory
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     userId?: StringFilter<"Event"> | string
@@ -6056,6 +6105,7 @@ export namespace Prisma {
     location?: SortOrder
     maxAttendees?: SortOrderInput | SortOrder
     isPublic?: SortOrder
+    category?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -6078,6 +6128,7 @@ export namespace Prisma {
     location?: StringFilter<"Event"> | string
     maxAttendees?: IntNullableFilter<"Event"> | number | null
     isPublic?: BoolFilter<"Event"> | boolean
+    category?: EnumEventCategoryFilter<"Event"> | $Enums.EventCategory
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     userId?: StringFilter<"Event"> | string
@@ -6095,6 +6146,7 @@ export namespace Prisma {
     location?: SortOrder
     maxAttendees?: SortOrderInput | SortOrder
     isPublic?: SortOrder
+    category?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -6118,6 +6170,7 @@ export namespace Prisma {
     location?: StringWithAggregatesFilter<"Event"> | string
     maxAttendees?: IntNullableWithAggregatesFilter<"Event"> | number | null
     isPublic?: BoolWithAggregatesFilter<"Event"> | boolean
+    category?: EnumEventCategoryWithAggregatesFilter<"Event"> | $Enums.EventCategory
     createdAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     userId?: StringWithAggregatesFilter<"Event"> | string
@@ -6344,6 +6397,7 @@ export namespace Prisma {
     location: string
     maxAttendees?: number | null
     isPublic?: boolean
+    category?: $Enums.EventCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -6362,6 +6416,7 @@ export namespace Prisma {
     location: string
     maxAttendees?: number | null
     isPublic?: boolean
+    category?: $Enums.EventCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -6380,6 +6435,7 @@ export namespace Prisma {
     location?: StringFieldUpdateOperationsInput | string
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
     isPublic?: BoolFieldUpdateOperationsInput | boolean
+    category?: EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -6398,6 +6454,7 @@ export namespace Prisma {
     location?: StringFieldUpdateOperationsInput | string
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
     isPublic?: BoolFieldUpdateOperationsInput | boolean
+    category?: EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -6416,6 +6473,7 @@ export namespace Prisma {
     location: string
     maxAttendees?: number | null
     isPublic?: boolean
+    category?: $Enums.EventCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -6431,6 +6489,7 @@ export namespace Prisma {
     location?: StringFieldUpdateOperationsInput | string
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
     isPublic?: BoolFieldUpdateOperationsInput | boolean
+    category?: EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -6446,6 +6505,7 @@ export namespace Prisma {
     location?: StringFieldUpdateOperationsInput | string
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
     isPublic?: BoolFieldUpdateOperationsInput | boolean
+    category?: EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -6723,6 +6783,13 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
+  export type EnumEventCategoryFilter<$PrismaModel = never> = {
+    equals?: $Enums.EventCategory | EnumEventCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.EventCategory[] | ListEnumEventCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EventCategory[] | ListEnumEventCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumEventCategoryFilter<$PrismaModel> | $Enums.EventCategory
+  }
+
   export type StringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -6781,6 +6848,7 @@ export namespace Prisma {
     location?: SortOrder
     maxAttendees?: SortOrder
     isPublic?: SortOrder
+    category?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -6800,6 +6868,7 @@ export namespace Prisma {
     location?: SortOrder
     maxAttendees?: SortOrder
     isPublic?: SortOrder
+    category?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -6815,6 +6884,7 @@ export namespace Prisma {
     location?: SortOrder
     maxAttendees?: SortOrder
     isPublic?: SortOrder
+    category?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     userId?: SortOrder
@@ -6880,6 +6950,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type EnumEventCategoryWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EventCategory | EnumEventCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.EventCategory[] | ListEnumEventCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EventCategory[] | ListEnumEventCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumEventCategoryWithAggregatesFilter<$PrismaModel> | $Enums.EventCategory
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEventCategoryFilter<$PrismaModel>
+    _max?: NestedEnumEventCategoryFilter<$PrismaModel>
   }
 
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -7135,6 +7215,10 @@ export namespace Prisma {
     set?: boolean
   }
 
+  export type EnumEventCategoryFieldUpdateOperationsInput = {
+    set?: $Enums.EventCategory
+  }
+
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
   }
@@ -7320,6 +7404,13 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
+  export type NestedEnumEventCategoryFilter<$PrismaModel = never> = {
+    equals?: $Enums.EventCategory | EnumEventCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.EventCategory[] | ListEnumEventCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EventCategory[] | ListEnumEventCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumEventCategoryFilter<$PrismaModel> | $Enums.EventCategory
+  }
+
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -7409,6 +7500,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type NestedEnumEventCategoryWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EventCategory | EnumEventCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.EventCategory[] | ListEnumEventCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EventCategory[] | ListEnumEventCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumEventCategoryWithAggregatesFilter<$PrismaModel> | $Enums.EventCategory
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEventCategoryFilter<$PrismaModel>
+    _max?: NestedEnumEventCategoryFilter<$PrismaModel>
   }
 
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -7675,6 +7776,7 @@ export namespace Prisma {
     location: string
     maxAttendees?: number | null
     isPublic?: boolean
+    category?: $Enums.EventCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -7692,6 +7794,7 @@ export namespace Prisma {
     location: string
     maxAttendees?: number | null
     isPublic?: boolean
+    category?: $Enums.EventCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -7725,6 +7828,7 @@ export namespace Prisma {
     location?: StringFieldUpdateOperationsInput | string
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
     isPublic?: BoolFieldUpdateOperationsInput | boolean
+    category?: EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -7742,6 +7846,7 @@ export namespace Prisma {
     location?: StringFieldUpdateOperationsInput | string
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
     isPublic?: BoolFieldUpdateOperationsInput | boolean
+    category?: EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -7759,6 +7864,7 @@ export namespace Prisma {
     location: string
     maxAttendees?: number | null
     isPublic?: boolean
+    category?: $Enums.EventCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -7776,6 +7882,7 @@ export namespace Prisma {
     location: string
     maxAttendees?: number | null
     isPublic?: boolean
+    category?: $Enums.EventCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -7809,6 +7916,7 @@ export namespace Prisma {
     location?: StringFieldUpdateOperationsInput | string
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
     isPublic?: BoolFieldUpdateOperationsInput | boolean
+    category?: EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -7826,6 +7934,7 @@ export namespace Prisma {
     location?: StringFieldUpdateOperationsInput | string
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
     isPublic?: BoolFieldUpdateOperationsInput | boolean
+    category?: EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -7843,6 +7952,7 @@ export namespace Prisma {
     location: string
     maxAttendees?: number | null
     isPublic?: boolean
+    category?: $Enums.EventCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -7860,6 +7970,7 @@ export namespace Prisma {
     location: string
     maxAttendees?: number | null
     isPublic?: boolean
+    category?: $Enums.EventCategory
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
@@ -7893,6 +8004,7 @@ export namespace Prisma {
     location?: StringFieldUpdateOperationsInput | string
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
     isPublic?: BoolFieldUpdateOperationsInput | boolean
+    category?: EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -7910,6 +8022,7 @@ export namespace Prisma {
     location?: StringFieldUpdateOperationsInput | string
     maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
     isPublic?: BoolFieldUpdateOperationsInput | boolean
+    category?: EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string

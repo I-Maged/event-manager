@@ -2,6 +2,8 @@
 
 import { useActionState } from 'react';
 import Link from 'next/link';
+import type { EventCategory } from '@/generated/prisma';
+import { EVENT_CATEGORIES } from '@/lib/categories';
 import { updateEvent } from './actions';
 import { DeleteEventButton } from './DeleteEventButton';
 
@@ -13,6 +15,7 @@ export type EditEventInitial = {
   location: string;
   maxAttendees: string;
   isPublic: boolean;
+  category: EventCategory;
 };
 
 export function EditEventForm({ initial }: { initial: EditEventInitial }) {
@@ -98,6 +101,25 @@ export function EditEventForm({ initial }: { initial: EditEventInitial }) {
             defaultValue={initial.maxAttendees}
             className="input-field"
           />
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="category" className="block text-sm font-medium">
+            Category
+          </label>
+          <select
+            id="category"
+            name="category"
+            required
+            defaultValue={initial.category}
+            className="input-field"
+          >
+            {EVENT_CATEGORIES.map((category) => (
+              <option key={category.value} value={category.value}>
+                {category.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="flex items-center gap-2">
