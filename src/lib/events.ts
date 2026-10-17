@@ -1,6 +1,13 @@
 import { connection } from 'next/server';
 import { prisma } from '@/db';
-import type { Event, RSVPStatus } from '@/generated/prisma';
+import type {
+  Event,
+  EventCategory,
+  Prisma,
+  RSVPStatus,
+} from '@/generated/prisma';
+import { EVENT_CATEGORIES } from '@/lib/categories';
+import type { EventListParams, SortOrder, WhenFilter } from '@/lib/discovery';
 
 export type RsvpCounts = Record<RSVPStatus, number>;
 
@@ -51,6 +58,117 @@ export async function getGoingCounts(
     _count: { eventId: true },
   });
   for (const g of groups) counts.set(g.eventId, g._count.eventId);
+  return counts;
+}
+
+/** Page size for the public browse grid. */
+export const PAGE_SIZE = 12;
+
+export type PublicEventsPage = {
+  events: Event[];
+  total: number;
+  page: number;
+  pageCount: number;
+};
+
+/** Midnight at the start of the given day, in server-local time. */
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+/**
+ * Date range for a `when` filter. Always floored at `now` so already-started
+ * events never show as upcoming; upper bounds are calendar-anchored so the
+ * window is stable within a day.
+ */
+function whenDateRange(when: WhenFilter, now: Date): Prisma.DateTimeFilter {
+  if (when === 'any') return { gte: now };
+  const end = startOfDay(now);
+  end.setDate(end.getDate() + (when === 'today' ? 1 : when === 'week' ? 7 : 30));
+  return { gte: now, lt: end };
+}
+
+/** Deterministic ordering; `id` is always the final tiebreaker. */
+function publicEventOrderBy(
+  sort: SortOrder,
+): Prisma.EventOrderByWithRelationInput[] {
+  switch (sort) {
+    case 'newest':
+      return [{ createdAt: 'desc' }, { id: 'asc' }];
+    case 'popular':
+      // Approximate popularity: total RSVPs (any status). Prisma can order by a
+      // to-many relation's count but cannot filter the counted relation.
+      return [{ rsvps: { _count: 'desc' } }, { id: 'asc' }];
+    case 'date':
+    default:
+      return [{ date: 'asc' }, { id: 'asc' }];
+  }
+}
+
+/** Case-insensitive free-text search across the fields shown on a card. */
+function searchFilter(q: string): Prisma.EventWhereInput {
+  const contains = { contains: q, mode: 'insensitive' as const };
+  return {
+    OR: [
+      { title: contains },
+      { description: contains },
+      { location: contains },
+      { organizerName: contains },
+    ],
+  };
+}
+
+/**
+ * One page of public, upcoming events matching the browse filters, plus the
+ * total needed for pagination. `page` is clamped so an out-of-range URL still
+ * renders the last page instead of an empty grid.
+ */
+export async function getPublicEventsPage(
+  params: EventListParams,
+): Promise<PublicEventsPage> {
+  // Current-time filter: always render at request time.
+  await connection();
+  const where: Prisma.EventWhereInput = {
+    isPublic: true,
+    date: whenDateRange(params.when, new Date()),
+    ...(params.category ? { category: params.category } : {}),
+    ...(params.organizer ? { userId: params.organizer } : {}),
+    ...(params.q ? searchFilter(params.q) : {}),
+  };
+
+  const total = await prisma.event.count({ where });
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const page = Math.min(Math.max(params.page, 1), pageCount);
+
+  const events = await prisma.event.findMany({
+    where,
+    orderBy: publicEventOrderBy(params.sort),
+    skip: (page - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
+  });
+
+  return { events, total, page, pageCount };
+}
+
+/**
+ * Upcoming public event counts per category, for the filter chips. Mirrors the
+ * default browse scope (`isPublic` + `date >= now`) so the chips sum to the
+ * unfiltered total.
+ */
+export async function getCategoryCounts(): Promise<
+  Record<EventCategory, number>
+> {
+  await connection();
+  const counts = Object.fromEntries(
+    EVENT_CATEGORIES.map((category) => [category.value, 0]),
+  ) as Record<EventCategory, number>;
+
+  const groups = await prisma.event.groupBy({
+    by: ['category'],
+    where: { isPublic: true, date: { gte: new Date() } },
+    _count: { _all: true },
+  });
+  for (const group of groups) counts[group.category] = group._count._all;
   return counts;
 }
 
