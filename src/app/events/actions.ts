@@ -6,7 +6,8 @@ import { randomUUID } from 'crypto';
 import { prisma } from '@/db';
 import type { Prisma, RSVPStatus } from '@/generated/prisma';
 import { auth } from '@/lib/auth/server';
-import { resolveOrganizerName } from '@/lib/events';
+import { formatEventDate, resolveOrganizerName } from '@/lib/events';
+import { notifyUsers } from '@/lib/notifications';
 
 type Tx = Prisma.TransactionClient;
 
@@ -51,13 +52,15 @@ function revalidateEvent(eventId: string) {
 
 /**
  * Fill free GOING slots from the wishlist (oldest first), flagging each
- * promoted row so the UI can show a "You got in!" banner.
+ * promoted row so the UI can show a "You got in!" banner. Returns the
+ * promoted user ids so callers can fan out PROMOTION notifications.
  */
 async function promoteFromWishlist(
   tx: Tx,
   eventId: string,
   cap: number,
-): Promise<void> {
+): Promise<string[]> {
+  const promoted: string[] = [];
   let going = await tx.rSVP.count({
     where: { eventId, status: 'GOING' },
   });
@@ -65,14 +68,44 @@ async function promoteFromWishlist(
     const next = await tx.rSVP.findFirst({
       where: { eventId, status: 'WAITLISTED' },
       orderBy: { createdAt: 'asc' },
-      select: { id: true },
+      select: { id: true, userId: true },
     });
     if (!next) break;
     await tx.rSVP.update({
       where: { id: next.id },
       data: { status: 'GOING', promotedAt: new Date() },
     });
+    promoted.push(next.userId);
     going += 1;
+  }
+  return promoted;
+}
+
+/**
+ * Best-effort PROMOTION fan-out for users just moved off the wishlist.
+ * Promotions are always delivered (opt-out does not apply). Never throws:
+ * the promotion succeeds even if the notification write fails.
+ */
+async function notifyPromotions(
+  eventId: string,
+  eventTitle: string,
+  eventDate: Date,
+  eventLocation: string,
+  promotedUserIds: string[],
+): Promise<void> {
+  if (promotedUserIds.length === 0) return;
+  try {
+    await notifyUsers(
+      promotedUserIds.map((userId) => ({
+        userId,
+        eventId,
+        type: 'PROMOTION' as const,
+        title: `You're in: ${eventTitle}`,
+        body: `A spot opened up — ${formatEventDate(eventDate)} at ${eventLocation}.`,
+      })),
+    );
+  } catch (error) {
+    console.error('promotion notify fan-out failed', { eventId, error });
   }
 }
 
@@ -113,8 +146,9 @@ async function upsertRsvp(
 
     // Promote oldest waitlisted entries while GOING slots are free
     // (covers leaving the GOING pool and capacity increases via edit).
+    let promoted: string[] = [];
     if (event.maxAttendees != null) {
-      await promoteFromWishlist(tx, eventId, event.maxAttendees);
+      promoted = await promoteFromWishlist(tx, eventId, event.maxAttendees);
     }
 
     let waitlistPosition: number | null = null;
@@ -138,11 +172,34 @@ async function upsertRsvp(
       waitlistPosition = ahead + 1;
     }
 
-    return { ok: true as const, status: finalStatus, waitlistPosition };
+    return {
+      ok: true as const,
+      status: finalStatus,
+      waitlistPosition,
+      promoted,
+      eventTitle: event.title,
+      eventDate: event.date,
+      eventLocation: event.location,
+    };
   });
 
-  if (result.ok) revalidateEvent(eventId);
-  return result;
+  if (!result.ok) return result;
+  revalidateEvent(eventId);
+  if (result.promoted.length > 0) {
+    await notifyPromotions(
+      eventId,
+      result.eventTitle,
+      result.eventDate,
+      result.eventLocation,
+      result.promoted,
+    );
+    revalidatePath('/notifications');
+  }
+  return {
+    ok: true,
+    status: result.status,
+    waitlistPosition: result.waitlistPosition,
+  };
 }
 
 /**
@@ -186,22 +243,83 @@ export async function joinWishlist(eventId: string): Promise<SetRsvpResult> {
 export async function cancelRsvp(
   eventId: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const userId = await requireUserId();
+  const { userId, attendeeName } = await requireUser();
 
   const result = await prisma.$transaction(async (tx) => {
     const event = await tx.event.findUnique({ where: { id: eventId } });
     if (!event) return { ok: false as const, error: 'Event not found.' };
 
+    const existing = await tx.rSVP.findUnique({
+      where: { userId_eventId: { userId, eventId } },
+      select: { id: true },
+    });
+
     await tx.rSVP.deleteMany({ where: { eventId, userId } });
 
+    let promoted: string[] = [];
     if (event.maxAttendees != null) {
-      await promoteFromWishlist(tx, eventId, event.maxAttendees);
+      promoted = await promoteFromWishlist(tx, eventId, event.maxAttendees);
     }
-    return { ok: true as const };
+
+    // Organizer's update/cancellation preference, if they hold an RSVP row.
+    const organizerRsvp = await tx.rSVP.findUnique({
+      where: { userId_eventId: { userId: event.userId, eventId } },
+      select: { notifyOnUpdate: true },
+    });
+
+    return {
+      ok: true as const,
+      promoted,
+      hadRsvp: existing !== null,
+      eventTitle: event.title,
+      eventDate: event.date,
+      eventLocation: event.location,
+      organizerId: event.userId,
+      organizerNotify: organizerRsvp?.notifyOnUpdate ?? true,
+    };
   });
 
-  if (result.ok) revalidateEvent(eventId);
-  return result;
+  if (!result.ok) return result;
+  revalidateEvent(eventId);
+
+  let notified = false;
+  if (result.promoted.length > 0) {
+    await notifyPromotions(
+      eventId,
+      result.eventTitle,
+      result.eventDate,
+      result.eventLocation,
+      result.promoted,
+    );
+    notified = true;
+  }
+
+  // Tell the organizer someone left (opt-out respected). Skipped when the
+  // caller had no RSVP row or is the organizer themselves.
+  if (
+    result.hadRsvp &&
+    result.organizerId !== userId &&
+    result.organizerNotify
+  ) {
+    try {
+      const name = attendeeName ?? 'An attendee';
+      await notifyUsers([
+        {
+          userId: result.organizerId,
+          eventId,
+          type: 'EVENT_CANCELLED' as const,
+          title: `${name} left ${result.eventTitle}`,
+          body: `${name} is no longer attending — ${formatEventDate(result.eventDate)} at ${result.eventLocation}.`,
+        },
+      ]);
+      notified = true;
+    } catch (error) {
+      console.error('cancel notify fan-out failed', { eventId, error });
+    }
+  }
+
+  if (notified) revalidatePath('/notifications');
+  return { ok: true };
 }
 
 /** Dismiss the "You got in!" banner for the caller's row. Idempotent. */
@@ -220,7 +338,8 @@ export async function dismissPromotion(
 /**
  * Toggle in-app update/reminder notifications for the caller's RSVP.
  * No-op when the caller has no RSVP row. Does not affect promotions
- * or comments, which are always delivered.
+ * or comments, which are always delivered. Event updates, event
+ * cancellations, and single-user cancel notices respect this setting.
  */
 export async function setNotifyOnUpdate(
   eventId: string,
