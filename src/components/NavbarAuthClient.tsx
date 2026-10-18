@@ -18,7 +18,7 @@ export function NavbarAuthClient() {
   const mounted = useMounted();
 
   if (!mounted || isPending) {
-    return <span className="text-sm text-muted">Loading...</span>;
+    return <span className="px-3 py-2 text-sm text-muted">Loading...</span>;
   }
 
   const user = session?.user;
@@ -26,7 +26,9 @@ export function NavbarAuthClient() {
   if (user) {
     return (
       <>
-        <span className="text-sm text-muted">{user.email}</span>
+        <span className="truncate px-3 py-2 text-sm text-muted lg:max-w-64">
+          {user.email}
+        </span>
         <SignOutButton />
       </>
     );
@@ -34,10 +36,7 @@ export function NavbarAuthClient() {
 
   return (
     <>
-      <Link
-        href="/auth/sign-in"
-        className="text-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
-      >
+      <Link href="/auth/sign-in" className="nav-link">
         Sign in
       </Link>
       <Link href="/auth/sign-up" className="btn-primary text-sm">

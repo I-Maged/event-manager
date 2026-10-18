@@ -1,9 +1,6 @@
-import Link from "next/link";
 import { auth } from "@/lib/auth/server";
 import { getUnreadCount } from "@/lib/notifications";
-
-const linkClassName =
-  "text-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors";
+import { NavLink } from "./NavLink";
 
 /**
  * Server-rendered auth links for the navbar. Single server source of truth:
@@ -21,23 +18,16 @@ export async function NavbarSessionLinks() {
 
   return (
     <>
-      <Link href="/account" className={linkClassName}>
-        Account
-      </Link>
-      <Link href="/my-events" className={linkClassName}>
-        My events
-      </Link>
-      <Link href="/wishlist" className={linkClassName}>
-        Wishlist
-      </Link>
-      <Link
+      <NavLink href="/account">Account</NavLink>
+      <NavLink href="/my-events">My events</NavLink>
+      <NavLink href="/wishlist">Wishlist</NavLink>
+      <NavLink
         href="/notifications"
-        aria-label={
+        ariaLabel={
           unread > 0
             ? `Notifications, ${unread} unread`
             : "Notifications, no unread"
         }
-        className={`relative ${linkClassName}`}
       >
         Notifications
         {unread > 0 && (
@@ -48,7 +38,7 @@ export async function NavbarSessionLinks() {
             {label}
           </span>
         )}
-      </Link>
+      </NavLink>
     </>
   );
 }

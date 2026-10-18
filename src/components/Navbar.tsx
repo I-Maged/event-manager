@@ -2,37 +2,33 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { NavbarAuthClient } from "./NavbarAuthClient";
 import { NavbarSessionLinks } from "./NavbarSessionLinks";
+import { NavbarShell } from "./NavbarShell";
+import { NavLink } from "./NavLink";
 
 const Navbar = () => {
   return (
-    <nav className="bg-surface border-b border-border shadow-sm">
+    <nav className="sticky top-0 z-50 bg-surface/80 border-b border-border shadow-sm backdrop-blur">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="h-16 flex justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="text-primary text-xl font-bold">
+        <NavbarShell
+          brand={
+            <Link
+              href="/"
+              className="min-w-0 truncate text-primary text-xl font-bold"
+            >
               EventPlanner
             </Link>
-            <Link
-              href="/events"
-              className="text-foreground hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              Events
-            </Link>
-            <Suspense fallback={null}>
-              <NavbarSessionLinks />
-            </Suspense>
-          </div>
-
-          <div className="hidden md:flex items-center gap-3">
-            <Suspense
-              fallback={
-                <span className="text-sm text-muted">Loading...</span>
-              }
-            >
+          }
+          auth={
+            <Suspense fallback={<span className="text-sm text-muted">Loading...</span>}>
               <NavbarAuthClient />
             </Suspense>
-          </div>
-        </div>
+          }
+        >
+          <NavLink href="/events">Events</NavLink>
+          <Suspense fallback={null}>
+            <NavbarSessionLinks />
+          </Suspense>
+        </NavbarShell>
       </div>
     </nav>
   );

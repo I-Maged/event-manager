@@ -154,3 +154,110 @@ export function whenLabel(when: WhenFilter): string {
 export function sortLabel(sort: SortOrder): string {
   return SORT_OPTIONS.find((option) => option.value === sort)?.label ?? 'Soonest';
 }
+
+/**
+ * URL-driven state for the organizer dashboard (`/my-events`). Like
+ * `EventListParams`, this stays free of runtime Prisma imports so the page and
+ * its client filter bar can share it.
+ */
+
+export type DashboardView = 'upcoming' | 'past' | 'all';
+export type DashboardSort = 'date' | 'fill' | 'newest';
+
+export type DashboardParams = {
+  view: DashboardView;
+  q: string;
+  sort: DashboardSort;
+};
+
+export const DEFAULT_DASHBOARD_VIEW: DashboardView = 'upcoming';
+export const DEFAULT_DASHBOARD_SORT: DashboardSort = 'date';
+
+export const DASHBOARD_VIEW_OPTIONS: { value: DashboardView; label: string }[] = [
+  { value: 'upcoming', label: 'Upcoming' },
+  { value: 'past', label: 'Past' },
+  { value: 'all', label: 'All' },
+];
+
+export const DASHBOARD_SORT_OPTIONS: { value: DashboardSort; label: string }[] = [
+  { value: 'date', label: 'Date' },
+  { value: 'fill', label: 'Fill %' },
+  { value: 'newest', label: 'Newest' },
+];
+
+export const DEFAULT_DASHBOARD_PARAMS: DashboardParams = {
+  view: DEFAULT_DASHBOARD_VIEW,
+  q: '',
+  sort: DEFAULT_DASHBOARD_SORT,
+};
+
+const DASHBOARD_VIEW_VALUES = DASHBOARD_VIEW_OPTIONS.map((option) => option.value);
+const DASHBOARD_SORT_VALUES = DASHBOARD_SORT_OPTIONS.map((option) => option.value);
+
+function isDashboardView(value: string): value is DashboardView {
+  return (DASHBOARD_VIEW_VALUES as string[]).includes(value);
+}
+
+function isDashboardSort(value: string): value is DashboardSort {
+  return (DASHBOARD_SORT_VALUES as string[]).includes(value);
+}
+
+/**
+ * Normalize arbitrary `searchParams` into a fully-defaulted `DashboardParams`.
+ * Unknown values fall back to defaults so a hand-typed URL never breaks.
+ */
+export function parseDashboardParams(input: RawSearchParams): DashboardParams {
+  const q = (firstValue(input.q) ?? '').trim().slice(0, MAX_QUERY_LENGTH);
+
+  const viewValue = firstValue(input.view);
+  const view: DashboardView =
+    viewValue && isDashboardView(viewValue) ? viewValue : DEFAULT_DASHBOARD_VIEW;
+
+  const sortValue = firstValue(input.sort);
+  const sort: DashboardSort =
+    sortValue && isDashboardSort(sortValue) ? sortValue : DEFAULT_DASHBOARD_SORT;
+
+  return { view, q, sort };
+}
+
+/**
+ * Build a `/my-events` href from the current params plus optional changes.
+ * Defaults are omitted for clean, shareable URLs.
+ */
+export function dashboardHref(
+  params: DashboardParams,
+  changes: Partial<DashboardParams> = {},
+): string {
+  const next: DashboardParams = { ...params, ...changes };
+
+  const search = new URLSearchParams();
+  if (next.view !== DEFAULT_DASHBOARD_VIEW) search.set('view', next.view);
+  if (next.q) search.set('q', next.q);
+  if (next.sort !== DEFAULT_DASHBOARD_SORT) search.set('sort', next.sort);
+
+  const query = search.toString();
+  return query ? `/my-events?${query}` : '/my-events';
+}
+
+/**
+ * True when the dashboard has an active free-text query. View only narrows to a
+ * subset of the same events, so it alone doesn't count as a "no matches" state.
+ */
+export function hasDashboardQuery(params: DashboardParams): boolean {
+  return params.q.length > 0;
+}
+
+/** Human-readable label for a `view` value. */
+export function dashboardViewLabel(view: DashboardView): string {
+  return (
+    DASHBOARD_VIEW_OPTIONS.find((option) => option.value === view)?.label ??
+    'Upcoming'
+  );
+}
+
+/** Human-readable label for a dashboard `sort` value. */
+export function dashboardSortLabel(sort: DashboardSort): string {
+  return (
+    DASHBOARD_SORT_OPTIONS.find((option) => option.value === sort)?.label ?? 'Date'
+  );
+}
