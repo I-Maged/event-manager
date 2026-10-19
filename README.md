@@ -16,6 +16,18 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Environment
+
+Connection strings and Neon Auth credentials live in `.env` (see `.env` for the
+current set: `DATABASE_URL` pooled, `DATABASE_URL_UNPOOLED` for Prisma CLI).
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `DATABASE_URL` | yes | Pooled Postgres connection used by the app runtime. |
+| `DATABASE_URL_UNPOOLED` | yes | Direct connection used by `prisma migrate` / introspection. |
+| `APP_TIME_ZONE` | no | IANA zone (e.g. `Europe/Berlin`) used as the fallback for events with no stored zone, for no-JS form submits, and for browse day boundaries ("Today", "Next 7 days"). Defaults to `UTC`. |
+
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

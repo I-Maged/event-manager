@@ -2,10 +2,10 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth/server';
 import {
-  formatEventDate,
   getUserPromotions,
   getUserWishlist,
 } from '@/lib/events';
+import { formatEventDate } from '@/lib/time';
 import { DismissPromotionButton, LeaveWishlistButton } from './WishlistButtons';
 import { CalendarLinks } from '@/components/CalendarLinks';
 
@@ -66,7 +66,7 @@ export default async function WishlistPage() {
                   <DismissPromotionButton eventId={event.id} />
                 </div>
                 <p>
-                  A spot opened up on {formatEventDate(event.date)} — see you
+                  A spot opened up on {formatEventDate(event.date, event.timeZone)} — see you
                   at {event.location}!
                 </p>
               </li>
@@ -93,7 +93,7 @@ export default async function WishlistPage() {
                   </span>
                 </div>
                 <p className="text-sm text-muted">
-                  {formatEventDate(entry.event.date)} · {entry.event.location}
+                  {formatEventDate(entry.event.date, entry.event.timeZone)} · {entry.event.location}
                 </p>
                 <div className="flex flex-wrap items-center gap-3 pt-1 text-sm">
                   <LeaveWishlistButton eventId={entry.event.id} />

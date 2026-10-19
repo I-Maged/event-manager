@@ -12,6 +12,7 @@ export type EditEventInitial = {
   title: string;
   description: string;
   dateValue: string;
+  timeZone: string;
   location: string;
   maxAttendees: string;
   isPublic: boolean;
@@ -27,6 +28,7 @@ export function EditEventForm({ initial }: { initial: EditEventInitial }) {
 
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="eventId" value={initial.eventId} />
+        <input type="hidden" name="timeZone" value={initial.timeZone} />
 
         <div className="space-y-1.5">
           <label htmlFor="title" className="block text-sm font-medium">

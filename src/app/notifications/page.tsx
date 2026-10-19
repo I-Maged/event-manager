@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { auth } from '@/lib/auth/server';
-import { formatEventDate } from '@/lib/events';
 import { getNotifications } from '@/lib/notifications';
+import { formatEventDate } from '@/lib/time';
 import type { NotificationType } from '@/generated/prisma';
 import { MarkAllReadButton, MarkReadButton } from './NotificationButtons';
 import { UpcomingWidget } from './UpcomingWidget';
@@ -88,7 +88,7 @@ export default async function NotificationsPage() {
               {n.body && <p className="text-sm text-muted">{n.body}</p>}
               {n.event && (
                 <p className="text-sm text-muted">
-                  {formatEventDate(n.event.date)}
+                  {formatEventDate(n.event.date, n.event.timeZone)}
                 </p>
               )}
               {n.eventId && (

@@ -16,6 +16,9 @@ model Event {
   title        String
   description  String
   date         DateTime
+  // IANA zone the organizer authored `date` in (e.g. "Europe/Berlin").
+  // Null for rows created before timezone support -> render with APP_TIME_ZONE.
+  timeZone     String?
   location     String
   maxAttendees Int?
   isPublic     Boolean       @default(true)
@@ -126,4 +129,14 @@ enum NotificationType {
   EVENT_CANCELLED
   COMMENT
   REMINDER
+}
+
+/// Fixed-window counters for per-user write limits. Postgres is the counter
+/// store because this stack has no Redis. One row per `{scope}:{userId}` key.
+model RateLimit {
+  key         String   @id
+  count       Int      @default(0)
+  windowStart DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([windowStart])
 }

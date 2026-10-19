@@ -8,6 +8,7 @@ import type {
 } from '@/generated/prisma';
 import { EVENT_CATEGORIES } from '@/lib/categories';
 import type { EventListParams, SortOrder, WhenFilter } from '@/lib/discovery';
+import { addDaysInZone, calendarDayDiffInZone } from '@/lib/time';
 
 export type RsvpCounts = Record<RSVPStatus, number>;
 
@@ -71,21 +72,19 @@ export type PublicEventsPage = {
   pageCount: number;
 };
 
-/** Midnight at the start of the given day, in server-local time. */
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
 /**
  * Date range for a `when` filter. Always floored at `now` so already-started
- * events never show as upcoming; upper bounds are calendar-anchored so the
- * window is stable within a day.
+ * events never show as upcoming; upper bounds are anchored to the start of a
+ * calendar day in `APP_TIME_ZONE`, so the window is stable within a day.
+ *
+ * Browse day boundaries are deliberately app-wide rather than per-event:
+ * filtering by "today" across events authored in different zones needs one
+ * reference clock, and `APP_TIME_ZONE` is that clock.
  */
 function whenDateRange(when: WhenFilter, now: Date): Prisma.DateTimeFilter {
   if (when === 'any') return { gte: now };
-  const end = startOfDay(now);
-  end.setDate(end.getDate() + (when === 'today' ? 1 : when === 'week' ? 7 : 30));
-  return { gte: now, lt: end };
+  const days = when === 'today' ? 1 : when === 'week' ? 7 : 30;
+  return { gte: now, lt: addDaysInZone(now, days) };
 }
 
 /** Deterministic ordering; `id` is always the final tiebreaker. */
@@ -291,18 +290,15 @@ export async function getUpcomingRsvps(
   });
 }
 
-/** "Today" / "Tomorrow" / "In N days" label for an upcoming event date. */
-export function startsInLabel(date: Date): string {
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfDay = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-  );
-  const days = Math.round(
-    (startOfDay.getTime() - startOfToday.getTime()) / (24 * 60 * 60 * 1000),
-  );
+/**
+ * "Today" / "Tomorrow" / "In N days" label for an upcoming event date,
+ * compared by calendar day in the event's own zone.
+ */
+export function startsInLabel(
+  date: Date,
+  timeZone?: string | null,
+): string {
+  const days = calendarDayDiffInZone(date, new Date(), timeZone);
   if (days <= 0) return 'Today';
   if (days === 1) return 'Tomorrow';
   return `In ${days} days`;
@@ -480,17 +476,6 @@ export function spotsLeft(
 ): number | null {
   if (event.maxAttendees == null) return null;
   return Math.max(0, event.maxAttendees - goingCount);
-}
-
-export function formatEventDate(date: Date): string {
-  return date.toLocaleString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
 }
 
 /** Display name for stamping on events (null when identity has neither). */

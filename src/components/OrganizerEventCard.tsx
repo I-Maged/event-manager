@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { CalendarLinks } from '@/components/CalendarLinks';
 import { categoryLabel } from '@/lib/categories';
 import { categoryFilterHref } from '@/lib/discovery';
-import { type OrganizerEventStats, formatEventDate } from '@/lib/events';
+import { type OrganizerEventStats } from '@/lib/events';
+import { formatEventDate } from '@/lib/time';
 
 type Props = {
   row: OrganizerEventStats;
@@ -47,7 +48,7 @@ export function OrganizerEventCard({ row }: Props) {
       </div>
 
       <p className="text-sm text-muted">
-        {formatEventDate(event.date)} · {event.location}
+        {formatEventDate(event.date, event.timeZone)} · {event.location}
       </p>
       <p className="text-sm">
         {goingLine}

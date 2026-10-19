@@ -5,9 +5,11 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/db';
 import { auth } from '@/lib/auth/server';
 import { parseEventForm } from '@/lib/event-validation';
-import { formatEventDate, resolveOrganizerName } from '@/lib/events';
+import { resolveOrganizerName } from '@/lib/events';
 import { notifyUsers } from '@/lib/notifications';
 import { lockEvent, notifyPromotions, promoteFromWishlist } from '@/lib/rsvp';
+import { enforceRateLimit } from '@/lib/rate-limit';
+import { formatEventDate } from '@/lib/time';
 
 async function requireOrganizer(eventId: string) {
   const { data: session } = await auth.getSession();
@@ -27,7 +29,9 @@ export async function updateEvent(
 ) {
   const eventId = formData.get('eventId') as string;
   if (!eventId) return { error: 'Missing event id.' };
-  const { organizerName } = await requireOrganizer(eventId);
+  const { userId, organizerName } = await requireOrganizer(eventId);
+  const limited = await enforceRateLimit('eventEdit', userId);
+  if (limited) return { error: limited.error };
 
   const parsed = parseEventForm(formData, { requireFutureDate: false });
   if (!parsed.ok) return { error: parsed.error };
@@ -99,6 +103,7 @@ export async function updateEvent(
       parsed.data.date,
       parsed.data.location,
       promoted,
+      parsed.data.timeZone,
     );
     revalidatePath('/notifications');
   }
@@ -114,7 +119,7 @@ export async function updateEvent(
     changeLines.push(`Location is now ${parsed.data.location}`);
   }
   if (parsed.data.date.getTime() !== before.date.getTime()) {
-    changeLines.push(`Date is now ${formatEventDate(parsed.data.date)}`);
+    changeLines.push(`Date is now ${formatEventDate(parsed.data.date, parsed.data.timeZone)}`);
   }
   if (changeLines.length > 0) {
     try {
@@ -159,7 +164,7 @@ export async function deleteEvent(formData: FormData) {
   // use eventId:null with the title baked into the text.
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    select: { title: true, date: true, location: true, userId: true },
+    select: { title: true, date: true, timeZone: true, location: true, userId: true },
   });
   if (!event) redirect('/events');
   const holders = await prisma.rSVP.findMany({
@@ -183,7 +188,7 @@ export async function deleteEvent(formData: FormData) {
           eventId: null,
           type: 'EVENT_CANCELLED' as const,
           title: `Event cancelled: ${event.title}`,
-          body: `${formatEventDate(event.date)} at ${event.location} will not take place.`,
+          body: `${formatEventDate(event.date, event.timeZone)} at ${event.location} will not take place.`,
         })),
       );
     } catch (error) {

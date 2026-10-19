@@ -37,8 +37,8 @@ export const DEFAULT_EVENT_LIST_PARAMS: EventListParams = {
 export const WHEN_OPTIONS: { value: WhenFilter; label: string }[] = [
   { value: 'any', label: 'Any time' },
   { value: 'today', label: 'Today' },
-  { value: 'week', label: 'This week' },
-  { value: 'month', label: 'This month' },
+  { value: 'week', label: 'Next 7 days' },
+  { value: 'month', label: 'Next 30 days' },
 ];
 
 export const SORT_OPTIONS: { value: SortOrder; label: string }[] = [

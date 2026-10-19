@@ -1,12 +1,32 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { EVENT_CATEGORIES, DEFAULT_CATEGORY } from '@/lib/categories';
 import { createEvent } from './actions';
 
+const subscribeNoop = () => () => {};
+const getBrowserTimeZone = () =>
+  Intl.DateTimeFormat().resolvedOptions().timeZone ?? '';
+const getServerTimeZone = () => '';
+
+/**
+ * The author's IANA zone. `useSyncExternalStore` reads the browser-only value
+ * after hydration (server snapshot is empty), so the server-rendered markup
+ * and the first client render agree. The server falls back to APP_TIME_ZONE
+ * when this is empty (no JS).
+ */
+function useBrowserTimeZone(): string {
+  return useSyncExternalStore(
+    subscribeNoop,
+    getBrowserTimeZone,
+    getServerTimeZone,
+  );
+}
+
 export default function NewEventPage() {
   const [state, formAction, isPending] = useActionState(createEvent, null);
+  const timeZone = useBrowserTimeZone();
 
   return (
     <div className="max-w-xl mx-auto">
@@ -14,6 +34,8 @@ export default function NewEventPage() {
         <h1 className="text-2xl font-bold">Create event</h1>
 
         <form action={formAction} className="space-y-4">
+          <input type="hidden" name="timeZone" value={timeZone} readOnly />
+
           <div className="space-y-1.5">
             <label htmlFor="title" className="block text-sm font-medium">
               Title

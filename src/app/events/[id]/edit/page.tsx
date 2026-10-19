@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { auth } from '@/lib/auth/server';
 import { getEventById } from '@/lib/events';
-import { toDatetimeLocalValue } from '@/lib/event-validation';
+import { resolveTimeZone, toDatetimeLocalValue } from '@/lib/time';
 import { EditEventForm } from './EditEventForm';
 
 export const metadata = {
@@ -32,7 +32,8 @@ export default async function EditEventPage({
           eventId: event.id,
           title: event.title,
           description: event.description,
-          dateValue: toDatetimeLocalValue(event.date),
+          dateValue: toDatetimeLocalValue(event.date, resolveTimeZone(event.timeZone)),
+          timeZone: resolveTimeZone(event.timeZone),
           location: event.location,
           maxAttendees:
             event.maxAttendees != null ? String(event.maxAttendees) : '',

@@ -2,7 +2,8 @@ import Link from 'next/link';
 import type { Event } from '@/generated/prisma';
 import { categoryLabel } from '@/lib/categories';
 import { categoryFilterHref } from '@/lib/discovery';
-import { formatEventDate, organizerAccentClass, spotsLeft } from '@/lib/events';
+import { formatEventDate } from '@/lib/time';
+import { organizerAccentClass, spotsLeft } from '@/lib/events';
 
 type Props = {
   event: Event;
@@ -57,7 +58,7 @@ export function EventCard({ event, going, isMine }: Props) {
         )}
       </div>
       <p className="text-sm text-muted">
-        {formatEventDate(event.date)} · {event.location}
+        {formatEventDate(event.date, event.timeZone)} · {event.location}
       </p>
       <p className="text-sm line-clamp-2">{event.description}</p>
       <p className="text-xs text-muted">

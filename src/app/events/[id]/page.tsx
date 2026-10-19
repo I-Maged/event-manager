@@ -13,7 +13,6 @@ export const instant = false;
 
 import {
   canViewEvent,
-  formatEventDate,
   getAttendees,
   getComments,
   getEventById,
@@ -24,6 +23,7 @@ import {
   getWishlist,
   spotsLeft,
 } from '@/lib/events';
+import { formatEventDate } from '@/lib/time';
 import { CommentForm } from './comments/CommentForm';
 import { CommentDeleteButton } from './comments/CommentDeleteButton';
 
@@ -347,7 +347,7 @@ export default async function EventDetailPage({
           </p>
         )}
         <p className="text-sm text-muted">
-          {formatEventDate(event.date)} · {event.location}
+          {formatEventDate(event.date, event.timeZone)} · {event.location}
         </p>
         <p className="whitespace-pre-wrap">{event.description}</p>
         <p className="text-sm text-muted">

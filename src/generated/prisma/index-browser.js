@@ -125,6 +125,7 @@ exports.Prisma.EventScalarFieldEnum = {
   title: 'title',
   description: 'description',
   date: 'date',
+  timeZone: 'timeZone',
   location: 'location',
   maxAttendees: 'maxAttendees',
   isPublic: 'isPublic',
@@ -167,6 +168,12 @@ exports.Prisma.NotificationScalarFieldEnum = {
   body: 'body',
   readAt: 'readAt',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.RateLimitScalarFieldEnum = {
+  key: 'key',
+  count: 'count',
+  windowStart: 'windowStart'
 };
 
 exports.Prisma.SortOrder = {
@@ -215,7 +222,8 @@ exports.Prisma.ModelName = {
   Event: 'Event',
   RSVP: 'RSVP',
   Comment: 'Comment',
-  Notification: 'Notification'
+  Notification: 'Notification',
+  RateLimit: 'RateLimit'
 };
 
 /**

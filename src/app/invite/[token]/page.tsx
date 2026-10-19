@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import { auth } from '@/lib/auth/server';
-import { formatEventDate, getEventByInviteToken } from '@/lib/events';
+import { getEventByInviteToken } from '@/lib/events';
+import { formatEventDate } from '@/lib/time';
 import { AcceptInviteButton } from './AcceptInviteButton';
 
 // Invite acceptance is session-gated: render on demand.
@@ -52,7 +53,7 @@ export default async function InvitePage({
         <div className="card p-8 text-center space-y-4">
           <h1 className="text-2xl font-bold">This event has ended</h1>
           <p className="text-sm text-muted">
-            {event.title} took place on {formatEventDate(event.date)}.
+            {event.title} took place on {formatEventDate(event.date, event.timeZone)}.
           </p>
         </div>
       </div>
@@ -67,7 +68,7 @@ export default async function InvitePage({
         </p>
         <h1 className="text-2xl font-bold">{event.title}</h1>
         <p className="text-sm text-muted">
-          {formatEventDate(event.date)} · {event.location}
+          {formatEventDate(event.date, event.timeZone)} · {event.location}
         </p>
         {event.isPublic ? (
           <p className="whitespace-pre-wrap text-sm">{event.description}</p>

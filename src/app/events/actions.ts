@@ -5,8 +5,9 @@ import { redirect } from 'next/navigation';
 import { randomUUID } from 'crypto';
 import { prisma } from '@/db';
 import { auth } from '@/lib/auth/server';
-import { formatEventDate, resolveOrganizerName } from '@/lib/events';
+import { resolveOrganizerName } from '@/lib/events';
 import { notifyUsers } from '@/lib/notifications';
+import { enforceRateLimit } from '@/lib/rate-limit';
 import {
   SETTABLE_STATUSES,
   cancelRsvpCore,
@@ -16,6 +17,7 @@ import {
   type SettableStatus as SettableStatusCore,
   type UpsertRsvpOutcome,
 } from '@/lib/rsvp';
+import { formatEventDate } from '@/lib/time';
 
 // Re-exported as local aliases (not `export … from`) so the client-facing
 // type surface of this 'use server' module is unchanged.
@@ -71,6 +73,7 @@ async function finishRsvp(
       outcome.eventDate,
       outcome.eventLocation,
       outcome.promoted,
+      outcome.eventTimeZone,
     );
     revalidatePath('/notifications');
   }
@@ -97,6 +100,8 @@ export async function setRsvp(
     return { ok: false, error: 'Invalid RSVP status.' };
   }
   const { userId, attendeeName } = await requireUser();
+  const limited = await enforceRateLimit('rsvp', userId);
+  if (limited) return limited;
   return finishRsvp(
     eventId,
     await upsertRsvpCore(userId, eventId, status, attendeeName),
@@ -110,6 +115,8 @@ export async function setRsvp(
  */
 export async function joinWishlist(eventId: string): Promise<SetRsvpResult> {
   const { userId, attendeeName } = await requireUser();
+  const limited = await enforceRateLimit('rsvp', userId);
+  if (limited) return limited;
   const event = await prisma.event.findUnique({
     where: { id: eventId },
     select: { maxAttendees: true, date: true },
@@ -132,6 +139,8 @@ export async function cancelRsvp(
   eventId: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const { userId, attendeeName } = await requireUser();
+  const limited = await enforceRateLimit('rsvp', userId);
+  if (limited) return limited;
 
   const result = await cancelRsvpCore(userId, eventId);
 
@@ -146,6 +155,7 @@ export async function cancelRsvp(
       result.eventDate,
       result.eventLocation,
       result.promoted,
+      result.eventTimeZone,
     );
     notified = true;
   }
@@ -165,7 +175,7 @@ export async function cancelRsvp(
           eventId,
           type: 'EVENT_CANCELLED' as const,
           title: `${name} left ${result.eventTitle}`,
-          body: `${name} is no longer attending — ${formatEventDate(result.eventDate)} at ${result.eventLocation}.`,
+          body: `${name} is no longer attending — ${formatEventDate(result.eventDate, result.eventTimeZone)} at ${result.eventLocation}.`,
         },
       ]);
       notified = true;
@@ -225,7 +235,9 @@ function newInviteToken(): string {
 export async function createInviteLink(
   eventId: string,
 ): Promise<InviteLinkResult> {
-  await requireOrganizer(eventId);
+  const userId = await requireOrganizer(eventId);
+  const limited = await enforceRateLimit('invite', userId);
+  if (limited) return limited;
   const existing = await prisma.event.findUnique({
     where: { id: eventId },
     select: { inviteToken: true, isPublic: true },
@@ -245,7 +257,9 @@ export async function createInviteLink(
 export async function regenerateInviteLink(
   eventId: string,
 ): Promise<InviteLinkResult> {
-  await requireOrganizer(eventId);
+  const userId = await requireOrganizer(eventId);
+  const limited = await enforceRateLimit('invite', userId);
+  if (limited) return limited;
   const existing = await prisma.event.findUnique({
     where: { id: eventId },
     select: { id: true, isPublic: true },
@@ -264,7 +278,9 @@ export async function regenerateInviteLink(
 export async function revokeInviteLink(
   eventId: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireOrganizer(eventId);
+  const userId = await requireOrganizer(eventId);
+  const limited = await enforceRateLimit('invite', userId);
+  if (limited) return limited;
   const existing = await prisma.event.findUnique({
     where: { id: eventId },
     select: { id: true },
@@ -284,6 +300,8 @@ export async function acceptInvite(
   token: string,
 ): Promise<SetRsvpResult & { eventId?: string }> {
   const { userId, attendeeName } = await requireUser();
+  const limited = await enforceRateLimit('accept', userId);
+  if (limited) return limited;
   const event = await prisma.event.findUnique({
     where: { inviteToken: token },
   });

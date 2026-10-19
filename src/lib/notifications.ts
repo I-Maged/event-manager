@@ -9,7 +9,7 @@ export type NotificationRow = {
   eventId: string | null;
   readAt: Date | null;
   createdAt: Date;
-  event: { id: string; title: string; date: Date } | null;
+  event: { id: string; title: string; date: Date; timeZone: string | null } | null;
 };
 
 /** Unread notification count for the navbar bell (0 when signed out). */
@@ -39,7 +39,7 @@ export async function getNotifications(
       eventId: true,
       readAt: true,
       createdAt: true,
-      event: { select: { id: true, title: true, date: true } },
+      event: { select: { id: true, title: true, date: true, timeZone: true } },
     },
   });
 }

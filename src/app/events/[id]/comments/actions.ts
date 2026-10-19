@@ -6,6 +6,7 @@ import { prisma } from '@/db';
 import { auth } from '@/lib/auth/server';
 import { canViewEvent, resolveOrganizerName } from '@/lib/events';
 import { MAX_COMMENT_LENGTH } from '@/lib/comments';
+import { enforceRateLimit } from '@/lib/rate-limit';
 const NOTIFY_RECIPIENT_CAP = 20;
 
 async function requireUser(): Promise<{
@@ -39,6 +40,9 @@ export async function addComment(
   if (trimmed.length > MAX_COMMENT_LENGTH) {
     return { ok: false, error: 'Comment must be 1000 characters or fewer.' };
   }
+
+  const limited = await enforceRateLimit('comment', userId);
+  if (limited) return limited;
 
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) return { ok: false, error: 'Event not found.' };

@@ -1,7 +1,7 @@
 import { prisma } from '@/db';
 import type { Prisma, RSVPStatus } from '@/generated/prisma';
-import { formatEventDate } from '@/lib/events';
 import { notifyUsers } from '@/lib/notifications';
+import { formatEventDate } from '@/lib/time';
 
 type Tx = Prisma.TransactionClient;
 
@@ -26,6 +26,7 @@ export type UpsertRsvpOutcome =
       promoted: string[];
       eventTitle: string;
       eventDate: Date;
+      eventTimeZone: string | null;
       eventLocation: string;
     }
   | { ok: false; error: string };
@@ -37,6 +38,7 @@ export type CancelRsvpOutcome =
       promoted: string[];
       eventTitle: string;
       eventDate: Date;
+      eventTimeZone: string | null;
       eventLocation: string;
       organizerId: string;
       organizerNotify: boolean;
@@ -125,6 +127,7 @@ export async function notifyPromotions(
   eventDate: Date,
   eventLocation: string,
   promotedUserIds: string[],
+  eventTimeZone?: string | null,
 ): Promise<void> {
   if (promotedUserIds.length === 0) return;
   try {
@@ -134,7 +137,7 @@ export async function notifyPromotions(
         eventId,
         type: 'PROMOTION' as const,
         title: `You're in: ${eventTitle}`,
-        body: `A spot opened up — ${formatEventDate(eventDate)} at ${eventLocation}.`,
+        body: `A spot opened up — ${formatEventDate(eventDate, eventTimeZone)} at ${eventLocation}.`,
       })),
     );
   } catch (error) {
@@ -228,6 +231,7 @@ export async function upsertRsvpCore(
         promoted,
         eventTitle: event.title,
         eventDate: event.date,
+        eventTimeZone: event.timeZone,
         eventLocation: event.location,
       };
     },
@@ -277,6 +281,7 @@ export async function cancelRsvpCore(
         hadRsvp: existing !== null,
         eventTitle: event.title,
         eventDate: event.date,
+        eventTimeZone: event.timeZone,
         eventLocation: event.location,
         organizerId: event.userId,
         organizerNotify: organizerRsvp?.notifyOnUpdate ?? true,

@@ -1,11 +1,8 @@
 import Link from 'next/link';
 import { CalendarLinks } from '@/components/CalendarLinks';
-import {
-  formatEventDate,
-  getUpcomingRsvps,
-  startsInLabel,
-} from '@/lib/events';
+import { getUpcomingRsvps, startsInLabel } from '@/lib/events';
 import { ensureDueReminders } from '@/lib/notifications';
+import { formatEventDate } from '@/lib/time';
 
 /**
  * "Coming up" widget: the caller's next RSVPs, soonest first.
@@ -31,11 +28,11 @@ export async function UpcomingWidget({ userId }: { userId: string }) {
                 {event.title}
               </Link>
               <span className="shrink-0 rounded-full border border-border px-2.5 py-1 text-xs text-muted">
-                Starts {startsInLabel(event.date).toLowerCase()}
+                Starts {startsInLabel(event.date, event.timeZone).toLowerCase()}
               </span>
             </div>
             <p className="text-sm text-muted">
-              {formatEventDate(event.date)} · {event.location}
+              {formatEventDate(event.date, event.timeZone)} · {event.location}
             </p>
             <CalendarLinks event={event} />
           </li>
