@@ -3,22 +3,19 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { acceptInvite } from '@/app/events/actions';
+import { useActionFeedback } from '@/lib/useActionFeedback';
 
 export function AcceptInviteButton({ token }: { token: string }) {
-  const [pending, setPending] = useState(false);
+  const { pending, error, setError, run } = useActionFeedback();
   const [message, setMessage] = useState<string | null>(null);
-  const [isError, setIsError] = useState(false);
   const [eventId, setEventId] = useState<string | null>(null);
 
   async function handleAccept() {
-    setPending(true);
     setMessage(null);
-    setIsError(false);
-    const result = await acceptInvite(token);
-    setPending(false);
+    const result = await run(() => acceptInvite(token));
+    if (!result) return;
     if (!result.ok) {
-      setMessage(result.error);
-      setIsError(true);
+      setError(result.error);
       if ('eventId' in result && result.eventId) setEventId(result.eventId);
       return;
     }
@@ -44,11 +41,13 @@ export function AcceptInviteButton({ token }: { token: string }) {
       >
         {pending ? 'Joining…' : eventId ? 'Joined!' : 'Accept invite — Join as Going'}
       </button>
+      {error && (
+        <div role="alert" className="alert-error">
+          {error}
+        </div>
+      )}
       {message && (
-        <div
-          role={isError ? 'alert' : 'status'}
-          className={isError ? 'alert-error' : 'text-sm text-muted'}
-        >
+        <div role="status" className="text-sm text-muted">
           {message}
         </div>
       )}

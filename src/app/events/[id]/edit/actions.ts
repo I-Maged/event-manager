@@ -7,6 +7,7 @@ import { auth } from '@/lib/auth/server';
 import { parseEventForm } from '@/lib/event-validation';
 import { formatEventDate, resolveOrganizerName } from '@/lib/events';
 import { notifyUsers } from '@/lib/notifications';
+import { lockEvent, notifyPromotions, promoteFromWishlist } from '@/lib/rsvp';
 
 async function requireOrganizer(eventId: string) {
   const { data: session } = await auth.getSession();
@@ -31,29 +32,76 @@ export async function updateEvent(
   const parsed = parseEventForm(formData, { requireFutureDate: false });
   if (!parsed.ok) return { error: parsed.error };
 
-  // Prevent shrinking capacity below the current GOING count.
-  if (parsed.data.maxAttendees !== null) {
-    const going = await prisma.rSVP.count({
-      where: { eventId, status: 'GOING' },
-    });
-    if (parsed.data.maxAttendees < going) {
-      return {
-        error: `Capacity cannot be below the ${going} guests already going.`,
-      };
-    }
+  // Capacity shrink and the write that stores it must be atomic with respect
+  // to concurrent RSVP mutations, so they share the per-event advisory lock
+  // used by upsertRsvpCore/cancelRsvpCore. Without it, the GOING count read
+  // here can go stale before the update lands and the cap can be stored
+  // below the number of guests already going.
+  const outcome = await prisma.$transaction(
+    async (tx) => {
+      await lockEvent(tx, eventId);
+
+      // Prevent shrinking capacity below the current GOING count.
+      if (parsed.data.maxAttendees !== null) {
+        const going = await tx.rSVP.count({
+          where: { eventId, status: 'GOING' },
+        });
+        if (parsed.data.maxAttendees < going) {
+          return {
+            ok: false as const,
+            error: `Capacity cannot be below the ${going} guests already going.`,
+          };
+        }
+      }
+
+      // Pre-update snapshot for the EVENT_UPDATED diff below.
+      const before = await tx.event.findUnique({
+        where: { id: eventId },
+        select: {
+          title: true,
+          date: true,
+          location: true,
+          userId: true,
+          maxAttendees: true,
+        },
+      });
+      if (!before) return { ok: false as const, error: 'Event not found.' };
+
+      await tx.event.update({
+        where: { id: eventId },
+        data: { ...parsed.data, organizerName },
+      });
+
+      // A raised cap frees seats immediately: promote inside the same locked
+      // transaction so the stored capacity and the wishlist cannot disagree.
+      const newCap = parsed.data.maxAttendees;
+      const raisedCap =
+        newCap !== null &&
+        (before.maxAttendees === null || newCap > before.maxAttendees);
+      const promoted =
+        raisedCap && newCap !== null
+          ? await promoteFromWishlist(tx, eventId, newCap)
+          : [];
+
+      return { ok: true as const, before, promoted };
+    },
+    { timeout: 15_000 },
+  );
+
+  if (!outcome.ok) return { error: outcome.error };
+  const { before, promoted } = outcome;
+
+  // Best-effort PROMOTION fan-out for anyone who just got a freed seat.
+  if (promoted.length > 0) {
+    await notifyPromotions(
+      eventId,
+      parsed.data.title,
+      parsed.data.date,
+      parsed.data.location,
+      promoted,
+    );
+    revalidatePath('/notifications');
   }
-
-  // Pre-update snapshot for the EVENT_UPDATED diff below.
-  const before = await prisma.event.findUnique({
-    where: { id: eventId },
-    select: { title: true, date: true, location: true, userId: true },
-  });
-  if (!before) return { error: 'Event not found.' };
-
-  await prisma.event.update({
-    where: { id: eventId },
-    data: { ...parsed.data, organizerName },
-  });
 
   // Best-effort EVENT_UPDATED fan-out: only when title/date/location
   // actually changed, only to GOING/MAYBE/WAITLISTED holders who opted in,

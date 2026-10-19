@@ -1,24 +1,25 @@
 'use client';
 
-import { useState } from 'react';
 import { authClient } from '@/lib/auth/client';
+import { useActionFeedback } from '@/lib/useActionFeedback';
 
 export function GoogleSignInButton({ label = 'Continue with Google' }: { label?: string }) {
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { pending, error, setError, run } = useActionFeedback();
 
   async function handleClick() {
-    setIsPending(true);
-    setError(null);
     // Land on a middleware-covered route so the proxy exchanges
     // ?neon_auth_session_verifier=… for the session cookie.
-    const { error } = await authClient.signIn.social({
-      provider: 'google',
-      callbackURL: '/account',
-    });
-    if (error) {
-      setError(error.message || 'Google sign-in failed. Is Google enabled in Neon Auth?');
-      setIsPending(false);
+    const result = await run(() =>
+      authClient.signIn.social({
+        provider: 'google',
+        callbackURL: '/account',
+      }),
+    );
+    if (!result) return;
+    if (result.error) {
+      setError(
+        result.error.message || 'Google sign-in failed. Is Google enabled in Neon Auth?',
+      );
     }
   }
 
@@ -27,10 +28,10 @@ export function GoogleSignInButton({ label = 'Continue with Google' }: { label?:
       <button
         type="button"
         onClick={handleClick}
-        disabled={isPending}
+        disabled={pending}
         className="btn-secondary w-full disabled:opacity-60"
       >
-        {isPending ? 'Redirecting to Google...' : label}
+        {pending ? 'Redirecting to Google...' : label}
       </button>
       {error && (
         <div className="alert-error">

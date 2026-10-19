@@ -4,19 +4,23 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { randomUUID } from 'crypto';
 import { prisma } from '@/db';
-import type { Prisma, RSVPStatus } from '@/generated/prisma';
 import { auth } from '@/lib/auth/server';
 import { formatEventDate, resolveOrganizerName } from '@/lib/events';
 import { notifyUsers } from '@/lib/notifications';
+import {
+  SETTABLE_STATUSES,
+  cancelRsvpCore,
+  notifyPromotions,
+  upsertRsvpCore,
+  type RsvpResult,
+  type SettableStatus as SettableStatusCore,
+  type UpsertRsvpOutcome,
+} from '@/lib/rsvp';
 
-type Tx = Prisma.TransactionClient;
-
-const SETTABLE_STATUSES = ['GOING', 'MAYBE', 'NOT_GOING'] as const;
-export type SettableStatus = (typeof SETTABLE_STATUSES)[number];
-
-export type SetRsvpResult =
-  | { ok: true; status: RSVPStatus; waitlistPosition: number | null }
-  | { ok: false; error: string };
+// Re-exported as local aliases (not `export … from`) so the client-facing
+// type surface of this 'use server' module is unchanged.
+export type SettableStatus = SettableStatusCore;
+export type SetRsvpResult = RsvpResult;
 
 async function requireUserId(): Promise<string> {
   const { data: session } = await auth.getSession();
@@ -51,161 +55,39 @@ function revalidateEvent(eventId: string) {
 }
 
 /**
- * Fill free GOING slots from the wishlist (oldest first), flagging each
- * promoted row so the UI can show a "You got in!" banner. Returns the
- * promoted user ids so callers can fan out PROMOTION notifications.
+ * Revalidate + best-effort PROMOTION fan-out shared by every caller of the
+ * upsert core, then narrow the core outcome to the client-facing result.
  */
-async function promoteFromWishlist(
-  tx: Tx,
+async function finishRsvp(
   eventId: string,
-  cap: number,
-): Promise<string[]> {
-  const promoted: string[] = [];
-  let going = await tx.rSVP.count({
-    where: { eventId, status: 'GOING' },
-  });
-  while (going < cap) {
-    const next = await tx.rSVP.findFirst({
-      where: { eventId, status: 'WAITLISTED' },
-      orderBy: { createdAt: 'asc' },
-      select: { id: true, userId: true },
-    });
-    if (!next) break;
-    await tx.rSVP.update({
-      where: { id: next.id },
-      data: { status: 'GOING', promotedAt: new Date() },
-    });
-    promoted.push(next.userId);
-    going += 1;
-  }
-  return promoted;
-}
-
-/**
- * Best-effort PROMOTION fan-out for users just moved off the wishlist.
- * Promotions are always delivered (opt-out does not apply). Never throws:
- * the promotion succeeds even if the notification write fails.
- */
-async function notifyPromotions(
-  eventId: string,
-  eventTitle: string,
-  eventDate: Date,
-  eventLocation: string,
-  promotedUserIds: string[],
-): Promise<void> {
-  if (promotedUserIds.length === 0) return;
-  try {
-    await notifyUsers(
-      promotedUserIds.map((userId) => ({
-        userId,
-        eventId,
-        type: 'PROMOTION' as const,
-        title: `You're in: ${eventTitle}`,
-        body: `A spot opened up — ${formatEventDate(eventDate)} at ${eventLocation}.`,
-      })),
-    );
-  } catch (error) {
-    console.error('promotion notify fan-out failed', { eventId, error });
-  }
-}
-
-/** Shared upsert core for setRsvp and joinWishlist (same cap/waitlist rules). */
-async function upsertRsvp(
-  userId: string,
-  eventId: string,
-  status: SettableStatus,
-  attendeeName?: string | null,
+  outcome: UpsertRsvpOutcome,
 ): Promise<SetRsvpResult> {
-  const result = await prisma.$transaction(async (tx) => {
-    const event = await tx.event.findUnique({ where: { id: eventId } });
-    if (!event) return { ok: false as const, error: 'Event not found.' };
-    if (event.date < new Date())
-      return { ok: false as const, error: 'This event has ended.' };
-
-    const existing = await tx.rSVP.findUnique({
-      where: { userId_eventId: { userId, eventId } },
-    });
-
-    let target: RSVPStatus = status;
-    if (status === 'GOING' && event.maxAttendees != null) {
-      const going = await tx.rSVP.count({
-        where: { eventId, status: 'GOING' },
-      });
-      const alreadyGoing = existing?.status === 'GOING';
-      if (!alreadyGoing && going >= event.maxAttendees) {
-        target = 'WAITLISTED';
-      }
-    }
-
-    const row = await tx.rSVP.upsert({
-      where: { userId_eventId: { userId, eventId } },
-      create: { eventId, userId, status: target, attendeeName: attendeeName ?? null },
-      update: { status: target, attendeeName: attendeeName ?? null },
-      select: { id: true, status: true, createdAt: true },
-    });
-
-    // Promote oldest waitlisted entries while GOING slots are free
-    // (covers leaving the GOING pool and capacity increases via edit).
-    let promoted: string[] = [];
-    if (event.maxAttendees != null) {
-      promoted = await promoteFromWishlist(tx, eventId, event.maxAttendees);
-    }
-
-    let waitlistPosition: number | null = null;
-    const finalRow =
-      row.id && target === 'WAITLISTED'
-        ? await tx.rSVP.findUnique({
-            where: { id: row.id },
-            select: { status: true, createdAt: true },
-          })
-        : null;
-    // Re-read: promotion above may have moved this user to GOING.
-    const finalStatus = finalRow?.status ?? target;
-    if (finalStatus === 'WAITLISTED' && finalRow) {
-      const ahead = await tx.rSVP.count({
-        where: {
-          eventId,
-          status: 'WAITLISTED',
-          createdAt: { lt: finalRow.createdAt },
-        },
-      });
-      waitlistPosition = ahead + 1;
-    }
-
-    return {
-      ok: true as const,
-      status: finalStatus,
-      waitlistPosition,
-      promoted,
-      eventTitle: event.title,
-      eventDate: event.date,
-      eventLocation: event.location,
-    };
-  });
-
-  if (!result.ok) return result;
+  if (!outcome.ok) return { ok: false, error: outcome.error };
   revalidateEvent(eventId);
-  if (result.promoted.length > 0) {
+  if (outcome.promoted.length > 0) {
     await notifyPromotions(
       eventId,
-      result.eventTitle,
-      result.eventDate,
-      result.eventLocation,
-      result.promoted,
+      outcome.eventTitle,
+      outcome.eventDate,
+      outcome.eventLocation,
+      outcome.promoted,
     );
     revalidatePath('/notifications');
   }
   return {
     ok: true,
-    status: result.status,
-    waitlistPosition: result.waitlistPosition,
+    status: outcome.status,
+    waitlistPosition: outcome.waitlistPosition,
   };
 }
 
 /**
  * Upsert the caller's RSVP. GOING past a full cap becomes WAITLISTED.
- * Runs in a transaction so concurrent GOING clicks cannot overbook.
- * After freeing a GOING slot, the oldest WAITLISTED entry is promoted.
+ * Every RSVP mutation for an event is serialized by a Postgres advisory
+ * lock taken as the first statement of `upsertRsvpCore`'s transaction, so a
+ * concurrent GOING click cannot overbook the cap and a waitlisted row
+ * cannot be double-promoted. After freeing a GOING slot, the oldest
+ * WAITLISTED entries are promoted.
  */
 export async function setRsvp(
   eventId: string,
@@ -215,7 +97,10 @@ export async function setRsvp(
     return { ok: false, error: 'Invalid RSVP status.' };
   }
   const { userId, attendeeName } = await requireUser();
-  return upsertRsvp(userId, eventId, status, attendeeName);
+  return finishRsvp(
+    eventId,
+    await upsertRsvpCore(userId, eventId, status, attendeeName),
+  );
 }
 
 /**
@@ -236,7 +121,10 @@ export async function joinWishlist(eventId: string): Promise<SetRsvpResult> {
   if (event.date < new Date()) {
     return { ok: false, error: 'This event has ended.' };
   }
-  return upsertRsvp(userId, eventId, 'GOING', attendeeName);
+  return finishRsvp(
+    eventId,
+    await upsertRsvpCore(userId, eventId, 'GOING', attendeeName),
+  );
 }
 
 /** Remove the caller's RSVP entirely, promoting the wishlist if needed. */
@@ -245,39 +133,7 @@ export async function cancelRsvp(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const { userId, attendeeName } = await requireUser();
 
-  const result = await prisma.$transaction(async (tx) => {
-    const event = await tx.event.findUnique({ where: { id: eventId } });
-    if (!event) return { ok: false as const, error: 'Event not found.' };
-
-    const existing = await tx.rSVP.findUnique({
-      where: { userId_eventId: { userId, eventId } },
-      select: { id: true },
-    });
-
-    await tx.rSVP.deleteMany({ where: { eventId, userId } });
-
-    let promoted: string[] = [];
-    if (event.maxAttendees != null) {
-      promoted = await promoteFromWishlist(tx, eventId, event.maxAttendees);
-    }
-
-    // Organizer's update/cancellation preference, if they hold an RSVP row.
-    const organizerRsvp = await tx.rSVP.findUnique({
-      where: { userId_eventId: { userId: event.userId, eventId } },
-      select: { notifyOnUpdate: true },
-    });
-
-    return {
-      ok: true as const,
-      promoted,
-      hadRsvp: existing !== null,
-      eventTitle: event.title,
-      eventDate: event.date,
-      eventLocation: event.location,
-      organizerId: event.userId,
-      organizerNotify: organizerRsvp?.notifyOnUpdate ?? true,
-    };
-  });
+  const result = await cancelRsvpCore(userId, eventId);
 
   if (!result.ok) return result;
   revalidateEvent(eventId);
@@ -438,7 +294,10 @@ export async function acceptInvite(
   if (event.userId === userId) {
     return { ok: false, error: 'You are hosting this event.', eventId: event.id };
   }
-  const result = await upsertRsvp(userId, event.id, 'GOING', attendeeName);
+  const result = await finishRsvp(
+    event.id,
+    await upsertRsvpCore(userId, event.id, 'GOING', attendeeName),
+  );
   if (!result.ok) return result;
   return { ...result, eventId: event.id };
 }

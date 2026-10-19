@@ -10,6 +10,8 @@ import {
   setRsvp,
   type SettableStatus,
 } from '@/app/events/actions';
+import { isFrameworkControlFlow } from '@/lib/action-errors';
+import { GENERIC_ACTION_ERROR } from '@/lib/useActionFeedback';
 
 type Props = {
   eventId: string;
@@ -62,32 +64,48 @@ export function RsvpControls({
     }
   }
 
+  // A rejected action must still clear `pending`: the buttons below are all
+  // disabled while `pending !== null`, and a stuck key disables every control.
   async function handleSet(next: SettableStatus) {
     setPending(next);
     setMessage(null);
     setIsError(false);
-    const result = await setRsvp(eventId, next);
-    setPending(null);
-    if (!result.ok) {
-      setMessage(result.error);
+    try {
+      const result = await setRsvp(eventId, next);
+      if (!result.ok) {
+        setMessage(result.error);
+        setIsError(true);
+        return;
+      }
+      applyResult(result);
+    } catch (thrown) {
+      if (isFrameworkControlFlow(thrown)) throw thrown;
+      setMessage(GENERIC_ACTION_ERROR);
       setIsError(true);
-      return;
+    } finally {
+      setPending(null);
     }
-    applyResult(result);
   }
 
   async function handleJoinWishlist() {
     setPending('wishlist');
     setMessage(null);
     setIsError(false);
-    const result = await joinWishlist(eventId);
-    setPending(null);
-    if (!result.ok) {
-      setMessage(result.error);
+    try {
+      const result = await joinWishlist(eventId);
+      if (!result.ok) {
+        setMessage(result.error);
+        setIsError(true);
+        return;
+      }
+      applyResult(result);
+    } catch (thrown) {
+      if (isFrameworkControlFlow(thrown)) throw thrown;
+      setMessage(GENERIC_ACTION_ERROR);
       setIsError(true);
-      return;
+    } finally {
+      setPending(null);
     }
-    applyResult(result);
   }
 
   async function handleCancel() {
@@ -95,23 +113,44 @@ export function RsvpControls({
     setPending('cancel');
     setMessage(null);
     setIsError(false);
-    const result = await cancelRsvp(eventId);
-    setPending(null);
-    if (!result.ok) {
-      setMessage(result.error);
+    try {
+      const result = await cancelRsvp(eventId);
+      if (!result.ok) {
+        setMessage(result.error);
+        setIsError(true);
+        return;
+      }
+      setStatus(null);
+      setPosition(null);
+      setPromoted(false);
+    } catch (thrown) {
+      if (isFrameworkControlFlow(thrown)) throw thrown;
+      setMessage(GENERIC_ACTION_ERROR);
       setIsError(true);
-      return;
+    } finally {
+      setPending(null);
     }
-    setStatus(null);
-    setPosition(null);
-    setPromoted(false);
   }
 
   async function handleDismissPromotion() {
     setPending('dismiss');
-    const result = await dismissPromotion(eventId);
-    setPending(null);
-    if (result.ok) setPromoted(false);
+    setMessage(null);
+    setIsError(false);
+    try {
+      const result = await dismissPromotion(eventId);
+      if (!result.ok) {
+        setMessage(result.error);
+        setIsError(true);
+        return;
+      }
+      setPromoted(false);
+    } catch (thrown) {
+      if (isFrameworkControlFlow(thrown)) throw thrown;
+      setMessage(GENERIC_ACTION_ERROR);
+      setIsError(true);
+    } finally {
+      setPending(null);
+    }
   }
 
   async function handleNotifyChange(next: boolean) {

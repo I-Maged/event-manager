@@ -1,19 +1,17 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth/client';
 import { GoogleSignInButton } from '@/components/GoogleSignInButton';
+import { useActionFeedback } from '@/lib/useActionFeedback';
 
 export default function SignUpPage() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, setIsPending] = useState(false);
+  const { pending: isPending, error, setError, run } = useActionFeedback();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError(null);
     const formData = new FormData(e.currentTarget);
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
@@ -28,16 +26,17 @@ export default function SignUpPage() {
       return;
     }
 
-    setIsPending(true);
-    const { error } = await authClient.signUp.email({
-      email,
-      name,
-      password,
-    });
+    const result = await run(() =>
+      authClient.signUp.email({
+        email,
+        name,
+        password,
+      }),
+    );
+    if (!result) return;
 
-    if (error) {
-      setError(error.message || 'Failed to create account');
-      setIsPending(false);
+    if (result.error) {
+      setError(result.error.message || 'Failed to create account');
       return;
     }
 

@@ -1,28 +1,29 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth/client';
 import { GoogleSignInButton } from '@/components/GoogleSignInButton';
+import { useActionFeedback } from '@/lib/useActionFeedback';
 
 export default function SignInPage() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, setIsPending] = useState(false);
+  const { pending: isPending, error, setError, run } = useActionFeedback();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError(null);
-    setIsPending(true);
+    // Read the form before awaiting: currentTarget is only valid during
+    // dispatch.
     const formData = new FormData(e.currentTarget);
-    const { error } = await authClient.signIn.email({
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-    });
-    if (error) {
-      setError(error.message || 'Failed to sign in. Try again');
-      setIsPending(false);
+    const result = await run(() =>
+      authClient.signIn.email({
+        email: formData.get('email') as string,
+        password: formData.get('password') as string,
+      }),
+    );
+    if (!result) return;
+    if (result.error) {
+      setError(result.error.message || 'Failed to sign in. Try again');
       return;
     }
     router.push('/');
