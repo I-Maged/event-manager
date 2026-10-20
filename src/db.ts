@@ -1,4 +1,6 @@
-import 'dotenv/config'
+// Next.js loads .env* automatically. Standalone tsx scripts must
+// `import 'dotenv/config'` before importing this module.
+import { requireEnv } from '@/lib/env'
 import { PrismaClient } from './generated/prisma'
 import { PrismaNeon } from '@prisma/adapter-neon'
 
@@ -8,7 +10,7 @@ const globalForPrisma = globalThis as unknown as {
 
 function createPrismaClient() {
   const adapter = new PrismaNeon({
-    connectionString: process.env.DATABASE_URL!,
+    connectionString: requireEnv('DATABASE_URL'),
   })
   return new PrismaClient({ adapter })
 }

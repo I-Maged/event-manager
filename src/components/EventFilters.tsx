@@ -1,12 +1,11 @@
 'use client';
 
 import {
-  startTransition,
   useCallback,
   useEffect,
-  useOptimistic,
   useRef,
   useState,
+  useTransition,
 } from 'react';
 import { useRouter } from 'next/navigation';
 import type { EventCategory } from '@/generated/prisma';
@@ -44,7 +43,7 @@ const CHIP_ACTIVE = 'border-primary bg-indigo-50 font-medium text-primary';
  */
 export function EventFilters({ params, categoryCounts, organizerName }: Props) {
   const router = useRouter();
-  const [isPending, setIsPending] = useOptimistic(false);
+  const [isPending, startTransition] = useTransition();
   const [query, setQuery] = useState(params.q);
   const [syncedQuery, setSyncedQuery] = useState(params.q);
 
@@ -55,12 +54,11 @@ export function EventFilters({ params, categoryCounts, organizerName }: Props) {
 
   const navigate = useCallback(
     (href: string) => {
-      startTransition(async () => {
-        setIsPending(true);
+      startTransition(() => {
         router.push(href);
       });
     },
-    [router, setIsPending],
+    [router, startTransition],
   );
 
   // Resync the input when the URL changes elsewhere (Clear all, back/forward).

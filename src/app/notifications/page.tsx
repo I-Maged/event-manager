@@ -1,8 +1,14 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
+import { PageNav } from '@/components/PageNav';
 import { auth } from '@/lib/auth/server';
-import { getNotifications, getUnreadCount } from '@/lib/notifications';
+import type { RawSearchParams } from '@/lib/discovery';
+import {
+  NOTIFICATIONS_PAGE_SIZE,
+  getNotificationsPage,
+  getUnreadCount,
+} from '@/lib/notifications';
 import { formatEventDate } from '@/lib/time';
 import type { NotificationType } from '@/generated/prisma';
 import { MarkAllReadButton, MarkReadButton } from './NotificationButtons';
@@ -23,19 +29,32 @@ const TYPE_LABEL: Record<NotificationType, string> = {
   REMINDER: 'Reminder',
 };
 
-export default async function NotificationsPage() {
+export default async function NotificationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
   const { data: session } = await auth.getSession();
   const userId = session?.user?.id;
   if (!userId) redirect('/auth/sign-in');
 
+  // Parse defensively; `getNotificationsPage` clamps the page to the real
+  // page count, so `?page=999` renders the last page instead of an empty list.
+  const pageParam = (await searchParams).page;
+  const pageValue = Array.isArray(pageParam) ? pageParam[0] : pageParam;
+  const parsedPage = pageValue ? Number.parseInt(pageValue, 10) : Number.NaN;
+  const requestedPage =
+    Number.isFinite(parsedPage) && parsedPage >= 1 ? Math.floor(parsedPage) : 1;
+
   // Count all unread rows, not just the fetched page: the navbar bell uses
   // `getUnreadCount` too, and the two must agree past the page limit.
-  const [notifications, unreadCount] = await Promise.all([
-    getNotifications(userId),
-    getUnreadCount(userId),
-  ]);
+  const [{ notifications, total, page, pageCount }, unreadCount] =
+    await Promise.all([
+      getNotificationsPage(userId, requestedPage),
+      getUnreadCount(userId),
+    ]);
 
-  if (notifications.length === 0) {
+  if (total === 0) {
     return (
       <div className="space-y-6 max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold">Notifications</h1>
@@ -51,6 +70,9 @@ export default async function NotificationsPage() {
       </div>
     );
   }
+
+  const start = (page - 1) * NOTIFICATIONS_PAGE_SIZE + 1;
+  const end = Math.min(page * NOTIFICATIONS_PAGE_SIZE, total);
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -69,6 +91,10 @@ export default async function NotificationsPage() {
       <Suspense fallback={null}>
         <UpcomingWidget userId={userId} />
       </Suspense>
+
+      <p className="text-sm text-muted" role="status">
+        Showing {start}–{end} of {total} notification{total === 1 ? '' : 's'}
+      </p>
 
       <ul className="space-y-3">
         {notifications.map((n) => {
@@ -107,6 +133,14 @@ export default async function NotificationsPage() {
           );
         })}
       </ul>
+
+      <PageNav
+        page={page}
+        pageCount={pageCount}
+        hrefForPage={(p) =>
+          p <= 1 ? '/notifications' : `/notifications?page=${p}`
+        }
+      />
     </div>
   );
 }

@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run typecheck && eslint src/app src/components src/lib src/db.ts src/proxy.ts && tsx scripts/timezone-check.ts && next build",
+    "verify": "npm run typecheck && eslint src/app src/components src/lib src/db.ts src/proxy.ts && tsx scripts/timezone-check.ts && tsx scripts/search-check.ts && next build",
     "verify:db": "tsx scripts/rate-limit-check.ts --allow-writes && tsx scripts/rsvp-concurrency.ts --allow-writes"
   },
   "dependencies": {

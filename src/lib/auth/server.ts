@@ -1,4 +1,5 @@
 import { createNeonAuth } from "@neondatabase/auth/next/server";
+import { requireEnv } from "@/lib/env";
 
 /**
  * True for Next.js's intentional "hanging promise" rejection — a runtime read
@@ -27,9 +28,9 @@ const logger = {
 };
 
 export const auth = createNeonAuth({
-  baseUrl: process.env.NEON_AUTH_BASE_URL!,
+  baseUrl: requireEnv("NEON_AUTH_BASE_URL"),
   cookies: {
-    secret: process.env.NEON_AUTH_COOKIE_SECRET!,
+    secret: requireEnv("NEON_AUTH_COOKIE_SECRET"),
   },
   logger,
 });

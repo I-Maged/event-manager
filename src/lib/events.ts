@@ -9,6 +9,7 @@ import type {
 } from '@/generated/prisma';
 import { EVENT_CATEGORIES } from '@/lib/categories';
 import type { EventListParams, SortOrder, WhenFilter } from '@/lib/discovery';
+import { escapeLikePattern } from '@/lib/search';
 import { addDaysInZone, calendarDayDiffInZone } from '@/lib/time';
 
 // Backwards-compatible module surface: `formatEventDate` moved to `@/lib/time`
@@ -109,9 +110,16 @@ function publicEventOrderBy(
   }
 }
 
-/** Case-insensitive free-text search across the fields shown on a card. */
+/**
+ * Case-insensitive free-text search across the fields shown on a card.
+ * User input is escaped so `%` and `_` match literally instead of acting as
+ * SQL LIKE wildcards (the value is still parameterized, never interpolated).
+ */
 function searchFilter(q: string): Prisma.EventWhereInput {
-  const contains = { contains: q, mode: 'insensitive' as const };
+  const contains = {
+    contains: escapeLikePattern(q),
+    mode: 'insensitive' as const,
+  };
   return {
     OR: [
       { title: contains },
@@ -140,18 +148,26 @@ export async function getPublicEventsPage(
     ...(params.q ? searchFilter(params.q) : {}),
   };
 
-  const total = await prisma.event.count({ where });
-  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const page = Math.min(Math.max(params.page, 1), pageCount);
+  // One snapshot for the count and the page: at READ COMMITTED a concurrent
+  // write could make `total`/`pageCount` disagree with the returned rows (and
+  // the page clamp derive from the stale total).
+  return prisma.$transaction(
+    async (tx) => {
+      const total = await tx.event.count({ where });
+      const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      const page = Math.min(Math.max(params.page, 1), pageCount);
 
-  const events = await prisma.event.findMany({
-    where,
-    orderBy: publicEventOrderBy(params.sort),
-    skip: (page - 1) * PAGE_SIZE,
-    take: PAGE_SIZE,
-  });
+      const events = await tx.event.findMany({
+        where,
+        orderBy: publicEventOrderBy(params.sort),
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+      });
 
-  return { events, total, page, pageCount };
+      return { events, total, page, pageCount };
+    },
+    { isolationLevel: 'RepeatableRead' },
+  );
 }
 
 /**
@@ -404,6 +420,37 @@ export async function getAttendees(
     where: { eventId: event.id },
     orderBy: { createdAt: 'asc' },
     select: {
+      userId: true,
+      attendeeName: true,
+      status: true,
+      createdAt: true,
+      checkedInAt: true,
+    },
+  });
+}
+
+export type AttendeeCsvRow = AttendeeRow & { id: string };
+
+/**
+ * One cursor page of the attendee roster for CSV streaming. Keyed by `id`
+ * (`createdAt` has no uniqueness guarantee) so concurrent writes cannot cause
+ * a row to be skipped or duplicated across page boundaries.
+ * Enforces visibility itself, like the other roster accessors.
+ */
+export async function getAttendeesPage(
+  event: Event,
+  viewerId: string | null,
+  opts: { cursor?: string; take?: number } = {},
+): Promise<AttendeeCsvRow[]> {
+  await assertCanView(event, viewerId);
+  const take = Math.min(Math.max(opts.take ?? 500, 1), 1000);
+  return prisma.rSVP.findMany({
+    where: { eventId: event.id },
+    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    take,
+    ...(opts.cursor ? { cursor: { id: opts.cursor }, skip: 1 } : {}),
+    select: {
+      id: true,
       userId: true,
       attendeeName: true,
       status: true,

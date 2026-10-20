@@ -15,6 +15,7 @@ export const instant = false;
 import {
   canViewEvent,
   getAttendees,
+  getCommentCount,
   getComments,
   getEventByIdCached,
   getInviteToken,
@@ -98,12 +99,15 @@ async function CommentSection({ eventId }: { eventId: string }) {
   if (!event) return null;
   if (!(await canViewEvent(event, viewerId))) return null;
 
-  const comments = await getComments(event, viewerId);
+  const [comments, commentCount] = await Promise.all([
+    getComments(event, viewerId),
+    getCommentCount(eventId),
+  ]);
   const isPast = event.date < new Date();
 
   return (
     <div className="card p-6 space-y-4">
-      <h2 className="font-semibold">Comments ({comments.length})</h2>
+      <h2 className="font-semibold">Comments ({commentCount})</h2>
       {comments.length === 0 ? (
         <p className="text-sm text-muted">
           No comments yet. Ask a question or share details.

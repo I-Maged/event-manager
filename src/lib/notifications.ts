@@ -44,6 +44,53 @@ export async function getNotifications(
   });
 }
 
+/** Rows per page on `/notifications` (older rows must become reachable). */
+export const NOTIFICATIONS_PAGE_SIZE = 20;
+
+export type NotificationsPageResult = {
+  notifications: NotificationRow[];
+  total: number;
+  page: number;
+  pageCount: number;
+};
+
+/**
+ * One page of the recipient's notifications, newest first. `requestedPage` is
+ * clamped so an out-of-range URL renders the last page instead of an empty
+ * screen. The total is the recipient's full count (not the page window).
+ */
+export async function getNotificationsPage(
+  userId: string,
+  requestedPage: number,
+): Promise<NotificationsPageResult> {
+  if (!userId) {
+    return { notifications: [], total: 0, page: 1, pageCount: 1 };
+  }
+
+  const total = await prisma.notification.count({ where: { userId } });
+  const pageCount = Math.max(1, Math.ceil(total / NOTIFICATIONS_PAGE_SIZE));
+  const page = Math.min(Math.max(requestedPage, 1), pageCount);
+
+  const notifications = await prisma.notification.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    skip: (page - 1) * NOTIFICATIONS_PAGE_SIZE,
+    take: NOTIFICATIONS_PAGE_SIZE,
+    select: {
+      id: true,
+      type: true,
+      title: true,
+      body: true,
+      eventId: true,
+      readAt: true,
+      createdAt: true,
+      event: { select: { id: true, title: true, date: true, timeZone: true } },
+    },
+  });
+
+  return { notifications, total, page, pageCount };
+}
+
 export type NotifyInput = {
   userId: string;
   eventId: string | null;

@@ -64,6 +64,7 @@ npm run verify:db   # passes --allow-writes; confirm the printed host first
 ```
 
 - [ ] `scripts/timezone-check.ts` prints "all assertions held."
+- [ ] `scripts/search-check.ts` prints "Search probe: all assertions held."
 - [ ] `scripts/rate-limit-check.ts` prints "all invariants held."
 - [ ] `scripts/rsvp-concurrency.ts` prints "all invariants held."
 - [ ] `npm run lint` is clean (generated Prisma client excluded).
@@ -102,3 +103,32 @@ npx tsx scripts/rate-limit-cleanup.ts          # dry run: reports stale rows
 - [ ] Exactly one check-in timestamp is stored; both calls report the same ISO
       string. `RSVP.checkedInBy` holds the organizer's user id.
 - [ ] Undo twice leaves `checkedInAt` and `checkedInBy` null.
+
+## 9. Pagination, CSV streaming, search, comments, HSTS
+
+1. **Notifications pagination.** Seed 57 notifications for one user.
+2. **CSV streaming.** Export an event with 1,000+ attendees.
+3. **Search semantics.** Search for `%` and `_`, then open
+   `/events?organizer=` followed by 500 characters.
+4. **Comments count.** Seed 51 comments on one event.
+5. **HSTS.** Inspect the deployed HTTPS response headers.
+
+- [ ] Page 1 shows 20 rows and "Page 1 of 3"; page 3 shows 17 rows and older
+      notifications are reachable.
+- [ ] Marking one read on page 2 keeps the page and updates the unread count;
+      the header count and the navbar bell agree.
+- [ ] `?page=999` clamps to the last page instead of rendering an empty screen.
+- [ ] The export returns `Cache-Control: private, no-store`, a valid CSV with
+      1,201 lines (header + 1,200 attendees), and no duplicates or missing ids
+      across page boundaries.
+- [ ] A non-organizer gets 404 and a signed-out caller gets 401.
+- [ ] `%` and `_` match literally instead of returning every event.
+- [ ] The 500-character `organizer` URL renders the normal list (truncated to
+      128 characters) with no 500.
+- [ ] With 51 comments the header says "Comments (51)" while 50 are rendered;
+      with 0 it says "Comments (0)" and shows the empty state.
+- [ ] The deployed HTTPS response includes
+      `Strict-Transport-Security: max-age=63072000; includeSubDomains`, and
+      sign-in, Google redirect, and RSVP flows still work.
+- [ ] Past-event wishlist and invite/check-in atomicity remain green
+      (re-run §3 and §8).

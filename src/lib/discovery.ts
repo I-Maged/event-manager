@@ -25,6 +25,12 @@ export const DEFAULT_SORT: SortOrder = 'date';
 /** Longest accepted free-text query (matches the DB's practical limits). */
 export const MAX_QUERY_LENGTH = 200;
 
+/**
+ * Longest accepted `organizer` id. Managed Auth ids are UUID-shaped, so 128 is
+ * comfortably generous while keeping an opaque URL parameter bounded.
+ */
+export const MAX_ORGANIZER_LENGTH = 128;
+
 export const DEFAULT_EVENT_LIST_PARAMS: EventListParams = {
   q: '',
   category: null,
@@ -90,7 +96,9 @@ export function parseEventListParams(input: RawSearchParams): EventListParams {
     ? sortValue
     : DEFAULT_SORT;
 
-  const organizerValue = (firstValue(input.organizer) ?? '').trim();
+  const organizerValue = (firstValue(input.organizer) ?? '')
+    .trim()
+    .slice(0, MAX_ORGANIZER_LENGTH);
   const organizer = organizerValue.length > 0 ? organizerValue : null;
 
   const pageRaw = firstValue(input.page);

@@ -7,7 +7,7 @@
 | Source | `fixes.md` — items not implemented at `e08f9c0` |
 | Scope | 1 partially-fixed Medium, 1 Medium, 10 Minor, plus the HSTS residual from M6 |
 | Stack | Next.js 16.4.0 (App Router, Turbopack, Cache Components, Partial Prefetching, React Compiler), React 19.3, Prisma 7 + `@prisma/adapter-neon`, Tailwind v4 |
-| Status | **Phases 0–2 implemented (2026-10-20); phases 3–7 pending** |
+| Status | **Phases 0–7 implemented and verified (2026-10-20)** |
 
 > The Critical (C1, C2), High (H1–H4), and most Medium findings are already fixed.
 > This plan covers only what is still open. Line numbers refer to `e08f9c0`.
@@ -86,8 +86,8 @@ Suggested PRs:
 Every PR ends with `npm run verify`; PR-A also requires a dev-branch migration
 run and the SQL checks in §6.
 
-> **Phase status (2026-10-20):** Phase 0 ✅, Phase 1 ✅, Phase 2 ✅.
-> See §14 for the implementation record and verification log. Phases 3–7 remain open.
+> **Phase status (2026-10-20):** Phases 0–7 ✅.
+> See §14 for the implementation record and verification log.
 
 ---
 
@@ -1056,20 +1056,20 @@ required to close the open items:
 
 | ID | Status | Commit / file | Notes |
 |---|---|---|---|
-| O1 | ☐ | | |
-| O2 | ☐ | | |
+| O1 | ✅ | `src/lib/notifications.ts`, `src/app/notifications/page.tsx`, `src/components/PageNav.tsx` | 20-row Previous/Next pagination; DB-wide unread count retained; out-of-range pages clamp. |
+| O2 | ✅ | `src/lib/events.ts`, `src/app/api/events/[id]/attendees/route.ts` | Cursor-paginated `ReadableStream` (500/page), `id` tiebreaker, `Cache-Control: private, no-store`. |
 | O3 | ✅ | `src/lib/rsvp.ts`, `src/app/wishlist/page.tsx` | Ended guard returns before delete/promotion; past wishlist rows show "Event ended". |
 | O4 | ✅ | `src/app/events/actions.ts` | Conditional `updateMany` claim; loser re-reads the winner's token (also re-checks `isPublic`). |
 | O5 | ✅ | `src/app/events/actions.ts`, `prisma/schema.prisma`, migration | `checkedInBy` decision: **added**. Conditional claim + mirror undo. |
-| O6 | ☐ | | |
-| O7 | ☐ | | |
-| O8 | ☐ | | |
+| O6 | ✅ | `src/lib/search.ts`, `src/lib/events.ts`, `scripts/search-check.ts` | `escapeLikePattern` applied in `searchFilter`; read-only probe added to `verify`. |
+| O7 | ✅ | `src/lib/discovery.ts` | `MAX_ORGANIZER_LENGTH = 128`; trimmed and sliced before use. |
+| O8 | ✅ | `src/lib/events.ts` | `count` + `findMany` wrapped in one `RepeatableRead` transaction. |
 | O9 | ✅ | `prisma/migrations/20261020191341_rsvp_hot_index_and_invariants` | Composite index + `Event_maxAttendees_positive` + `Comment_body_length`. |
-| O10 | ☐ | | |
-| O11 | ☐ | | |
-| O12 | ☐ | | |
-| O13 | ☐ | | |
-| O14 | ☐ | | |
+| O10 | ✅ | `src/components/EventFilters.tsx`, `src/components/DashboardFilters.tsx` | `useTransition().isPending` drives `data-pending`; no optimistic placeholder. |
+| O11 | ✅ | `src/db.ts` | Removed `dotenv/config`; contract documented for standalone scripts. |
+| O12 | ✅ | `src/lib/env.ts`, `src/db.ts`, `src/lib/auth/server.ts` | `requireEnv` fail-fast; verified missing-var message (no secret echoed). |
+| O13 | ✅ | `src/app/events/[id]/page.tsx` | Header uses `getCommentCount` via `Promise.all`; list still capped at 50. |
+| O14 | ✅ | `next.config.ts` | `Strict-Transport-Security: max-age=63072000; includeSubDomains` (no `preload`). |
 
 **Verification log (2026-10-20):**
 
@@ -1096,3 +1096,29 @@ required to close the open items:
   time" before the transaction even starts.
 - Manual QA: §3 extended (past-event wishlist) and new §8 added (invite-link /
   check-in atomicity) in `docs/manual-qa.md`; browser sign-off still pending.
+
+**Verification log — Phases 3–7 (2026-10-20):**
+
+- `search-check.ts` — "Search probe: all assertions held." (`%`, `_`, `\`
+  escaping; 128-character organizer truncation; blank → null).
+- `npm run verify` — exit 0: typecheck, scoped ESLint, timezone probe, search
+  probe, `next build` (15 routes compiled; `/notifications` and the attendee
+  route remain dynamic, `/events` partial-prerender).
+- `npm run lint` — exit 0, no findings.
+- `npx prisma migrate status` — 13 migrations, "Database schema is up to date!".
+- `PROBE_RACERS=3 npm run verify:db` — rate-limit and RSVP probes both report
+  "all invariants held." (dev target `ep-broad-river-b2eldrmb`).
+- Runtime probes on the dev branch (fixtures deleted afterwards):
+  `RepeatableRead` count+list transaction executed; attendee cursor pages
+  returned 2/2/1 unique rows with no overlap; notifications returned 20/5 rows
+  and `?page=999` clamped to page 2; `%` and `_` searches matched only literal
+  titles.
+- `next start -p 3111` header probe: `/` returned 200 with
+  `Strict-Transport-Security: max-age=63072000; includeSubDomains`; the
+  report-only CSP is still present.
+- Env fail-fast: `requireEnv` prints
+  `Missing required environment variable "…"…` and importing `src/db.ts` with
+  an empty `DATABASE_URL` throws the same message; no secret value is printed.
+- Manual QA: §9 added (pagination, CSV streaming, search semantics, comments
+  count, HSTS) and `search-check.ts` added to §6; browser sign-off for §9 is
+  still pending (needs seeded data and a deployed HTTPS host).
