@@ -6,11 +6,11 @@
 | Source | Review of `implementation_plan.md` at revision `cb9d1a9` ("timezone & rate limiting") |
 | Baseline | Plan's reviewed revision was `c44ec52`; Phase 1–5 were implemented in `afc5e05`, `594a4de`, `40c5d19`, `cb9d1a9` |
 | Scope | The 9 hanging items from that review, **plus** every Phase 0–5 verification step that is still unproven and every Appendix B item that remains unfixed |
-| Status | **Implemented** — see "Implementation record" at the bottom. Two items still need an external action (scheduled GC job, deploy env). |
+| Status | **Implemented** — see "Implementation record" at the bottom. Remaining work is external: deploy `neon.ts`, set the deploy env, and sign off manual QA. |
 
-> **Plan-mode note:** this file is the deliverable. All edits below must be made by switching into an implementation agent. Steps are written to be executed top-to-bottom.
->
-> **Path note:** written to `C:\Users\Maged\.opencode\plan\hanging_items.md` because plan documents may only be written there in Plan mode. Move/copy it next to `implementation_plan.md` in the repo root if you want it versioned with the code.
+> **Status note:** the plan below is implemented; see "Implementation record" at
+> the bottom for the per-item status and the outstanding external actions.
+> Numbered steps are kept as the historical rationale.
 
 ## How to read this plan
 
@@ -429,12 +429,12 @@ guard; B6 ships report-only CSP.
 | H1.1 | ✅ `APP_TIME_ZONE=Europe/Berlin` | `.env` |
 | H1.2 | ✅ dry-run script; **0 legacy rows**, so no backfill needed | `scripts/backfill-time-zone.ts` |
 | H1.3 | ✅ host print + `--allow-writes` guard | `scripts/preflight.ts`, both probes |
-| H2.1 | ✅ both probes pass, logs committed to the working tree | `scripts/*.post-fix.log`, `scripts/rate-limit-check.log` |
+| H2.1 | ✅ both probes pass; logs committed in `1247e7d` | `scripts/*.post-fix.log`, `scripts/rate-limit-check.log` |
 | H2.2 | ✅ `typecheck` / `verify` / `verify:db` | `package.json` |
 | H2.3 | ✅ manual checklist | `docs/manual-qa.md` |
-| H3.1 | ⚠️ SQL job added, **not scheduled** — needs Neon cron setup | `scripts/sql/rate-limit-cleanup.sql` |
+| H3.1 | ⚠️ job shipped as a Neon Function + `neon.ts` trigger; **`neon deploy` still pending** | `functions/rate-limit-cleanup.ts`, `neon.ts` (`rate-limit-gc-hourly`), `scripts/rate-limit-cleanup.ts`, `scripts/sql/rate-limit-cleanup.sql`, `docs/operations.md` |
 | H3.2 | ✅ fail-open kept, hashed user logging | `src/lib/rate-limit.ts` |
-| H3.3 | ✅ `eventCreate`, `commentDelete`, `checkIn` scopes applied | `rate-limit.ts` + 3 action files |
+| H3.3 | ✅ `eventCreate`, `commentDelete`, `checkIn` scopes applied and asserted | `rate-limit.ts` + 3 action files + `scripts/rate-limit-check.ts` |
 | H4.1 | ✅ no-op edits preserve `timeZone` (incl. null) | `src/app/events/[id]/edit/actions.ts` |
 | H4.2 | ✅ compatibility re-export | `src/lib/events.ts` |
 | H4.3 | ⏭️ skipped (optional; only needed for multi-zone no-backfill) | — |
@@ -445,6 +445,18 @@ guard; B6 ships report-only CSP.
 Verification run: `npm run verify` (typecheck, scoped eslint, timezone probe,
 production build) passes; `npm run lint` is clean; security headers confirmed
 with `curl -I` against `next start`; both DB probes report all invariants held.
+The H3.3 scope assertions were added after that probe run, so re-run
+`npm run verify:db` on a dev branch to refresh `scripts/rate-limit-check.log`.
+The GC handler was exercised locally (403 without the trigger header, 200 with
+it); `neon.ts` validates against `@neon/config`.
 
-Remaining external actions: (1) schedule the rate-limit GC in Neon,
-(2) set `APP_TIME_ZONE` in the deploy environment (it is gitignored in `.env`).
+Remaining external actions:
+1. **Deploy the GC trigger**: `neon link && neon config plan && neon deploy` (see
+   `docs/operations.md`). The trigger is branch-scoped; deploy it against the
+   branch that should run the GC. Until then the inline sweep is best effort.
+2. **Set `APP_TIME_ZONE` in the deploy environment** (it is gitignored in `.env`).
+3. **Sign off `docs/manual-qa.md`** for the release.
+4. **Record the Neon branch** the `20261019*` migrations and probes ran on (no PR
+   description holds this yet).
+5. **Optional (H6.2):** move `implementation_plan.md`,
+   `critical-high-fix-plan.md`, and this file under `docs/`.

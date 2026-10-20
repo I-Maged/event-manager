@@ -64,3 +64,18 @@ npm run verify:db   # passes --allow-writes; confirm the printed host first
 - [ ] `scripts/rate-limit-check.ts` prints "all invariants held."
 - [ ] `scripts/rsvp-concurrency.ts` prints "all invariants held."
 - [ ] `npm run lint` is clean (generated Prisma client excluded).
+
+## 7. RateLimit garbage collection
+
+The authoritative GC is the hourly Neon Function Trigger (`docs/operations.md`).
+The inline sweep in `src/lib/rate-limit.ts` is best effort only.
+
+```bash
+npx tsx scripts/rate-limit-cleanup.ts          # dry run: reports stale rows
+```
+
+- [ ] The dry run prints the resolved database host and a stale-row count.
+- [ ] After the scheduled trigger runs, a row inserted with
+      `windowStart = now() - interval '2 days'` is gone.
+- [ ] Function logs (`neon logs query --source function`) show a
+      `rate-limit GC complete` line with the deleted count.

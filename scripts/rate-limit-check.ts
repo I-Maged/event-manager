@@ -70,6 +70,46 @@ async function main(): Promise<number> {
     // --- shape guards ------------------------------------------------------
     check('message is non-empty', RATE_LIMIT_MESSAGE.length > 0);
     check('comment budget is the tightest', RATE_LIMITS.comment.limit < RATE_LIMITS.rsvp.limit);
+
+    // Every scope declared in `RateLimitScope` must have a positive budget.
+    const expectedScopes = [
+      'comment',
+      'rsvp',
+      'invite',
+      'accept',
+      'eventEdit',
+      'eventCreate',
+      'commentDelete',
+      'checkIn',
+    ] as const;
+    for (const scope of expectedScopes) {
+      const budget = RATE_LIMITS[scope];
+      check(
+        `${scope} scope has a budget`,
+        budget != null && budget.limit > 0 && budget.windowMs > 0,
+        JSON.stringify(budget),
+      );
+    }
+    check(
+      'all declared budgets are positive',
+      Object.values(RATE_LIMITS).every((b) => b.limit > 0 && b.windowMs > 0),
+    );
+
+    // Coverage-hardening scopes (see hanging_items.md H3.3).
+    check(
+      'eventCreate is bounded at 10/hour',
+      RATE_LIMITS.eventCreate.limit === 10 &&
+        RATE_LIMITS.eventCreate.windowMs === 60 * 60_000,
+    );
+    check(
+      'commentDelete is bounded at 30/minute',
+      RATE_LIMITS.commentDelete.limit === 30 &&
+        RATE_LIMITS.commentDelete.windowMs === 60_000,
+    );
+    check(
+      'checkIn is bounded at 60/minute',
+      RATE_LIMITS.checkIn.limit === 60 && RATE_LIMITS.checkIn.windowMs === 60_000,
+    );
   } finally {
     await prisma.rateLimit.deleteMany({ where: { key: { startsWith: 'probe:' } } });
     await prisma.$disconnect();

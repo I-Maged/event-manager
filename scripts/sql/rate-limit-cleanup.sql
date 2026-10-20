@@ -2,9 +2,20 @@
 --
 -- The in-process sweep in src/lib/rate-limit.ts is best effort only: its
 -- counter is module state, so on serverless it may never reach the threshold
--- per instance. This job is the authoritative GC.
+-- per instance. This statement is the authoritative GC.
 --
--- Schedule it (e.g. hourly) as a Neon scheduled function / cron against
--- DATABASE_URL_UNPOOLED. See the `neon` skill for the scheduling workflow.
+-- The scheduled job is the Neon Function + Function Trigger declared in
+-- neon.ts:
+--   functions.ratelimitgc  -> ./functions/rate-limit-cleanup.ts
+--   triggers.rate-limit-gc-hourly (cron "17 * * * *", UTC)
+-- Deploy it with the Neon CLI:
+--   neon link && neon deploy        # or: neon config plan && neon deploy
+-- Confirm a run:
+--   neon logs query --source function
+--
+-- The same predicate is embedded in the function and in
+-- scripts/rate-limit-cleanup.ts (for manual / external-scheduler use). Keep the
+-- three in sync, and keep the retention equal to CLEANUP_AGE_MS in
+-- src/lib/rate-limit.ts.
 
 DELETE FROM "RateLimit" WHERE "windowStart" < now() - interval '1 day';

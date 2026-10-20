@@ -20,12 +20,13 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 Connection strings and Neon Auth credentials live in `.env` (see `.env` for the
 current set: `DATABASE_URL` pooled, `DATABASE_URL_UNPOOLED` for Prisma CLI).
+`.env.example` lists the required keys with placeholder values.
 
 | Variable | Required | Purpose |
 |---|---|---|
 | `DATABASE_URL` | yes | Pooled Postgres connection used by the app runtime. |
 | `DATABASE_URL_UNPOOLED` | yes | Direct connection used by `prisma migrate` / introspection. |
-| `APP_TIME_ZONE` | no | IANA zone (e.g. `Europe/Berlin`) used as the fallback for events with no stored zone, for no-JS form submits, and for browse day boundaries ("Today", "Next 7 days"). Defaults to `UTC`; this repo sets `Europe/Berlin`. |
+| `APP_TIME_ZONE` | no | IANA zone (e.g. `Europe/Berlin`) used as the fallback for events with no stored zone, for no-JS form submits, and for browse day boundaries ("Today", "Next 7 days"). Defaults to `UTC`; this repo sets `Europe/Berlin`. **Set this in the deploy environment too** — `.env` is gitignored, so the deploy value is separate. |
 
 ## Verification
 
@@ -43,6 +44,21 @@ resolved database host first. Only run them against a dev branch. See
 
 `scripts/backfill-time-zone.ts` stamps legacy `Event.timeZone = null` rows with
 `APP_TIME_ZONE`; it is a dry run unless `--apply --allow-writes` is passed.
+
+## Scheduled jobs
+
+The `RateLimit` counter table is garbage-collected by an hourly Neon Function
+Trigger declared in `neon.ts` (function `functions/rate-limit-cleanup.ts`). The
+in-process sweep in `src/lib/rate-limit.ts` is best effort only. To run the same
+delete by hand or from another scheduler:
+
+```bash
+npx tsx scripts/rate-limit-cleanup.ts          # dry run: reports stale rows
+npx tsx scripts/rate-limit-cleanup.ts --apply  # deletes
+```
+
+Deploying the trigger and the fallback options (Vercel Cron, GitHub Actions) are
+documented in `docs/operations.md`.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
