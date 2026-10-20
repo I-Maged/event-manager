@@ -21,7 +21,7 @@ export async function GET(
   if (!event || event.userId !== userId) {
     return new Response('Not found', { status: 404 });
   }
-  const attendees = await getAttendees(id);
+  const attendees = await getAttendees(event, userId);
   const lines = ['status,name,joined_at,checked_in'];
   for (const a of attendees) {
     lines.push(

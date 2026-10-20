@@ -6,7 +6,10 @@
  * writers. Run it *before* the advisory-lock fix to capture the failure as
  * evidence, then again after to show it holds.
  *
- *   npx tsx scripts/rsvp-concurrency.ts
+ *   npx tsx scripts/rsvp-concurrency.ts --allow-writes
+ *
+ * Writes are refused unless `--allow-writes` (or `PROBE_ALLOW=1`) is passed;
+ * see `scripts/preflight.ts`.
  *
  * Exit code 0 = every invariant held; 1 = at least one broke.
  * Every fixture is prefixed `probe-` and deleted by eventId afterwards.
@@ -18,6 +21,7 @@ import {
   promoteFromWishlist,
   upsertRsvpCore,
 } from '@/lib/rsvp';
+import { requireProbeTarget } from './preflight';
 
 // The bug is a scheduling race, so each concurrency scenario runs repeatedly.
 // Both counts are overridable for quick local experiments.
@@ -161,6 +165,7 @@ async function scenarioC() {
 }
 
 async function main() {
+  requireProbeTarget('rsvp-concurrency');
   try {
     for (let round = 1; round <= ROUNDS; round += 1) {
       await scenarioA(round);

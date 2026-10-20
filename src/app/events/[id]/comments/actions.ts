@@ -95,6 +95,9 @@ export async function deleteComment(
   commentId: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const userId = await requireUserId();
+  const limited = await enforceRateLimit('commentDelete', userId);
+  if (limited) return limited;
+
   const comment = await prisma.comment.findUnique({
     where: { id: commentId },
     select: { id: true, userId: true, eventId: true },

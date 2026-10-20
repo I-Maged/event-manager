@@ -1,11 +1,12 @@
 /**
  * Rate-limit probe — DEV BRANCH ONLY (writes and deletes `probe:` rows).
  *
- *   npx tsx scripts/rate-limit-check.ts
+ *   npx tsx scripts/rate-limit-check.ts --allow-writes
  *
  * Proves the fixed-window counter is atomic under concurrency, resets after
- * its window, and that the lazy sweep removes stale rows. Exit code 0 = all
- * invariants held, 1 = at least one broke.
+ * its window, and that the lazy sweep removes stale rows. Writes are refused
+ * unless `--allow-writes` (or `PROBE_ALLOW=1`) is passed; see
+ * `scripts/preflight.ts`. Exit code 0 = all invariants held, 1 = one broke.
  */
 import 'dotenv/config';
 import { prisma } from '@/db';
@@ -15,6 +16,7 @@ import {
   RATE_LIMIT_MESSAGE,
   RATE_LIMITS,
 } from '@/lib/rate-limit';
+import { requireProbeTarget } from './preflight';
 
 const failures: string[] = [];
 
@@ -25,6 +27,7 @@ function check(label: string, condition: boolean, detail = ''): void {
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function main(): Promise<number> {
+  requireProbeTarget('rate-limit-check');
   const tag = `probe:${Date.now()}`;
 
   try {

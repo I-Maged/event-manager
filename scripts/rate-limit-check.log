@@ -1,0 +1,7 @@
+rate-limit-check database target:
+DATABASE_URL          -> ep-broad-river-b2eldrmb-pooler.c-6.eu-central-1.aws.neon.tech
+DATABASE_URL_UNPOOLED -> ep-broad-river-b2eldrmb.c-6.eu-central-1.aws.neon.tech
+
+--allow-writes confirmed: probe writes are enabled.
+
+Rate-limit probe: all invariants held.

@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { connection } from 'next/server';
 import { prisma } from '@/db';
 import type {
@@ -9,6 +10,10 @@ import type {
 import { EVENT_CATEGORIES } from '@/lib/categories';
 import type { EventListParams, SortOrder, WhenFilter } from '@/lib/discovery';
 import { addDaysInZone, calendarDayDiffInZone } from '@/lib/time';
+
+// Backwards-compatible module surface: `formatEventDate` moved to `@/lib/time`
+// when timezone support landed, and a few callers may still import it here.
+export { formatEventDate } from '@/lib/time';
 
 export type RsvpCounts = Record<RSVPStatus, number>;
 
@@ -238,6 +243,18 @@ export async function getRsvpCounts(eventId: string): Promise<RsvpCounts> {
   return counts;
 }
 
+/**
+ * Render-pass memoized variants for the React Server Component tree.
+ *
+ * `/events/[id]` reads the event from `generateMetadata`, the page and two
+ * Suspense sections (4x) and the counts twice. React's `cache` dedupes those
+ * calls within one render pass (it is request-scoped, never shared across
+ * requests). Route Handlers are outside the RSC tree, so they must keep using
+ * the raw functions above.
+ */
+export const getEventByIdCached = cache(getEventById);
+export const getRsvpCountsCached = cache(getRsvpCounts);
+
 export async function getUserRsvpStatus(
   eventId: string,
   userId: string,
@@ -304,12 +321,28 @@ export function startsInLabel(
   return `In ${days} days`;
 }
 
+/**
+ * Visibility guard for data accessors that are only safe once the caller has
+ * resolved the event. Throwing (rather than returning 404) makes a future
+ * misuse fail loudly in development instead of leaking private data.
+ */
+async function assertCanView(
+  event: Event,
+  viewerId: string | null,
+): Promise<void> {
+  if (!(await canViewEvent(event, viewerId))) {
+    throw new Error(`Event ${event.id} is not visible to this viewer.`);
+  }
+}
+
 /** Ordered wishlist queue (oldest first). No identities: userIds are opaque. */
 export async function getWishlist(
-  eventId: string,
+  event: Event,
+  viewerId: string | null,
 ): Promise<{ userId: string; createdAt: Date }[]> {
+  await assertCanView(event, viewerId);
   return prisma.rSVP.findMany({
-    where: { eventId, status: 'WAITLISTED' },
+    where: { eventId: event.id, status: 'WAITLISTED' },
     orderBy: { createdAt: 'asc' },
     select: { userId: true, createdAt: true },
   });
@@ -323,14 +356,16 @@ export type CommentRow = {
   createdAt: Date;
 };
 
-/** Event comments, oldest first. Caller must gate with canViewEvent. */
+/** Event comments, oldest first. Enforces visibility itself (see B5). */
 export async function getComments(
-  eventId: string,
+  event: Event,
+  viewerId: string | null,
   limit = 50,
 ): Promise<CommentRow[]> {
+  await assertCanView(event, viewerId);
   const take = Math.min(Math.max(limit, 1), 100);
   return prisma.comment.findMany({
-    where: { eventId },
+    where: { eventId: event.id },
     orderBy: { createdAt: 'asc' },
     take,
     select: {
@@ -356,10 +391,17 @@ export type AttendeeRow = {
   checkedInAt: Date | null;
 };
 
-/** Full attendee roster for organizers, oldest first. Names are stamped on RSVP write. */
-export async function getAttendees(eventId: string): Promise<AttendeeRow[]> {
+/**
+ * Full attendee roster, oldest first. Names are stamped on RSVP write.
+ * Enforces visibility itself (see B5); organizers pass their own id.
+ */
+export async function getAttendees(
+  event: Event,
+  viewerId: string | null,
+): Promise<AttendeeRow[]> {
+  await assertCanView(event, viewerId);
   return prisma.rSVP.findMany({
-    where: { eventId },
+    where: { eventId: event.id },
     orderBy: { createdAt: 'asc' },
     select: {
       userId: true,
@@ -397,23 +439,46 @@ export type WishlistEntry = {
   event: Event;
 };
 
-/** Events the user wishlisted, each with its live queue position. */
+/**
+ * Events the user wishlisted, each with its live queue position.
+ *
+ * Two queries total, regardless of how many events: the second query fetches
+ * every waitlisted row for the relevant events once and positions are derived
+ * from that shared ordering in memory. The previous version called
+ * `getWaitlistPosition` per row (1 + N queries).
+ */
 export async function getUserWishlist(userId: string): Promise<WishlistEntry[]> {
   const rows = await prisma.rSVP.findMany({
     where: { userId, status: 'WAITLISTED' },
     include: { event: true },
     orderBy: { createdAt: 'asc' },
   });
-  return Promise.all(
-    rows.map(async (row) => ({
-      id: row.id,
-      status: row.status,
-      createdAt: row.createdAt,
-      promotedAt: row.promotedAt,
-      waitlistPosition: await getWaitlistPosition(row.eventId, userId),
-      event: row.event,
-    })),
-  );
+  if (rows.length === 0) return [];
+
+  const eventIds = [...new Set(rows.map((row) => row.eventId))];
+  const queues = await prisma.rSVP.findMany({
+    where: { eventId: { in: eventIds }, status: 'WAITLISTED' },
+    select: { eventId: true, userId: true, createdAt: true },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  const positionByEntry = new Map<string, number>();
+  const nextPosition = new Map<string, number>();
+  for (const entry of queues) {
+    const position = (nextPosition.get(entry.eventId) ?? 0) + 1;
+    nextPosition.set(entry.eventId, position);
+    positionByEntry.set(`${entry.eventId}:${entry.userId}`, position);
+  }
+
+  return rows.map((row) => ({
+    id: row.id,
+    status: row.status,
+    createdAt: row.createdAt,
+    promotedAt: row.promotedAt,
+    waitlistPosition:
+      positionByEntry.get(`${row.eventId}:${row.userId}`) ?? null,
+    event: row.event,
+  }));
 }
 
 /** Promoted rows whose banner hasn't been dismissed yet, with their events. */

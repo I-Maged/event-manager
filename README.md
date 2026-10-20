@@ -25,8 +25,24 @@ current set: `DATABASE_URL` pooled, `DATABASE_URL_UNPOOLED` for Prisma CLI).
 |---|---|---|
 | `DATABASE_URL` | yes | Pooled Postgres connection used by the app runtime. |
 | `DATABASE_URL_UNPOOLED` | yes | Direct connection used by `prisma migrate` / introspection. |
-| `APP_TIME_ZONE` | no | IANA zone (e.g. `Europe/Berlin`) used as the fallback for events with no stored zone, for no-JS form submits, and for browse day boundaries ("Today", "Next 7 days"). Defaults to `UTC`. |
+| `APP_TIME_ZONE` | no | IANA zone (e.g. `Europe/Berlin`) used as the fallback for events with no stored zone, for no-JS form submits, and for browse day boundaries ("Today", "Next 7 days"). Defaults to `UTC`; this repo sets `Europe/Berlin`. |
 
+## Verification
+
+```bash
+npm run typecheck   # tsc --noEmit
+npm run lint        # repo-wide (generated Prisma client is ignored)
+npm run verify      # typecheck + scoped lint + timezone probe + production build
+npm run verify:db   # rate-limit + RSVP concurrency probes (writes to the DB)
+```
+
+The DB probes insert and delete rows, so they refuse to run unless writes are
+explicitly allowed (`--allow-writes` or `PROBE_ALLOW=1`) **and** they print the
+resolved database host first. Only run them against a dev branch. See
+`docs/manual-qa.md` for the manual release checklist.
+
+`scripts/backfill-time-zone.ts` stamps legacy `Event.timeZone = null` rows with
+`APP_TIME_ZONE`; it is a dry run unless `--apply --allow-writes` is passed.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

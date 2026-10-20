@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { auth } from '@/lib/auth/server';
-import { getNotifications } from '@/lib/notifications';
+import { getNotifications, getUnreadCount } from '@/lib/notifications';
 import { formatEventDate } from '@/lib/time';
 import type { NotificationType } from '@/generated/prisma';
 import { MarkAllReadButton, MarkReadButton } from './NotificationButtons';
@@ -28,8 +28,12 @@ export default async function NotificationsPage() {
   const userId = session?.user?.id;
   if (!userId) redirect('/auth/sign-in');
 
-  const notifications = await getNotifications(userId);
-  const unreadCount = notifications.filter((n) => n.readAt === null).length;
+  // Count all unread rows, not just the fetched page: the navbar bell uses
+  // `getUnreadCount` too, and the two must agree past the page limit.
+  const [notifications, unreadCount] = await Promise.all([
+    getNotifications(userId),
+    getUnreadCount(userId),
+  ]);
 
   if (notifications.length === 0) {
     return (

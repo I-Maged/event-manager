@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { prisma } from '@/db';
 
 /** Shared client-facing message for every throttled action. */
@@ -8,12 +9,19 @@ export type RateLimitScope =
   | 'rsvp'
   | 'invite'
   | 'accept'
-  | 'eventEdit';
+  | 'eventEdit'
+  | 'eventCreate'
+  | 'commentDelete'
+  | 'checkIn';
 
 /**
  * Per-user budgets for the actions that write (or fan out notifications).
  * `comment` is tightest because one comment fans out up to 20 notifications;
- * `eventEdit` fans out to every holder of the event.
+ * `eventEdit` fans out to every holder of the event; `eventCreate` bounds
+ * unbounded event creation (10/hour).
+ *
+ * Cheap, idempotent, caller-scoped toggles (`markRead`, `dismissPromotion`,
+ * `setNotifyOnUpdate`) are deliberately unlimited.
  */
 export const RATE_LIMITS: Record<
   RateLimitScope,
@@ -24,6 +32,9 @@ export const RATE_LIMITS: Record<
   invite: { limit: 10, windowMs: 60_000 },
   accept: { limit: 10, windowMs: 60_000 },
   eventEdit: { limit: 10, windowMs: 60_000 },
+  eventCreate: { limit: 10, windowMs: 60 * 60_000 },
+  commentDelete: { limit: 30, windowMs: 60_000 },
+  checkIn: { limit: 60, windowMs: 60_000 },
 };
 
 /**
@@ -65,6 +76,13 @@ export async function consume(
  * Lazy cleanup of rows whose window is long past. Rows are tiny, but the table
  * is otherwise unbounded; sweeping every Nth call keeps it out of the request
  * path for all but a rare caller. Failures are logged, never surfaced.
+ *
+ * This is **best effort only**: `callsSinceCleanup` is module state, so on
+ * serverless (many instances, frequent cold starts) the sweep may never fire
+ * per process. The authoritative GC is the scheduled job in
+ * `scripts/sql/rate-limit-cleanup.sql` (Neon scheduled function/cron):
+ *
+ *   DELETE FROM "RateLimit" WHERE "windowStart" < now() - interval '1 day';
  */
 const CLEANUP_EVERY = 500;
 const CLEANUP_AGE_MS = 24 * 60 * 60 * 1000;
@@ -89,12 +107,21 @@ async function sweepStaleRows(): Promise<void> {
   }
 }
 
+/** Short, non-reversible id for logs (never log the raw Managed Auth id). */
+function logUser(userId: string): string {
+  return createHash('sha256').update(userId).digest('hex').slice(0, 12);
+}
+
 /**
  * Enforce the per-user budget for `scope`. Returns a client-facing error object
  * for the action to return, or null when the caller may proceed.
  *
- * Fails **open**: a limiter outage (missing table, DB error) must not take down
- * commenting or RSVP, and during a real DB outage the action fails anyway.
+ * Fails **open** by design: a limiter outage (missing table, DB error) must not
+ * take down commenting or RSVP, and during a real DB outage the action fails
+ * anyway. The failure is logged with a stable marker and a hashed user id so it
+ * can be alerted on without leaking identities. Revisit fail-closed only if
+ * abuse is actually observed on the `comment` scope.
+ *
  * Callers invoke this after the auth guard, so only authenticated users are
  * counted and keys are `{scope}:{userId}`.
  */
@@ -108,7 +135,11 @@ export async function enforceRateLimit(
     const allowed = await consume(`${scope}:${userId}`, limit, windowMs);
     return allowed ? null : { ok: false, error: RATE_LIMIT_MESSAGE };
   } catch (error) {
-    console.error('rate limit check failed (failing open)', { scope, error });
+    console.error('rate limit check failed (failing open)', {
+      scope,
+      user: logUser(userId),
+      error,
+    });
     return null;
   }
 }

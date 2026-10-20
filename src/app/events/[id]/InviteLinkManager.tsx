@@ -19,11 +19,10 @@ export function InviteLinkManager({ eventId, initialToken }: Props) {
   const [isError, setIsError] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const url = token
-    ? typeof window !== 'undefined'
-      ? `${window.location.origin}/invite/${token}`
-      : `/invite/${token}`
-    : null;
+  // Keep render deterministic: the server and the first client render both
+  // show the relative path. The absolute URL is built in the click handler,
+  // where `window` is guaranteed to exist (fixes the hydration mismatch).
+  const url = token ? `/invite/${token}` : null;
 
   async function run(
     kind: 'create' | 'regenerate' | 'revoke',
@@ -65,7 +64,8 @@ export function InviteLinkManager({ eventId, initialToken }: Props) {
   async function handleCopy() {
     if (!url) return;
     try {
-      await navigator.clipboard.writeText(url);
+      const absolute = new URL(url, window.location.origin).toString();
+      await navigator.clipboard.writeText(absolute);
       setCopied(true);
     } catch {
       setMessage('Copy failed — select the link manually.');

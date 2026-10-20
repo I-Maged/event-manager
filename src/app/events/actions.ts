@@ -334,7 +334,9 @@ export async function checkInAttendee(
   eventId: string,
   attendeeUserId: string,
 ): Promise<CheckInResult> {
-  await requireOrganizer(eventId);
+  const organizerId = await requireOrganizer(eventId);
+  const limited = await enforceRateLimit('checkIn', organizerId);
+  if (limited) return limited;
   try {
     const rsvp = await prisma.rSVP.findUnique({
       where: { userId_eventId: { userId: attendeeUserId, eventId } },
@@ -364,7 +366,9 @@ export async function undoCheckIn(
   eventId: string,
   attendeeUserId: string,
 ): Promise<CheckInResult> {
-  await requireOrganizer(eventId);
+  const organizerId = await requireOrganizer(eventId);
+  const limited = await enforceRateLimit('checkIn', organizerId);
+  if (limited) return limited;
   try {
     const rsvp = await prisma.rSVP.findUnique({
       where: { userId_eventId: { userId: attendeeUserId, eventId } },

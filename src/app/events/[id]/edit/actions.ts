@@ -65,15 +65,26 @@ export async function updateEvent(
           title: true,
           date: true,
           location: true,
+          timeZone: true,
           userId: true,
           maxAttendees: true,
         },
       });
       if (!before) return { ok: false as const, error: 'Event not found.' };
 
+      // Preserve the stored zone when the organizer did not move the wall
+      // clock. Legacy rows have `timeZone = null`, while the edit form seeds
+      // its hidden field with the *display* fallback (APP_TIME_ZONE); writing
+      // that fallback on a no-op save would silently shift the event's shown
+      // time. `datetime-local` only submits minutes, so compare whole minutes.
+      const sameWallClock =
+        Math.floor(parsed.data.date.getTime() / 60_000) ===
+        Math.floor(before.date.getTime() / 60_000);
+      const timeZone = sameWallClock ? before.timeZone : parsed.data.timeZone;
+
       await tx.event.update({
         where: { id: eventId },
-        data: { ...parsed.data, organizerName },
+        data: { ...parsed.data, timeZone, organizerName },
       });
 
       // A raised cap frees seats immediately: promote inside the same locked
@@ -87,13 +98,13 @@ export async function updateEvent(
           ? await promoteFromWishlist(tx, eventId, newCap)
           : [];
 
-      return { ok: true as const, before, promoted };
+      return { ok: true as const, before, promoted, timeZone };
     },
     { timeout: 15_000 },
   );
 
   if (!outcome.ok) return { error: outcome.error };
-  const { before, promoted } = outcome;
+  const { before, promoted, timeZone } = outcome;
 
   // Best-effort PROMOTION fan-out for anyone who just got a freed seat.
   if (promoted.length > 0) {
@@ -103,7 +114,7 @@ export async function updateEvent(
       parsed.data.date,
       parsed.data.location,
       promoted,
-      parsed.data.timeZone,
+      timeZone,
     );
     revalidatePath('/notifications');
   }
@@ -119,7 +130,7 @@ export async function updateEvent(
     changeLines.push(`Location is now ${parsed.data.location}`);
   }
   if (parsed.data.date.getTime() !== before.date.getTime()) {
-    changeLines.push(`Date is now ${formatEventDate(parsed.data.date, parsed.data.timeZone)}`);
+    changeLines.push(`Date is now ${formatEventDate(parsed.data.date, timeZone)}`);
   }
   if (changeLines.length > 0) {
     try {

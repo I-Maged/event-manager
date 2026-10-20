@@ -8,6 +8,7 @@ import { InviteLinkManager } from './InviteLinkManager';
 import { RosterCheckInButton } from './RosterCheckInButton';
 import { auth } from '@/lib/auth/server';
 import { categoryLabel } from '@/lib/categories';
+import type { Event } from '@/generated/prisma';
 // Session-gated visibility + live RSVP counts: render on demand.
 export const instant = false;
 
@@ -15,9 +16,9 @@ import {
   canViewEvent,
   getAttendees,
   getComments,
-  getEventById,
+  getEventByIdCached,
   getInviteToken,
-  getRsvpCounts,
+  getRsvpCountsCached,
   getUserRsvp,
   getWaitlistPosition,
   getWishlist,
@@ -35,7 +36,7 @@ export async function generateMetadata({
   // Session + DB read below must run at request time, not during prerender.
   await connection();
   const { id } = await params;
-  const event = await getEventById(id);
+  const event = await getEventByIdCached(id);
   if (!event) return { title: 'Event not found' };
   // Same visibility rule as the page: never leak private titles to metadata.
   const { data: session } = await auth.getSession();
@@ -49,10 +50,10 @@ async function RsvpSection({ eventId }: { eventId: string }) {
   await connection();
   const { data: session } = await auth.getSession();
   const userId = session?.user?.id ?? null;
-  const event = await getEventById(eventId);
+  const event = await getEventByIdCached(eventId);
   if (!event) notFound();
 
-  const counts = await getRsvpCounts(eventId);
+  const counts = await getRsvpCountsCached(eventId);
   const left = spotsLeft(event, counts.GOING);
   const isPast = event.date < new Date();
 
@@ -93,11 +94,11 @@ async function CommentSection({ eventId }: { eventId: string }) {
   await connection();
   const { data: session } = await auth.getSession();
   const viewerId = session?.user?.id ?? null;
-  const event = await getEventById(eventId);
+  const event = await getEventByIdCached(eventId);
   if (!event) return null;
   if (!(await canViewEvent(event, viewerId))) return null;
 
-  const comments = await getComments(eventId);
+  const comments = await getComments(event, viewerId);
   const isPast = event.date < new Date();
 
   return (
@@ -161,8 +162,8 @@ async function CommentSection({ eventId }: { eventId: string }) {
   );
 }
 
-async function OrganizerWishlistPanel({ eventId }: { eventId: string }) {
-  const wishlist = await getWishlist(eventId);
+async function OrganizerWishlistPanel({ event }: { event: Event }) {
+  const wishlist = await getWishlist(event, event.userId);
   if (wishlist.length === 0) return null;
   return (
     <div className="card p-6 space-y-3">
@@ -201,8 +202,9 @@ const STATUS_LABEL: Record<string, string> = {
   WAITLISTED: 'Wishlist',
 };
 
-async function OrganizerRosterPanel({ eventId }: { eventId: string }) {
-  const attendees = await getAttendees(eventId);
+async function OrganizerRosterPanel({ event }: { event: Event }) {
+  const eventId = event.id;
+  const attendees = await getAttendees(event, event.userId);
   if (attendees.length === 0) {
     return (
       <div className="card p-6 space-y-2">
@@ -295,14 +297,14 @@ export default async function EventDetailPage({
   const { id } = await params;
   // Current-time comparison below: always render at request time.
   await connection();
-  const event = await getEventById(id);
+  const event = await getEventByIdCached(id);
   if (!event) notFound();
 
   const { data: session } = await auth.getSession();
   const userId = session?.user?.id ?? null;
   if (!(await canViewEvent(event, userId))) notFound();
 
-  const counts = await getRsvpCounts(id);
+  const counts = await getRsvpCountsCached(id);
   const left = spotsLeft(event, counts.GOING);
   const isOrganizer = userId !== null && event.userId === userId;
   const isPast = event.date < new Date();
@@ -406,7 +408,7 @@ export default async function EventDetailPage({
 
       {isOrganizer && event.maxAttendees != null && (
         <Suspense fallback={null}>
-          <OrganizerWishlistPanel eventId={event.id} />
+          <OrganizerWishlistPanel event={event} />
         </Suspense>
       )}
 
@@ -418,7 +420,7 @@ export default async function EventDetailPage({
             </div>
           }
         >
-          <OrganizerRosterPanel eventId={event.id} />
+          <OrganizerRosterPanel event={event} />
         </Suspense>
       )}
 
