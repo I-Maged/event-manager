@@ -28,8 +28,11 @@ boundaries. Paste the result into the PR.
 
 1. Create an event whose `date` is in the past (or edit one after it ends).
 2. Open it while signed in and attempt an RSVP.
+3. For a past event you wishlisted, open `/wishlist` and try to leave it.
 
 - [ ] The action returns "This event has ended." and no RSVP row is created.
+- [ ] A past wishlisted event shows a muted "Event ended" label instead of "Leave wishlist".
+- [ ] Leaving that wishlist still returns "This event has ended." and the RSVP row remains.
 
 ## 4. Event wall clock is stable across create/edit
 
@@ -65,6 +68,13 @@ npm run verify:db   # passes --allow-writes; confirm the printed host first
 - [ ] `scripts/rsvp-concurrency.ts` prints "all invariants held."
 - [ ] `npm run lint` is clean (generated Prisma client excluded).
 
+On a high-latency connection or a cold Neon compute, lower the racer count so
+the advisory-lock-serialized writers stay inside the 15s transaction timeout:
+
+```bash
+PROBE_RACERS=3 npm run verify:db
+```
+
 ## 7. RateLimit garbage collection
 
 The authoritative GC is the hourly Neon Function Trigger (`docs/operations.md`).
@@ -79,3 +89,16 @@ npx tsx scripts/rate-limit-cleanup.ts          # dry run: reports stale rows
       `windowStart = now() - interval '2 days'` is gone.
 - [ ] Function logs (`neon logs query --source function`) show a
       `rate-limit GC complete` line with the deleted count.
+
+## 8. Invite-link and check-in atomicity
+
+1. As the organizer of a private event with no active invite link, open two
+   tabs (or the browser console) and fire "Create invite link" in both.
+2. As the organizer, open the roster in two tabs and check in the same GOING
+   attendee in both, then undo in both.
+
+- [ ] Both create calls return the **same** token, and `Event.inviteToken`
+      matches it; a later create still returns that token.
+- [ ] Exactly one check-in timestamp is stored; both calls report the same ISO
+      string. `RSVP.checkedInBy` holds the organizer's user id.
+- [ ] Undo twice leaves `checkedInAt` and `checkedInBy` null.

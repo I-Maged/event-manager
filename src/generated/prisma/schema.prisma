@@ -7,6 +7,10 @@ datasource db {
   provider = "postgresql"
 }
 
+// NOTE: CHECK constraints live only in the migration SQL — Prisma cannot
+// express or introspect them. Never run `prisma db push` against this
+// database: it would drop them. Schema changes ship as migrations.
+
 // Managed Auth (Neon Auth) owns identity in the `neon_auth` schema.
 // This app stores only domain data. `userId` is the Managed Auth user id
 // (plain String, no FK) so auth state branches with the database.
@@ -20,6 +24,8 @@ model Event {
   // Null for rows created before timezone support -> render with APP_TIME_ZONE.
   timeZone     String?
   location     String
+  // DB-level invariant (migration-only):
+  //   CHECK ("maxAttendees" IS NULL OR "maxAttendees" > 0)
   maxAttendees Int?
   isPublic     Boolean       @default(true)
   category     EventCategory @default(OTHER)
@@ -76,6 +82,9 @@ model RSVP {
   // Set when the organizer checks the attendee in. Null = not checked in.
   checkedInAt DateTime?
 
+  /// Managed Auth user id of the organizer who performed the check-in.
+  checkedInBy String?
+
   // Opt-out for event-update and reminder notifications. True by default.
   notifyOnUpdate Boolean @default(true)
 
@@ -87,6 +96,7 @@ model RSVP {
   @@unique([userId, eventId])
   @@index([userId])
   @@index([eventId])
+  @@index([eventId, status, createdAt])
 }
 
 enum RSVPStatus {
@@ -102,6 +112,8 @@ model Comment {
   event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   userId     String
   authorName String?
+  // DB-level invariant (migration-only):
+  //   CHECK (char_length("body") <= 1000)
   body       String
   createdAt  DateTime @default(now())
 

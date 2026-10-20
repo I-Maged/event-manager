@@ -145,6 +145,7 @@ exports.Prisma.RSVPScalarFieldEnum = {
   promotedAt: 'promotedAt',
   attendeeName: 'attendeeName',
   checkedInAt: 'checkedInAt',
+  checkedInBy: 'checkedInBy',
   notifyOnUpdate: 'notifyOnUpdate',
   userId: 'userId',
   eventId: 'eventId'

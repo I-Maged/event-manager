@@ -100,7 +100,7 @@ export async function updateEvent(
 
       return { ok: true as const, before, promoted, timeZone };
     },
-    { timeout: 15_000 },
+    { timeout: 15_000, maxWait: 15_000 },
   );
 
   if (!outcome.ok) return { error: outcome.error };

@@ -2661,6 +2661,7 @@ export namespace Prisma {
     promotedAt: Date | null
     attendeeName: string | null
     checkedInAt: Date | null
+    checkedInBy: string | null
     notifyOnUpdate: boolean | null
     userId: string | null
     eventId: string | null
@@ -2674,6 +2675,7 @@ export namespace Prisma {
     promotedAt: Date | null
     attendeeName: string | null
     checkedInAt: Date | null
+    checkedInBy: string | null
     notifyOnUpdate: boolean | null
     userId: string | null
     eventId: string | null
@@ -2687,6 +2689,7 @@ export namespace Prisma {
     promotedAt: number
     attendeeName: number
     checkedInAt: number
+    checkedInBy: number
     notifyOnUpdate: number
     userId: number
     eventId: number
@@ -2702,6 +2705,7 @@ export namespace Prisma {
     promotedAt?: true
     attendeeName?: true
     checkedInAt?: true
+    checkedInBy?: true
     notifyOnUpdate?: true
     userId?: true
     eventId?: true
@@ -2715,6 +2719,7 @@ export namespace Prisma {
     promotedAt?: true
     attendeeName?: true
     checkedInAt?: true
+    checkedInBy?: true
     notifyOnUpdate?: true
     userId?: true
     eventId?: true
@@ -2728,6 +2733,7 @@ export namespace Prisma {
     promotedAt?: true
     attendeeName?: true
     checkedInAt?: true
+    checkedInBy?: true
     notifyOnUpdate?: true
     userId?: true
     eventId?: true
@@ -2814,6 +2820,7 @@ export namespace Prisma {
     promotedAt: Date | null
     attendeeName: string | null
     checkedInAt: Date | null
+    checkedInBy: string | null
     notifyOnUpdate: boolean
     userId: string
     eventId: string
@@ -2844,6 +2851,7 @@ export namespace Prisma {
     promotedAt?: boolean
     attendeeName?: boolean
     checkedInAt?: boolean
+    checkedInBy?: boolean
     notifyOnUpdate?: boolean
     userId?: boolean
     eventId?: boolean
@@ -2858,6 +2866,7 @@ export namespace Prisma {
     promotedAt?: boolean
     attendeeName?: boolean
     checkedInAt?: boolean
+    checkedInBy?: boolean
     notifyOnUpdate?: boolean
     userId?: boolean
     eventId?: boolean
@@ -2872,6 +2881,7 @@ export namespace Prisma {
     promotedAt?: boolean
     attendeeName?: boolean
     checkedInAt?: boolean
+    checkedInBy?: boolean
     notifyOnUpdate?: boolean
     userId?: boolean
     eventId?: boolean
@@ -2886,12 +2896,13 @@ export namespace Prisma {
     promotedAt?: boolean
     attendeeName?: boolean
     checkedInAt?: boolean
+    checkedInBy?: boolean
     notifyOnUpdate?: boolean
     userId?: boolean
     eventId?: boolean
   }
 
-  export type RSVPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "createdAt" | "updatedAt" | "promotedAt" | "attendeeName" | "checkedInAt" | "notifyOnUpdate" | "userId" | "eventId", ExtArgs["result"]["rSVP"]>
+  export type RSVPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "status" | "createdAt" | "updatedAt" | "promotedAt" | "attendeeName" | "checkedInAt" | "checkedInBy" | "notifyOnUpdate" | "userId" | "eventId", ExtArgs["result"]["rSVP"]>
   export type RSVPInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventDefaultArgs<ExtArgs>
   }
@@ -2915,6 +2926,10 @@ export namespace Prisma {
       promotedAt: Date | null
       attendeeName: string | null
       checkedInAt: Date | null
+      /**
+       * Managed Auth user id of the organizer who performed the check-in.
+       */
+      checkedInBy: string | null
       notifyOnUpdate: boolean
       userId: string
       eventId: string
@@ -3349,6 +3364,7 @@ export namespace Prisma {
     readonly promotedAt: FieldRef<"RSVP", 'DateTime'>
     readonly attendeeName: FieldRef<"RSVP", 'String'>
     readonly checkedInAt: FieldRef<"RSVP", 'DateTime'>
+    readonly checkedInBy: FieldRef<"RSVP", 'String'>
     readonly notifyOnUpdate: FieldRef<"RSVP", 'Boolean'>
     readonly userId: FieldRef<"RSVP", 'String'>
     readonly eventId: FieldRef<"RSVP", 'String'>
@@ -7018,6 +7034,7 @@ export namespace Prisma {
     promotedAt: 'promotedAt',
     attendeeName: 'attendeeName',
     checkedInAt: 'checkedInAt',
+    checkedInBy: 'checkedInBy',
     notifyOnUpdate: 'notifyOnUpdate',
     userId: 'userId',
     eventId: 'eventId'
@@ -7317,6 +7334,7 @@ export namespace Prisma {
     promotedAt?: DateTimeNullableFilter<"RSVP"> | Date | string | null
     attendeeName?: StringNullableFilter<"RSVP"> | string | null
     checkedInAt?: DateTimeNullableFilter<"RSVP"> | Date | string | null
+    checkedInBy?: StringNullableFilter<"RSVP"> | string | null
     notifyOnUpdate?: BoolFilter<"RSVP"> | boolean
     userId?: StringFilter<"RSVP"> | string
     eventId?: StringFilter<"RSVP"> | string
@@ -7331,6 +7349,7 @@ export namespace Prisma {
     promotedAt?: SortOrderInput | SortOrder
     attendeeName?: SortOrderInput | SortOrder
     checkedInAt?: SortOrderInput | SortOrder
+    checkedInBy?: SortOrderInput | SortOrder
     notifyOnUpdate?: SortOrder
     userId?: SortOrder
     eventId?: SortOrder
@@ -7349,6 +7368,7 @@ export namespace Prisma {
     promotedAt?: DateTimeNullableFilter<"RSVP"> | Date | string | null
     attendeeName?: StringNullableFilter<"RSVP"> | string | null
     checkedInAt?: DateTimeNullableFilter<"RSVP"> | Date | string | null
+    checkedInBy?: StringNullableFilter<"RSVP"> | string | null
     notifyOnUpdate?: BoolFilter<"RSVP"> | boolean
     userId?: StringFilter<"RSVP"> | string
     eventId?: StringFilter<"RSVP"> | string
@@ -7363,6 +7383,7 @@ export namespace Prisma {
     promotedAt?: SortOrderInput | SortOrder
     attendeeName?: SortOrderInput | SortOrder
     checkedInAt?: SortOrderInput | SortOrder
+    checkedInBy?: SortOrderInput | SortOrder
     notifyOnUpdate?: SortOrder
     userId?: SortOrder
     eventId?: SortOrder
@@ -7382,6 +7403,7 @@ export namespace Prisma {
     promotedAt?: DateTimeNullableWithAggregatesFilter<"RSVP"> | Date | string | null
     attendeeName?: StringNullableWithAggregatesFilter<"RSVP"> | string | null
     checkedInAt?: DateTimeNullableWithAggregatesFilter<"RSVP"> | Date | string | null
+    checkedInBy?: StringNullableWithAggregatesFilter<"RSVP"> | string | null
     notifyOnUpdate?: BoolWithAggregatesFilter<"RSVP"> | boolean
     userId?: StringWithAggregatesFilter<"RSVP"> | string
     eventId?: StringWithAggregatesFilter<"RSVP"> | string
@@ -7700,6 +7722,7 @@ export namespace Prisma {
     promotedAt?: Date | string | null
     attendeeName?: string | null
     checkedInAt?: Date | string | null
+    checkedInBy?: string | null
     notifyOnUpdate?: boolean
     userId: string
     event: EventCreateNestedOneWithoutRsvpsInput
@@ -7713,6 +7736,7 @@ export namespace Prisma {
     promotedAt?: Date | string | null
     attendeeName?: string | null
     checkedInAt?: Date | string | null
+    checkedInBy?: string | null
     notifyOnUpdate?: boolean
     userId: string
     eventId: string
@@ -7726,6 +7750,7 @@ export namespace Prisma {
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     checkedInAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkedInBy?: NullableStringFieldUpdateOperationsInput | string | null
     notifyOnUpdate?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
     event?: EventUpdateOneRequiredWithoutRsvpsNestedInput
@@ -7739,6 +7764,7 @@ export namespace Prisma {
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     checkedInAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkedInBy?: NullableStringFieldUpdateOperationsInput | string | null
     notifyOnUpdate?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
     eventId?: StringFieldUpdateOperationsInput | string
@@ -7752,6 +7778,7 @@ export namespace Prisma {
     promotedAt?: Date | string | null
     attendeeName?: string | null
     checkedInAt?: Date | string | null
+    checkedInBy?: string | null
     notifyOnUpdate?: boolean
     userId: string
     eventId: string
@@ -7765,6 +7792,7 @@ export namespace Prisma {
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     checkedInAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkedInBy?: NullableStringFieldUpdateOperationsInput | string | null
     notifyOnUpdate?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
   }
@@ -7777,6 +7805,7 @@ export namespace Prisma {
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     checkedInAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkedInBy?: NullableStringFieldUpdateOperationsInput | string | null
     notifyOnUpdate?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
     eventId?: StringFieldUpdateOperationsInput | string
@@ -8240,6 +8269,7 @@ export namespace Prisma {
     promotedAt?: SortOrder
     attendeeName?: SortOrder
     checkedInAt?: SortOrder
+    checkedInBy?: SortOrder
     notifyOnUpdate?: SortOrder
     userId?: SortOrder
     eventId?: SortOrder
@@ -8253,6 +8283,7 @@ export namespace Prisma {
     promotedAt?: SortOrder
     attendeeName?: SortOrder
     checkedInAt?: SortOrder
+    checkedInBy?: SortOrder
     notifyOnUpdate?: SortOrder
     userId?: SortOrder
     eventId?: SortOrder
@@ -8266,6 +8297,7 @@ export namespace Prisma {
     promotedAt?: SortOrder
     attendeeName?: SortOrder
     checkedInAt?: SortOrder
+    checkedInBy?: SortOrder
     notifyOnUpdate?: SortOrder
     userId?: SortOrder
     eventId?: SortOrder
@@ -8908,6 +8940,7 @@ export namespace Prisma {
     promotedAt?: Date | string | null
     attendeeName?: string | null
     checkedInAt?: Date | string | null
+    checkedInBy?: string | null
     notifyOnUpdate?: boolean
     userId: string
   }
@@ -8920,6 +8953,7 @@ export namespace Prisma {
     promotedAt?: Date | string | null
     attendeeName?: string | null
     checkedInAt?: Date | string | null
+    checkedInBy?: string | null
     notifyOnUpdate?: boolean
     userId: string
   }
@@ -9017,6 +9051,7 @@ export namespace Prisma {
     promotedAt?: DateTimeNullableFilter<"RSVP"> | Date | string | null
     attendeeName?: StringNullableFilter<"RSVP"> | string | null
     checkedInAt?: DateTimeNullableFilter<"RSVP"> | Date | string | null
+    checkedInBy?: StringNullableFilter<"RSVP"> | string | null
     notifyOnUpdate?: BoolFilter<"RSVP"> | boolean
     userId?: StringFilter<"RSVP"> | string
     eventId?: StringFilter<"RSVP"> | string
@@ -9364,6 +9399,7 @@ export namespace Prisma {
     promotedAt?: Date | string | null
     attendeeName?: string | null
     checkedInAt?: Date | string | null
+    checkedInBy?: string | null
     notifyOnUpdate?: boolean
     userId: string
   }
@@ -9394,6 +9430,7 @@ export namespace Prisma {
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     checkedInAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkedInBy?: NullableStringFieldUpdateOperationsInput | string | null
     notifyOnUpdate?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
   }
@@ -9406,6 +9443,7 @@ export namespace Prisma {
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     checkedInAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkedInBy?: NullableStringFieldUpdateOperationsInput | string | null
     notifyOnUpdate?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
   }
@@ -9418,6 +9456,7 @@ export namespace Prisma {
     promotedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attendeeName?: NullableStringFieldUpdateOperationsInput | string | null
     checkedInAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkedInBy?: NullableStringFieldUpdateOperationsInput | string | null
     notifyOnUpdate?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
   }

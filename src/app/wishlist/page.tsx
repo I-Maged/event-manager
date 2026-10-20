@@ -25,6 +25,7 @@ export default async function WishlistPage() {
     getUserWishlist(userId),
     getUserPromotions(userId),
   ]);
+  const now = new Date();
 
   if (wishlist.length === 0 && promotions.length === 0) {
     return (
@@ -96,7 +97,11 @@ export default async function WishlistPage() {
                   {formatEventDate(entry.event.date, entry.event.timeZone)} · {entry.event.location}
                 </p>
                 <div className="flex flex-wrap items-center gap-3 pt-1 text-sm">
-                  <LeaveWishlistButton eventId={entry.event.id} />
+                  {entry.event.date < now ? (
+                    <span className="text-muted">Event ended</span>
+                  ) : (
+                    <LeaveWishlistButton eventId={entry.event.id} />
+                  )}
                   <CalendarLinks event={entry.event} />
                 </div>
               </li>

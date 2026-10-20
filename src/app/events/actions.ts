@@ -247,8 +247,31 @@ export async function createInviteLink(
     return { ok: false, error: 'Public events do not need invite links.' };
   }
   if (existing.inviteToken) return { ok: true, token: existing.inviteToken };
+
+  // Claim the empty token in one conditional write. Two concurrent callers can
+  // both observe `inviteToken === null`; the loser's update matches zero rows
+  // (the row lock makes it re-evaluate the predicate after the winner commits)
+  // and re-reads the winner's token instead of silently invalidating it.
   const token = newInviteToken();
-  await prisma.event.update({ where: { id: eventId }, data: { inviteToken: token } });
+  const claimed = await prisma.event.updateMany({
+    where: { id: eventId, inviteToken: null, isPublic: false },
+    data: { inviteToken: token },
+  });
+
+  if (claimed.count === 0) {
+    // Another request won the race, or the event changed under us.
+    const current = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { inviteToken: true, isPublic: true },
+    });
+    if (!current) return { ok: false, error: 'Event not found.' };
+    if (current.isPublic) {
+      return { ok: false, error: 'Public events do not need invite links.' };
+    }
+    if (current.inviteToken) return { ok: true, token: current.inviteToken };
+    return { ok: false, error: 'Could not create an invite link. Please retry.' };
+  }
+
   revalidateEvent(eventId);
   return { ok: true, token };
 }
@@ -338,23 +361,36 @@ export async function checkInAttendee(
   const limited = await enforceRateLimit('checkIn', organizerId);
   if (limited) return limited;
   try {
-    const rsvp = await prisma.rSVP.findUnique({
-      where: { userId_eventId: { userId: attendeeUserId, eventId } },
-      select: { id: true, status: true, checkedInAt: true },
+    // Single conditional write: only the first check-in can match
+    // `checkedInAt: null`. Under READ COMMITTED a concurrent second update
+    // blocks on the row lock, re-evaluates the predicate after the winner
+    // commits, and matches zero rows — so exactly one timestamp is stored.
+    const now = new Date();
+    const claimed = await prisma.rSVP.updateMany({
+      where: {
+        eventId,
+        userId: attendeeUserId,
+        status: 'GOING',
+        checkedInAt: null,
+      },
+      data: { checkedInAt: now, checkedInBy: organizerId },
     });
-    if (!rsvp) return { ok: false, error: 'Attendee not found.' };
-    if (rsvp.status !== 'GOING') {
-      return { ok: false, error: 'Only Going attendees can be checked in.' };
+
+    if (claimed.count === 0) {
+      const rsvp = await prisma.rSVP.findUnique({
+        where: { userId_eventId: { userId: attendeeUserId, eventId } },
+        select: { status: true, checkedInAt: true },
+      });
+      if (!rsvp) return { ok: false, error: 'Attendee not found.' };
+      if (rsvp.status !== 'GOING') {
+        return { ok: false, error: 'Only Going attendees can be checked in.' };
+      }
+      // Already checked in: idempotent success with the stored timestamp.
+      return { ok: true, checkedInAt: rsvp.checkedInAt?.toISOString() ?? null };
     }
-    if (rsvp.checkedInAt)
-      return { ok: true, checkedInAt: rsvp.checkedInAt.toISOString() };
-    const updated = await prisma.rSVP.update({
-      where: { id: rsvp.id },
-      data: { checkedInAt: new Date() },
-      select: { checkedInAt: true },
-    });
+
     revalidateEvent(eventId);
-    return { ok: true, checkedInAt: updated.checkedInAt?.toISOString() ?? null };
+    return { ok: true, checkedInAt: now.toISOString() };
   } catch (error) {
     console.error('checkInAttendee failed', { eventId, attendeeUserId, error });
     return { ok: false, error: 'Check-in failed. Please retry.' };
@@ -370,19 +406,20 @@ export async function undoCheckIn(
   const limited = await enforceRateLimit('checkIn', organizerId);
   if (limited) return limited;
   try {
+    // Mirror of the check-in claim: clear only a row that is still checked in.
+    await prisma.rSVP.updateMany({
+      where: { eventId, userId: attendeeUserId, checkedInAt: { not: null } },
+      data: { checkedInAt: null, checkedInBy: null },
+    });
+
     const rsvp = await prisma.rSVP.findUnique({
       where: { userId_eventId: { userId: attendeeUserId, eventId } },
-      select: { id: true, checkedInAt: true },
-    });
-    if (!rsvp) return { ok: false, error: 'Attendee not found.' };
-    if (!rsvp.checkedInAt) return { ok: true, checkedInAt: null };
-    const updated = await prisma.rSVP.update({
-      where: { id: rsvp.id },
-      data: { checkedInAt: null },
       select: { checkedInAt: true },
     });
+    if (!rsvp) return { ok: false, error: 'Attendee not found.' };
+
     revalidateEvent(eventId);
-    return { ok: true, checkedInAt: updated.checkedInAt?.toISOString() ?? null };
+    return { ok: true, checkedInAt: rsvp.checkedInAt?.toISOString() ?? null };
   } catch (error) {
     console.error('undoCheckIn failed', { eventId, attendeeUserId, error });
     return { ok: false, error: 'Undo check-in failed. Please retry.' };

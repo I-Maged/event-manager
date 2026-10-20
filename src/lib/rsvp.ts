@@ -235,7 +235,10 @@ export async function upsertRsvpCore(
         eventLocation: event.location,
       };
     },
-    { timeout: 15_000 },
+    // Neon opens a WebSocket per pooled client, so a burst of writers can
+    // exceed Prisma's 2s default maxWait while the pool grows. maxWait only
+    // extends the queue wait; `timeout` still bounds the transaction itself.
+    { timeout: 15_000, maxWait: 15_000 },
   );
 }
 
@@ -256,6 +259,10 @@ export async function cancelRsvpCore(
 
       const event = await tx.event.findUnique({ where: { id: eventId } });
       if (!event) return { ok: false as const, error: 'Event not found.' };
+      // Match upsertRsvpCore/joinWishlist: no cancel, promotion, or organizer
+      // notice may run for an event that has already ended.
+      if (event.date < new Date())
+        return { ok: false as const, error: 'This event has ended.' };
 
       const existing = await tx.rSVP.findUnique({
         where: { userId_eventId: { userId, eventId } },
@@ -287,6 +294,6 @@ export async function cancelRsvpCore(
         organizerNotify: organizerRsvp?.notifyOnUpdate ?? true,
       };
     },
-    { timeout: 15_000 },
+    { timeout: 15_000, maxWait: 15_000 },
   );
 }
