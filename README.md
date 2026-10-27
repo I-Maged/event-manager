@@ -34,16 +34,30 @@ current set: `DATABASE_URL` pooled, `DATABASE_URL_UNPOOLED` for Prisma CLI).
 npm run typecheck   # tsc --noEmit
 npm run lint        # repo-wide (generated Prisma client is ignored)
 npm run verify      # typecheck + scoped lint + timezone probe + production build
-npm run verify:db   # rate-limit + RSVP concurrency probes (writes to the DB)
+npm test            # unit + component tests (no DB, no network)
+npm run test:db     # DB integration tests (ephemeral Neon branch)
+npm run verify:full # verify + every test layer
 ```
 
-The DB probes insert and delete rows, so they refuse to run unless writes are
-explicitly allowed (`--allow-writes` or `PROBE_ALLOW=1`) **and** they print the
-resolved database host first. Only run them against a dev branch. See
-`docs/manual-qa.md` for the manual release checklist.
+Database-backed tests run only against a disposable Neon branch created by
+`npm run db:test:up`; see [`TESTING.md`](./TESTING.md) for the branch lifecycle,
+the safety guard, and the full command reference. The legacy probe scripts
+refuse writes unless `--allow-writes` (or `PROBE_ALLOW=1`) is passed and always
+print the resolved host first.
 
 `scripts/backfill-time-zone.ts` stamps legacy `Event.timeZone = null` rows with
 `APP_TIME_ZONE`; it is a dry run unless `--apply --allow-writes` is passed.
+
+## Testing
+
+- `npm test` — Vitest unit + component projects. Safe on any machine.
+- `npm run test:db` — Vitest DB integration against an ephemeral branch.
+- `npm run test:http` — HTTP contract tests (Phase 4).
+- `npm run test:e2e` — Playwright (desktop Chromium + Pixel 7).
+
+Start with [`TESTING.md`](./TESTING.md) for setup, safety rules, and how to add
+a regression test. The phased checklist lives in
+[`testing_plan.md`](./testing_plan.md).
 
 ## Scheduled jobs
 
@@ -58,7 +72,7 @@ npx tsx scripts/rate-limit-cleanup.ts --apply  # deletes
 ```
 
 Deploying the trigger and the fallback options (Vercel Cron, GitHub Actions) are
-documented in `docs/operations.md`.
+documented alongside the trigger declaration in `neon.ts`.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

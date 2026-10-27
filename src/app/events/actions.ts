@@ -2,10 +2,16 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { randomUUID } from 'crypto';
 import { prisma } from '@/db';
 import { auth } from '@/lib/auth/server';
 import { resolveOrganizerName } from '@/lib/events';
+import {
+  acceptInviteCore,
+  createInviteLinkCore,
+  regenerateInviteLinkCore,
+  revokeInviteLinkCore,
+  type InviteLinkResult as InviteLinkCoreResult,
+} from '@/lib/invite';
 import { notifyUsers } from '@/lib/notifications';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import {
@@ -220,13 +226,7 @@ export async function setNotifyOnUpdate(
   return { ok: true };
 }
 
-export type InviteLinkResult =
-  | { ok: true; token: string }
-  | { ok: false; error: string };
-
-function newInviteToken(): string {
-  return randomUUID().replace(/-/g, '');
-}
+export type InviteLinkResult = InviteLinkCoreResult;
 
 /**
  * Reusable invite link for a private event. Idempotent: returns the existing
@@ -238,42 +238,9 @@ export async function createInviteLink(
   const userId = await requireOrganizer(eventId);
   const limited = await enforceRateLimit('invite', userId);
   if (limited) return limited;
-  const existing = await prisma.event.findUnique({
-    where: { id: eventId },
-    select: { inviteToken: true, isPublic: true },
-  });
-  if (!existing) return { ok: false, error: 'Event not found.' };
-  if (existing.isPublic) {
-    return { ok: false, error: 'Public events do not need invite links.' };
-  }
-  if (existing.inviteToken) return { ok: true, token: existing.inviteToken };
-
-  // Claim the empty token in one conditional write. Two concurrent callers can
-  // both observe `inviteToken === null`; the loser's update matches zero rows
-  // (the row lock makes it re-evaluate the predicate after the winner commits)
-  // and re-reads the winner's token instead of silently invalidating it.
-  const token = newInviteToken();
-  const claimed = await prisma.event.updateMany({
-    where: { id: eventId, inviteToken: null, isPublic: false },
-    data: { inviteToken: token },
-  });
-
-  if (claimed.count === 0) {
-    // Another request won the race, or the event changed under us.
-    const current = await prisma.event.findUnique({
-      where: { id: eventId },
-      select: { inviteToken: true, isPublic: true },
-    });
-    if (!current) return { ok: false, error: 'Event not found.' };
-    if (current.isPublic) {
-      return { ok: false, error: 'Public events do not need invite links.' };
-    }
-    if (current.inviteToken) return { ok: true, token: current.inviteToken };
-    return { ok: false, error: 'Could not create an invite link. Please retry.' };
-  }
-
-  revalidateEvent(eventId);
-  return { ok: true, token };
+  const result = await createInviteLinkCore(eventId);
+  if (result.ok) revalidateEvent(eventId);
+  return result;
 }
 
 /** Replace the active invite link (invalidates the previously shared URL). */
@@ -283,18 +250,9 @@ export async function regenerateInviteLink(
   const userId = await requireOrganizer(eventId);
   const limited = await enforceRateLimit('invite', userId);
   if (limited) return limited;
-  const existing = await prisma.event.findUnique({
-    where: { id: eventId },
-    select: { id: true, isPublic: true },
-  });
-  if (!existing) return { ok: false, error: 'Event not found.' };
-  if (existing.isPublic) {
-    return { ok: false, error: 'Public events do not need invite links.' };
-  }
-  const token = newInviteToken();
-  await prisma.event.update({ where: { id: eventId }, data: { inviteToken: token } });
-  revalidateEvent(eventId);
-  return { ok: true, token };
+  const result = await regenerateInviteLinkCore(eventId);
+  if (result.ok) revalidateEvent(eventId);
+  return result;
 }
 
 /** Revoke the invite link (previously shared URLs stop working). Idempotent. */
@@ -304,14 +262,9 @@ export async function revokeInviteLink(
   const userId = await requireOrganizer(eventId);
   const limited = await enforceRateLimit('invite', userId);
   if (limited) return limited;
-  const existing = await prisma.event.findUnique({
-    where: { id: eventId },
-    select: { id: true },
-  });
-  if (!existing) return { ok: false, error: 'Event not found.' };
-  await prisma.event.update({ where: { id: eventId }, data: { inviteToken: null } });
-  revalidateEvent(eventId);
-  return { ok: true };
+  const result = await revokeInviteLinkCore(eventId);
+  if (result.ok) revalidateEvent(eventId);
+  return result;
 }
 
 /**
@@ -325,22 +278,16 @@ export async function acceptInvite(
   const { userId, attendeeName } = await requireUser();
   const limited = await enforceRateLimit('accept', userId);
   if (limited) return limited;
-  const event = await prisma.event.findUnique({
-    where: { inviteToken: token },
-  });
-  if (!event) return { ok: false, error: 'This invite link is invalid or revoked.' };
-  if (event.date < new Date()) {
-    return { ok: false, error: 'This event has ended.' };
+
+  const accepted = await acceptInviteCore(userId, attendeeName, token);
+  if (!accepted.ok) {
+    return accepted.eventId
+      ? { ok: false, error: accepted.error, eventId: accepted.eventId }
+      : { ok: false, error: accepted.error };
   }
-  if (event.userId === userId) {
-    return { ok: false, error: 'You are hosting this event.', eventId: event.id };
-  }
-  const result = await finishRsvp(
-    event.id,
-    await upsertRsvpCore(userId, event.id, 'GOING', attendeeName),
-  );
-  if (!result.ok) return result;
-  return { ...result, eventId: event.id };
+
+  const result = await finishRsvp(accepted.eventId, accepted.rsvp);
+  return result.ok ? { ...result, eventId: accepted.eventId } : result;
 }
 
 export type CheckInResult =

@@ -6,10 +6,13 @@ import { prisma } from '@/db';
 import { auth } from '@/lib/auth/server';
 import { parseEventForm } from '@/lib/event-validation';
 import { resolveOrganizerName } from '@/lib/events';
-import { notifyUsers } from '@/lib/notifications';
+import {
+  notifyEventCancelled,
+  notifyEventUpdated,
+  selectEventUpdateRecipients,
+} from '@/lib/event-notifications';
 import { lockEvent, notifyPromotions, promoteFromWishlist } from '@/lib/rsvp';
 import { enforceRateLimit } from '@/lib/rate-limit';
-import { formatEventDate } from '@/lib/time';
 
 async function requireOrganizer(eventId: string) {
   const { data: session } = await auth.getSession();
@@ -122,43 +125,14 @@ export async function updateEvent(
   // Best-effort EVENT_UPDATED fan-out: only when title/date/location
   // actually changed, only to GOING/MAYBE/WAITLISTED holders who opted in,
   // never to the organizer who made the edit.
-  const changeLines: string[] = [];
-  if (parsed.data.title !== before.title) {
-    changeLines.push(`Title is now “${parsed.data.title}”`);
-  }
-  if (parsed.data.location !== before.location) {
-    changeLines.push(`Location is now ${parsed.data.location}`);
-  }
-  if (parsed.data.date.getTime() !== before.date.getTime()) {
-    changeLines.push(`Date is now ${formatEventDate(parsed.data.date, timeZone)}`);
-  }
-  if (changeLines.length > 0) {
-    try {
-      const holders = await prisma.rSVP.findMany({
-        where: {
-          eventId,
-          status: { in: ['GOING', 'MAYBE', 'WAITLISTED'] },
-          notifyOnUpdate: true,
-          NOT: { userId: before.userId },
-        },
-        select: { userId: true },
-      });
-      if (holders.length > 0) {
-        await notifyUsers(
-          holders.map((h) => ({
-            userId: h.userId,
-            eventId,
-            type: 'EVENT_UPDATED' as const,
-            title: `Event updated: ${parsed.data.title}`,
-            body: changeLines.join(' · '),
-          })),
-        );
-        revalidatePath('/notifications');
-      }
-    } catch (error) {
-      console.error('event update notify fan-out failed', { eventId, error });
-    }
-  }
+  const notified = await notifyEventUpdated({
+    eventId,
+    organizerId: before.userId,
+    before,
+    after: parsed.data,
+    timeZone,
+  });
+  if (notified > 0) revalidatePath('/notifications');
 
   revalidatePath('/events');
   revalidatePath(`/events/${eventId}`);
@@ -178,34 +152,12 @@ export async function deleteEvent(formData: FormData) {
     select: { title: true, date: true, timeZone: true, location: true, userId: true },
   });
   if (!event) redirect('/events');
-  const holders = await prisma.rSVP.findMany({
-    where: {
-      eventId,
-      status: { in: ['GOING', 'MAYBE', 'WAITLISTED'] },
-      notifyOnUpdate: true,
-      NOT: { userId: event.userId },
-    },
-    select: { userId: true },
-  });
+  const recipients = await selectEventUpdateRecipients(eventId, event.userId);
 
   await prisma.event.delete({ where: { id: eventId } });
 
   // Best-effort EVENT_CANCELLED fan-out (opt-out respected).
-  if (holders.length > 0) {
-    try {
-      await notifyUsers(
-        holders.map((h) => ({
-          userId: h.userId,
-          eventId: null,
-          type: 'EVENT_CANCELLED' as const,
-          title: `Event cancelled: ${event.title}`,
-          body: `${formatEventDate(event.date, event.timeZone)} at ${event.location} will not take place.`,
-        })),
-      );
-    } catch (error) {
-      console.error('event cancel notify fan-out failed', { eventId, error });
-    }
-  }
+  await notifyEventCancelled({ eventId, event, recipients });
 
   revalidatePath('/events');
   revalidatePath('/notifications');

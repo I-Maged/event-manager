@@ -4,10 +4,10 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/db';
 import { auth } from '@/lib/auth/server';
+import { notifyNewComment } from '@/lib/event-notifications';
 import { canViewEvent, resolveOrganizerName } from '@/lib/events';
 import { MAX_COMMENT_LENGTH } from '@/lib/comments';
 import { enforceRateLimit } from '@/lib/rate-limit';
-const NOTIFY_RECIPIENT_CAP = 20;
 
 async function requireUser(): Promise<{
   userId: string;
@@ -59,33 +59,13 @@ export async function addComment(
   });
 
   // Best-effort fan-out: comment succeeds even if notifications fail.
-  try {
-    const prior = await prisma.comment.findMany({
-      where: { eventId, NOT: { userId } },
-      select: { userId: true },
-      distinct: ['userId'],
-      take: NOTIFY_RECIPIENT_CAP,
-    });
-    const recipients = new Set<string>();
-    if (event.userId !== userId) recipients.add(event.userId);
-    for (const row of prior) {
-      if (row.userId !== userId) recipients.add(row.userId);
-      if (recipients.size >= NOTIFY_RECIPIENT_CAP) break;
-    }
-    if (recipients.size > 0) {
-      await prisma.notification.createMany({
-        data: [...recipients].map((recipientId) => ({
-          userId: recipientId,
-          eventId,
-          type: 'COMMENT' as const,
-          title: `New comment on ${event.title}`,
-          body: trimmed.slice(0, 140),
-        })),
-      });
-    }
-  } catch (error) {
-    console.error('comment notify fan-out failed', { eventId, error });
-  }
+  await notifyNewComment({
+    eventId,
+    eventTitle: event.title,
+    organizerId: event.userId,
+    authorId: userId,
+    body: trimmed,
+  });
 
   revalidatePath(`/events/${eventId}`);
   return { ok: true, id: comment.id };

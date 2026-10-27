@@ -25,20 +25,31 @@ const EMPTY_COUNTS: RsvpCounts = {
   WAITLISTED: 0,
 };
 
+/**
+ * Request-free core for the public "upcoming" query. `now` is injectable so
+ * tests can pin the current-time filter without fake timers.
+ */
+export async function getPublicUpcomingEventsCore(
+  organizerUserId?: string,
+  now: Date = new Date(),
+): Promise<Event[]> {
+  return prisma.event.findMany({
+    where: {
+      isPublic: true,
+      date: { gte: now },
+      ...(organizerUserId ? { userId: organizerUserId } : {}),
+    },
+    orderBy: { date: 'asc' },
+  });
+}
+
 /** Public, upcoming events ordered by date, optionally by one organizer. */
 export async function getPublicUpcomingEvents(
   organizerUserId?: string,
 ): Promise<Event[]> {
   // Current-time filter: always render at request time.
   await connection();
-  return prisma.event.findMany({
-    where: {
-      isPublic: true,
-      date: { gte: new Date() },
-      ...(organizerUserId ? { userId: organizerUserId } : {}),
-    },
-    orderBy: { date: 'asc' },
-  });
+  return getPublicUpcomingEventsCore(organizerUserId);
 }
 
 /** Display name for an organizer's public events (null when unknown). */
@@ -131,18 +142,16 @@ function searchFilter(q: string): Prisma.EventWhereInput {
 }
 
 /**
- * One page of public, upcoming events matching the browse filters, plus the
- * total needed for pagination. `page` is clamped so an out-of-range URL still
- * renders the last page instead of an empty grid.
+ * Request-free core for the browse page query. Callers that need
+ * request-time rendering call `getPublicEventsPage` instead.
  */
-export async function getPublicEventsPage(
+export async function getPublicEventsPageCore(
   params: EventListParams,
+  now: Date = new Date(),
 ): Promise<PublicEventsPage> {
-  // Current-time filter: always render at request time.
-  await connection();
   const where: Prisma.EventWhereInput = {
     isPublic: true,
-    date: whenDateRange(params.when, new Date()),
+    date: whenDateRange(params.when, now),
     ...(params.category ? { category: params.category } : {}),
     ...(params.organizer ? { userId: params.organizer } : {}),
     ...(params.q ? searchFilter(params.q) : {}),
@@ -171,25 +180,44 @@ export async function getPublicEventsPage(
 }
 
 /**
+ * One page of public, upcoming events matching the browse filters, plus the
+ * total needed for pagination. `page` is clamped so an out-of-range URL still
+ * renders the last page instead of an empty grid.
+ */
+export async function getPublicEventsPage(
+  params: EventListParams,
+): Promise<PublicEventsPage> {
+  // Current-time filter: always render at request time.
+  await connection();
+  return getPublicEventsPageCore(params);
+}
+
+/**
  * Upcoming public event counts per category, for the filter chips. Mirrors the
  * default browse scope (`isPublic` + `date >= now`) so the chips sum to the
  * unfiltered total.
  */
-export async function getCategoryCounts(): Promise<
-  Record<EventCategory, number>
-> {
-  await connection();
+export async function getCategoryCountsCore(
+  now: Date = new Date(),
+): Promise<Record<EventCategory, number>> {
   const counts = Object.fromEntries(
     EVENT_CATEGORIES.map((category) => [category.value, 0]),
   ) as Record<EventCategory, number>;
 
   const groups = await prisma.event.groupBy({
     by: ['category'],
-    where: { isPublic: true, date: { gte: new Date() } },
+    where: { isPublic: true, date: { gte: now } },
     _count: { _all: true },
   });
   for (const group of groups) counts[group.category] = group._count._all;
   return counts;
+}
+
+export async function getCategoryCounts(): Promise<
+  Record<EventCategory, number>
+> {
+  await connection();
+  return getCategoryCountsCore();
 }
 
 export type OrganizerEventStats = {
@@ -198,12 +226,11 @@ export type OrganizerEventStats = {
   fillRate: number | null;
 };
 
-/** Organizer's events with per-event RSVP funnels, split upcoming/past. */
-export async function getOrganizerEvents(
+/** Request-free core for the organizer dashboard split. */
+export async function getOrganizerEventsCore(
   userId: string,
+  now: Date = new Date(),
 ): Promise<{ upcoming: OrganizerEventStats[]; past: OrganizerEventStats[] }> {
-  // Current-time split: always render at request time.
-  await connection();
   const empty = { upcoming: [], past: [] } as {
     upcoming: OrganizerEventStats[];
     past: OrganizerEventStats[];
@@ -227,7 +254,6 @@ export async function getOrganizerEvents(
     countsByEvent.set(g.eventId, counts);
   }
 
-  const now = new Date();
   const upcoming: OrganizerEventStats[] = [];
   const past: OrganizerEventStats[] = [];
   for (const event of events) {
@@ -242,6 +268,15 @@ export async function getOrganizerEvents(
   }
   past.reverse();
   return { upcoming, past };
+}
+
+/** Organizer's events with per-event RSVP funnels, split upcoming/past. */
+export async function getOrganizerEvents(
+  userId: string,
+): Promise<{ upcoming: OrganizerEventStats[]; past: OrganizerEventStats[] }> {
+  // Current-time split: always render at request time.
+  await connection();
+  return getOrganizerEventsCore(userId);
 }
 
 export async function getEventById(id: string): Promise<Event | null> {

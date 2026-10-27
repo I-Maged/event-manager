@@ -31,21 +31,35 @@ pool.on('error', (error) => {
 const CLEANUP_SQL =
   'DELETE FROM "RateLimit" WHERE "windowStart" < now() - interval \'1 day\'';
 
-const handler = {
-  async fetch(request: Request): Promise<Response> {
-    if (!request.headers.get('x-neon-trigger-invocation-id')) {
-      return Response.json({ error: 'not a trigger call' }, { status: 403 });
-    }
-    try {
-      const result = await pool.query(CLEANUP_SQL);
-      const deleted = result.rowCount ?? 0;
-      console.log('rate-limit GC complete', { deleted });
-      return Response.json({ ok: true, deleted });
-    } catch (error) {
-      console.error('rate-limit GC failed', { error });
-      return Response.json({ ok: false }, { status: 500 });
-    }
-  },
-};
+export type CleanupQuery = () => Promise<{ rowCount: number | null }>;
+export type CleanupHandler = { fetch(request: Request): Promise<Response> };
+
+/**
+ * Handler factory so the trigger-header guard and the delete/failure branches
+ * can be tested without a live pool. The default export below wires it to the
+ * module-level pool.
+ */
+export function createRateLimitCleanupHandler(
+  runCleanup: CleanupQuery,
+): CleanupHandler {
+  return {
+    async fetch(request: Request): Promise<Response> {
+      if (!request.headers.get('x-neon-trigger-invocation-id')) {
+        return Response.json({ error: 'not a trigger call' }, { status: 403 });
+      }
+      try {
+        const result = await runCleanup();
+        const deleted = result.rowCount ?? 0;
+        console.log('rate-limit GC complete', { deleted });
+        return Response.json({ ok: true, deleted });
+      } catch (error) {
+        console.error('rate-limit GC failed', { error });
+        return Response.json({ ok: false }, { status: 500 });
+      }
+    },
+  };
+}
+
+const handler = createRateLimitCleanupHandler(() => pool.query(CLEANUP_SQL));
 
 export default handler;
