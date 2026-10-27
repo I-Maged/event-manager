@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   reactCompiler: true,
+  experimental: {
+    // Record that this app was upgraded through Next.js's security flow.
+    agentUpgrade: "security",
+  },
   turbopack: {
     rules: {
       "*.css": {

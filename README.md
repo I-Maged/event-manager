@@ -40,10 +40,11 @@ npm run verify:full # verify + every test layer
 ```
 
 Database-backed tests run only against a disposable Neon branch created by
-`npm run db:test:up`; see [`TESTING.md`](./TESTING.md) for the branch lifecycle,
-the safety guard, and the full command reference. The legacy probe scripts
-refuse writes unless `--allow-writes` (or `PROBE_ALLOW=1`) is passed and always
-print the resolved host first.
+`npm run db:test:up` (after the one-time `npm run db:test:base`); see
+[`TESTING.md`](./TESTING.md) for the branch lifecycle, the safety guard, and
+the full command reference. The legacy probe scripts refuse writes unless
+`--allow-writes` (or `PROBE_ALLOW=1`) is passed and always print the resolved
+host first.
 
 `scripts/backfill-time-zone.ts` stamps legacy `Event.timeZone = null` rows with
 `APP_TIME_ZONE`; it is a dry run unless `--apply --allow-writes` is passed.

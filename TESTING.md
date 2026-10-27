@@ -40,16 +40,19 @@ npm run typecheck
 For anything that touches a database:
 
 ```bash
-# One-time per shell/CI job. Requires a Neon API key.
-export NEON_API_KEY=...            # PowerShell: $env:NEON_API_KEY = "..."
-export NEON_PROJECT_ID=...
-export NEON_TEST_PARENT_BRANCH=test-base
+# One-time: create the data-free base branch (needs a Neon API key).
+npm run db:test:base
 
+# Each test session / CI job:
 npm run db:test:up           # create branch, write .env.test, migrate
 npm run test:db              # DB integration suite
 npm run test:e2e             # Playwright against a production build
 npm run db:test:down         # delete the branch, remove .env.test
 ```
+
+`NEON_API_KEY` and `NEON_PROJECT_ID` are read from the environment or from
+`.env` (the script loads it; process env wins). The key must be a real
+`napi_…` key, not an auth URL.
 
 `db:test:up` refuses to overwrite an existing `.env.test` unless you pass
 `--force` (`npm run db:test:up -- --force`).
@@ -59,32 +62,81 @@ npm run db:test:down         # delete the branch, remove .env.test
 ## Test database lifecycle
 
 Database-backed tests never point at `.env`. They use `.env.test`, which is
-generated for a disposable Neon branch.
+generated for a disposable Neon branch. There are two levels:
 
-1. `npm run db:test:up` calls the Neon REST API (no Neon CLI dependency) and
-   creates a branch from `NEON_TEST_PARENT_BRANCH`.
-2. The parent must be a **schema-only** branch such as `test-base`. Never point
-   it at production: a copy-on-write branch starts with all of production's
-   rows and PII.
-3. The branch gets its own read/write endpoint. Pooled and direct connection
-   URIs are written to `.env.test` as `DATABASE_URL` and
-   `DATABASE_URL_UNPOOLED`.
-4. `prisma migrate deploy` runs against the direct URL. Migrations are applied
+1. **`test-base` — the data-free base.** Created once with
+   `npm run db:test:base`. It contains the application schema but **no rows and
+   no auth identities**, and is never used by tests directly.
+2. **Ephemeral branches — one per run.** `db:test:up` creates a branch from
+   `test-base`, provisions a branch-scoped Neon Auth service, allows the
+   `localhost` origin, writes `.env.test`, and applies migrations.
+
+Why the extra scrub: Neon refuses every schema-only init source (`schema-only`,
+`parent-schema`) while the project has Neon Auth's legacy web access roles
+(`anonymous`, `authenticated`), and removing those roles from production is not
+acceptable. `db:test:base` therefore falls back to a **one-time copy-on-write
+branch** and immediately makes it data-free: every `public` table except
+`_prisma_migrations` is truncated, and `neon_auth` identity tables
+(`user`, `session`, `account`, `member`, `invitation`, `organization`,
+`verification`) are emptied. Auth configuration (`project_config`, `jwks`) is
+kept so branch auth keeps working. The script then asserts the branch is empty
+and deletes it if anything fails, so no copied row survives an aborted run.
+
+Because the branch has tables but no `_prisma_migrations` rows,
+`db:test:base` marks every existing migration as already applied. Children
+inherit that baseline, so `prisma migrate deploy` only applies *new*
+migrations. Each ephemeral branch gets its own auth service from the API; if
+the inherited `neon_auth` schema blocks provisioning, that disposable branch
+drops the schema and retries once.
+
+`test-base` is a normal child branch, so it can be recreated with
+`npm run db:test:base -- --force` (delete first, then create) after production
+schema changes; it starts from the current `production` schema each time.
+
+Steps for one run:
+
+1. `db:test:up` resolves `NEON_TEST_PARENT_BRANCH` (default `test-base`) and
+   refuses to branch from the project's default branch.
+2. It waits for the new branch to reach `ready`.
+3. It enables Neon Auth for that branch (`POST …/auth`, `better_auth`) unless the
+   branch already has it, then reads the branch's own `base_url` / `jwks_url`.
+4. It enables `allow_localhost` on that branch so browser auth calls from
+   Playwright are accepted.
+5. Pooled and direct connection URIs, the branch auth URL, `TEST_BASE_URL`, and
+   a random per-run `NEON_AUTH_COOKIE_SECRET` are written to `.env.test`.
+6. `prisma migrate deploy` runs against the direct URL. Migrations are applied
    with Prisma, never with `prisma db push`.
-5. Application code and tests use the pooled URL, so advisory locks and
+7. `prisma migrate status` must be clean, and the branch must be data-free
+   (all `public` tables and `neon_auth."user"` empty) or setup fails.
+8. Application code and tests use the pooled URL, so advisory locks and
    transaction behaviour are exercised through PgBouncer.
-6. If setup fails halfway, the script deletes the branch and removes
+9. If setup fails halfway, the script deletes the branch and removes
    `.env.test` before exiting.
-7. `npm run db:test:down` deletes the branch and removes `.env.test`.
-   `npm run db:test:status` prints the current target (hosts only).
+10. `npm run db:test:down` deletes the branch and removes `.env.test`.
+    `npm run db:test:status` prints the current target (hosts only).
+
+### Auth origin rule
+
+Better Auth validates the browser `Origin` on state-changing auth calls
+(sign-up, sign-in), and the Next.js auth proxy forwards that origin upstream.
+Neon's `allow_localhost` setting trusts `localhost` but **not** `127.0.0.1`, so
+`TEST_BASE_URL` must use the hostname form:
+
+```dotenv
+TEST_BASE_URL="http://localhost:3100"
+```
+
+Using `http://127.0.0.1:3100` produces `403 Invalid origin` on sign-up. If you
+change the host or port, the branch must trust that origin as well.
 
 Environment variables for the lifecycle script:
 
 | Variable | Required | Purpose |
 |---|---|---|
-| `NEON_API_KEY` | yes | Branch create/delete permission. |
+| `NEON_API_KEY` | yes | `napi_…` key with branch create/delete permission. |
 | `NEON_PROJECT_ID` | yes | Project id, or `projectId` in a `.neon` file. |
-| `NEON_TEST_PARENT_BRANCH` | yes | Schema-only parent branch id (`br-…`) or name. |
+| `NEON_TEST_BASE_BRANCH` | no | Defaults to `test-base` (`db:test:base`). |
+| `NEON_TEST_PARENT_BRANCH` | no | Defaults to `test-base`; never the default branch. |
 | `NEON_TEST_DATABASE` | no | Defaults to `neondb`. |
 | `NEON_TEST_ROLE` | no | Defaults to `neondb_owner`. |
 | `NEON_API_BASE` | no | Override for mocks/tests. |
@@ -98,10 +150,20 @@ TEST_DB_ALLOW=1
 DATABASE_URL="postgresql://…@ep-xxx-pooler.…/neondb?sslmode=require"
 DATABASE_URL_UNPOOLED="postgresql://…@ep-xxx.…/neondb?sslmode=require"
 APP_TIME_ZONE="Europe/Berlin"
+NEON_AUTH_BASE_URL="https://ep-xxx.neonauth.…/neondb/auth"
+NEON_AUTH_JWKS_URL="https://ep-xxx.neonauth.…/neondb/auth/.well-known/jwks.json"
+NEON_AUTH_COOKIE_SECRET="…per-run random…"
+TEST_BASE_URL="http://localhost:3100"
 TEST_DB_PROJECT_ID=…
 TEST_DB_BRANCH_ID=…
 TEST_DB_BRANCH_NAME=…
+TEST_DB_AUTH_HOST=…
 ```
+
+The auth variables are not optional decoration: `next build` and `next start`
+load `.env` for any missing variable, so a run without them would silently use
+the **production** auth service while writing to the test branch. The guard
+rejects that, and Playwright refuses to start if the auth URL is missing.
 
 `.env.test` contains credentials and is gitignored. Never commit it, paste it
 into an issue, or print it.
@@ -127,6 +189,8 @@ file is imported:
 - Pooled and direct hosts must resolve to the same endpoint/branch.
 - Any host matching the app database in `.env` (compared by host and endpoint)
   aborts the run.
+- `NEON_AUTH_BASE_URL`, when set, must not resolve to the app auth host in
+  `.env`. A test run must never create real users in production auth.
 - An optional `TEST_DB_HOST_ALLOWLIST` (comma-separated suffixes) can pin the
   allowed domain.
 - Only hosts are printed, never credentials.
@@ -138,6 +202,8 @@ Additional rules:
 - Do not add `prisma db push` to scripts, docs, or CI. Use migrations only.
 - DB tests truncate only the app's domain tables (`Event`, `RSVP`, `Comment`,
   `Notification`, `RateLimit`). `neon_auth` is never truncated.
+- `db:test:up` fails if the new branch is not data-free; it never runs tests on
+  a branch that inherited rows.
 - E2E teardown must delete only rows the run created, or the whole branch.
 - CI must delete the branch in a `finally`/`always()` step, including on
   failure.
@@ -146,7 +212,9 @@ Additional rules:
 `npm run test:db` without a prepared `.env.test` fails loudly on purpose.
 `npm run test:http` currently exits 0 with "No test files found" (Phase 4).
 Playwright skips its specs and does not start the app when `.env.test` is
-missing or `TEST_DB_ALLOW` is not `1`.
+missing or `TEST_DB_ALLOW` is not `1`. If `.env.test` *is* present but lacks a
+branch-scoped `NEON_AUTH_BASE_URL`, it fails instead of silently using
+production auth.
 
 ---
 
@@ -161,7 +229,8 @@ missing or `TEST_DB_ALLOW` is not `1`.
 | `npm run test:e2e` | Playwright projects: desktop Chromium + Pixel 7. |
 | `npm run test:all` | Unit + component, DB, HTTP, E2E. |
 | `npm run test:ci` | Unit + component, then DB. The CI-safe subset. |
-| `npm run db:test:up` | Create branch, write `.env.test`, `migrate deploy`. |
+| `npm run db:test:base` | One-time: create/baseline the data-free `test-base`. |
+| `npm run db:test:up` | Create branch, provision auth, write `.env.test`, `migrate deploy`. |
 | `npm run db:test:down` | Delete branch and remove `.env.test`. |
 | `npm run db:test:status` | Print the current test target (hosts only). |
 | `npm run verify` | Typecheck + scoped lint + probes + production build. |
@@ -230,8 +299,9 @@ Some things cannot be automated in this setup and stay manual:
 - Real email delivery and deliverability (sign-up verification, password
   reset).
 - Production/preview deployment smoke tests, if the policy allows them.
-- Confirm the Neon Auth behaviour on an ephemeral branch: whether users are
-  copied from the parent and whether test users need email verification.
+- Whether sign-up on a fresh branch requires email verification (the branch is
+  provisioned with provider defaults; authenticated E2E still needs a confirmed
+  policy).
 - Browser matrix beyond Chromium + one mobile viewport (Firefox/WebKit only if
   cross-browser support becomes a requirement).
 - Recovery from a real database outage (the error boundary can be exercised
@@ -246,8 +316,9 @@ Some things cannot be automated in this setup and stay manual:
 - The `components` project contains only a harness smoke test; Phase 2 adds
   the real client state-machine coverage.
 - E2E contains only a smoke spec. Authenticated journeys need the Neon Auth
-  test-user helpers and a confirmed verification policy.
+  test-user helpers; branch auth provisioning itself is wired into
+  `db:test:up`.
 - CI is not wired yet. The intended job split is in `testing_plan.md`.
 - Optional tooling (`fast-check`, `ical.js`, `csv-parse`) is not installed.
-- Runtime validation of branch creation/migration requires `NEON_API_KEY`,
-  `NEON_PROJECT_ID`, and a schema-only `test-base` branch.
+- Runtime validation of `test-base` and the ephemeral branch still requires a
+  valid `NEON_API_KEY` and `NEON_PROJECT_ID`.

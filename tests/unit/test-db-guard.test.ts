@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  appAuthBaseUrl,
   appDatabaseHosts,
   assertTestDatabaseSafety,
 } from '../support/env';
@@ -65,6 +66,35 @@ describe('test database guard', () => {
         DATABASE_URL_UNPOOLED: `postgresql://user:pass@${direct}/neondb`,
       }),
     ).toThrow(/app database/);
+  });
+
+  it('accepts a branch-scoped auth URL', () => {
+    const target = assertTestDatabaseSafety({
+      ...SAFE_ENV,
+      NEON_AUTH_BASE_URL:
+        'https://ep-guard-test.neonauth.c-6.eu-central-1.aws.neon.tech/neondb/auth',
+    });
+    expect(target.authHost).toContain('neonauth');
+  });
+
+  it('refuses the app auth service from .env', () => {
+    const appAuth = appAuthBaseUrl();
+    if (!appAuth) return; // no local .env in this checkout
+    expect(() =>
+      assertTestDatabaseSafety({
+        ...SAFE_ENV,
+        NEON_AUTH_BASE_URL: appAuth,
+      }),
+    ).toThrow(/app auth service/);
+  });
+
+  it('refuses an unparseable auth URL', () => {
+    expect(() =>
+      assertTestDatabaseSafety({
+        ...SAFE_ENV,
+        NEON_AUTH_BASE_URL: 'not-a-url',
+      }),
+    ).toThrow(/NEON_AUTH_BASE_URL is not a valid URL/);
   });
 });
 

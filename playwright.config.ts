@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 import { config as loadEnv } from 'dotenv';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { appAuthBaseUrl, assertTestDatabaseSafety } from './tests/support/env';
 
 /**
  * Playwright is the only browser runner for this repo (no Cypress/Jest).
@@ -22,13 +23,44 @@ if (hasTestEnvFile) {
   loadEnv({ path: testEnvPath, quiet: true });
 }
 
-const baseURL = process.env.TEST_BASE_URL ?? 'http://127.0.0.1:3100';
+function hostOf(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    return new URL(value).host;
+  } catch {
+    return null;
+  }
+}
+
+// Neon Auth's `allow_localhost` trusts `localhost` but not `127.0.0.1`.
+const baseURL = process.env.TEST_BASE_URL ?? 'http://localhost:3100';
 const port = Number(new URL(baseURL).port || 3100);
 
-const e2eEnabled =
+const dbReady =
   hasTestEnvFile &&
   process.env.TEST_DB_ALLOW === '1' &&
   Boolean(process.env.DATABASE_URL);
+
+// A test run must never authenticate against production. Missing auth vars
+// would otherwise fall through to `.env` during `next build`/`next start`.
+const authHost = hostOf(process.env.NEON_AUTH_BASE_URL);
+const appAuthHost = hostOf(appAuthBaseUrl());
+const authIsIsolated = Boolean(authHost) && authHost !== appAuthHost;
+
+if (dbReady && !authIsIsolated) {
+  throw new Error(
+    [
+      '.env.test is missing a branch-scoped NEON_AUTH_BASE_URL.',
+      'Without it the app build falls back to production auth from `.env`.',
+      'Fix: run `npm run db:test:up -- --force` (or `npm run db:test:down` first).',
+    ].join('\n'),
+  );
+}
+
+const e2eEnabled = dbReady && authIsIsolated;
+
+// Refuse production hosts (database and auth) before starting the app.
+if (e2eEnabled) assertTestDatabaseSafety();
 
 const appEnv: Record<string, string> = {};
 for (const [key, value] of Object.entries(process.env)) {

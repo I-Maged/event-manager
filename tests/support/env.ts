@@ -13,7 +13,9 @@ import { resolve } from 'node:path';
  *   - the pooled URL really is a `-pooler` host,
  *   - pooled and unpooled URLs resolve to the same Neon endpoint/branch,
  *   - neither host equals the app database host in `.env` (the production /
- *     development branch).
+ *     development branch),
+ *   - when `NEON_AUTH_BASE_URL` is set it is not the app auth service from
+ *     `.env` (a test run must never authenticate against production).
  *
  * Only hosts are ever printed. Credentials stay in `.env.test`.
  */
@@ -24,6 +26,7 @@ export type TestDbTarget = {
   pooledHost: string;
   unpooledHost: string;
   endpoint: string;
+  authHost: string | null;
 };
 
 function hostOf(connectionString: string): string {
@@ -60,12 +63,19 @@ export function appDatabaseHosts(): string[] {
   return hosts;
 }
 
+/** Neon Auth base URL declared in `.env` (the app / production auth service). */
+export function appAuthBaseUrl(): string | null {
+  return readEnvFileVar(resolve(process.cwd(), '.env'), 'NEON_AUTH_BASE_URL');
+}
+
 export function describeTestDatabaseTarget(target: TestDbTarget): string {
-  return [
+  const lines = [
     `DATABASE_URL          -> ${target.pooledHost}`,
     `DATABASE_URL_UNPOOLED -> ${target.unpooledHost}`,
     `endpoint              -> ${target.endpoint}`,
-  ].join('\n');
+  ];
+  if (target.authHost) lines.push(`NEON_AUTH_BASE_URL    -> ${target.authHost}`);
+  return lines.join('\n');
 }
 
 /**
@@ -150,6 +160,31 @@ export function assertTestDatabaseSafety(
     }
   }
 
+  const authUrl = env.NEON_AUTH_BASE_URL?.trim() ?? '';
+  let authHost = '';
+  if (authUrl) {
+    try {
+      authHost = hostOf(authUrl);
+    } catch {
+      problems.push('NEON_AUTH_BASE_URL is not a valid URL.');
+    }
+  }
+  if (authHost) {
+    const appAuth = appAuthBaseUrl();
+    if (appAuth) {
+      try {
+        if (hostOf(appAuth) === authHost) {
+          problems.push(
+            `NEON_AUTH_BASE_URL points at the app auth service from .env (${authHost}). ` +
+              'The test branch must use its own auth URL; run `npm run db:test:up` again.',
+          );
+        }
+      } catch {
+        // Unparseable app auth URL is not this guard's problem.
+      }
+    }
+  }
+
   if (problems.length > 0) {
     throw new Error(
       [
@@ -167,6 +202,7 @@ export function assertTestDatabaseSafety(
     pooledHost,
     unpooledHost,
     endpoint: endpointOf(pooledHost),
+    authHost: authHost || null,
   };
 
   // Hosts only — never credentials.
