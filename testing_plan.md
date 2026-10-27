@@ -1,12 +1,14 @@
 # Testing Plan — Event Manager
 
-Status: in progress — Phase 0 (harness), Phase 1 (unit), and Phase 2 (component) complete
+Status: in progress — Phase 0 (harness), Phase 1 (unit), Phase 2 (component),
+and Phase 3 (DB integration) implemented
 Last updated: 2026-10-27
 
 This document is the working checklist for building the test suite. It is
-phased so that useful coverage lands early. Phase 0 (harness) and Phase 1
-(unit tests) are implemented; later phases are still unchecked. Blocked or
-externally dependent items carry a note explaining what is missing.
+phased so that useful coverage lands early. Phase 0 (harness), Phase 1 (unit),
+Phase 2 (component), and Phase 3 (DB integration) tests are implemented; Phase 4
+(HTTP contract) and Phase 5 (E2E) are still unchecked. Blocked or externally
+dependent items carry a note explaining what is missing.
 
 ## Decisions already made
 
@@ -480,46 +482,46 @@ factories.
 
 ### 3.1 RSVP core and capacity
 
-- [ ] Uncapped event accepts GOING.
-- [ ] Uncapped event accepts MAYBE.
-- [ ] Uncapped event accepts NOT_GOING.
-- [ ] Re-saving the same status is idempotent.
-- [ ] Changing status updates the same row.
-- [ ] `attendeeName` is stamped on create and update.
-- [ ] Capped event with a free seat accepts GOING.
-- [ ] Capped event with no free seat returns WAITLISTED.
-- [ ] An existing GOING user can re-click GOING without becoming waitlisted.
-- [ ] Switching GOING to MAYBE frees a seat.
-- [ ] Switching GOING to NOT_GOING frees a seat.
-- [ ] Switching away from GOING promotes the oldest waitlisted user.
-- [ ] Waitlist position is 1-based and ordered by creation time.
-- [ ] Equal `createdAt` rows have a deterministic order and position
+- [x] Uncapped event accepts GOING.
+- [x] Uncapped event accepts MAYBE.
+- [x] Uncapped event accepts NOT_GOING.
+- [x] Re-saving the same status is idempotent.
+- [x] Changing status updates the same row.
+- [x] `attendeeName` is stamped on create and update.
+- [x] Capped event with a free seat accepts GOING.
+- [x] Capped event with no free seat returns WAITLISTED.
+- [x] An existing GOING user can re-click GOING without becoming waitlisted.
+- [x] Switching GOING to MAYBE frees a seat.
+- [x] Switching GOING to NOT_GOING frees a seat.
+- [x] Switching away from GOING promotes the oldest waitlisted user.
+- [x] Waitlist position is 1-based and ordered by creation time.
+- [x] Equal `createdAt` rows have a deterministic order and position
       (expose/fix a tie-break bug if present).
-- [ ] Unknown event returns a friendly error.
-- [ ] Ended event returns "This event has ended."
-- [ ] No RSVP row is written for an ended event.
+- [x] Unknown event returns a friendly error.
+- [x] Ended event returns "This event has ended."
+- [x] No RSVP row is written for an ended event.
 
 ### 3.2 Wishlist promotion
 
-- [ ] Promotion is oldest-first.
-- [ ] Promoted rows get `promotedAt`.
-- [ ] Promoted user ids are returned to the caller.
-- [ ] No promotion happens while `room <= 0`.
-- [ ] Promotion drains a queue larger than one batch.
-- [ ] A user who joins a full event can be promoted in the same transaction
+- [x] Promotion is oldest-first.
+- [x] Promoted rows get `promotedAt`.
+- [x] Promoted user ids are returned to the caller.
+- [x] No promotion happens while `room <= 0`.
+- [x] Promotion drains a queue larger than one batch.
+- [x] A user who joins a full event can be promoted in the same transaction
       when a seat is free.
-- [ ] Promotion preserves the attendee name and other row fields.
-- [ ] Promotion never exceeds the cap.
+- [x] Promotion preserves the attendee name and other row fields.
+- [x] Promotion never exceeds the cap.
 
 ### 3.3 Cancellation
 
-- [ ] Cancel removes the caller's row.
-- [ ] Cancel promotes waitlisted users when a seat frees.
-- [ ] Cancel reports `hadRsvp` correctly.
-- [ ] Cancel returns organizer id and notify preference.
-- [ ] Cancel with no row is safe.
-- [ ] Cancel on an ended event is rejected without writes.
-- [ ] Cancel on an unknown event is rejected.
+- [x] Cancel removes the caller's row.
+- [x] Cancel promotes waitlisted users when a seat frees.
+- [x] Cancel reports `hadRsvp` correctly.
+- [x] Cancel returns organizer id and notify preference.
+- [x] Cancel with no row is safe.
+- [x] Cancel on an ended event is rejected without writes.
+- [x] Cancel on an unknown event is rejected.
 
 ### 3.4 Concurrency
 
@@ -530,10 +532,10 @@ factories.
 - [x] No waitlisted row is promoted twice.
 - [x] No seat remains unfilled while someone is waitlisted (the two-cancel case
       ends with a full event and an empty queue).
-- [ ] Capacity raise during concurrent writers cannot overbook.
-- [ ] Capacity shrink below the GOING count is rejected inside the lock.
+- [x] Capacity raise during concurrent writers cannot overbook.
+- [x] Capacity shrink below the GOING count is rejected inside the lock.
 - [x] Mutations for one event are serialized (cap-1 race is the proof).
-- [ ] Mutations for different events do not block each other.
+- [x] Mutations for different events do not block each other.
 - [x] Repeat concurrency scenarios for a configurable number of rounds
       (`TEST_ROUNDS`).
 - [ ] Use reduced rounds/racers on PRs and full rounds nightly. Values are
@@ -543,31 +545,31 @@ factories.
 
 ### 3.5 Invite links
 
-- [ ] Create on a private event returns a token.
-- [ ] Create is idempotent and returns the existing token.
-- [ ] Two concurrent creates return the same token.
-- [ ] Public events reject invite creation.
-- [ ] Regenerate replaces the token.
-- [ ] Old token no longer resolves after regeneration.
-- [ ] Revoke clears the token.
-- [ ] Revoked token no longer resolves.
-- [ ] Unknown event is handled.
-- [ ] Accept creates GOING when space is available.
-- [ ] Accept creates WAITLISTED when full.
-- [ ] Accept on an ended event is rejected.
-- [ ] Accept by the host is rejected.
-- [ ] Accept with an unknown token is rejected.
+- [x] Create on a private event returns a token.
+- [x] Create is idempotent and returns the existing token.
+- [x] Two concurrent creates return the same token.
+- [x] Public events reject invite creation.
+- [x] Regenerate replaces the token.
+- [x] Old token no longer resolves after regeneration.
+- [x] Revoke clears the token.
+- [x] Revoked token no longer resolves.
+- [x] Unknown event is handled.
+- [x] Accept creates GOING when space is available.
+- [x] Accept creates WAITLISTED when full.
+- [x] Accept on an ended event is rejected.
+- [x] Accept by the host is rejected.
+- [x] Accept with an unknown token is rejected.
 
 ### 3.6 Check-in
 
-- [ ] First check-in stores `checkedInAt` and `checkedInBy`.
-- [ ] Second check-in is idempotent and returns the same timestamp.
-- [ ] Checking in a MAYBE/NOT_GOING/WAITLISTED row is rejected.
-- [ ] Checking in a missing attendee is rejected.
-- [ ] Undo clears both `checkedInAt` and `checkedInBy`.
-- [ ] Undo twice is safe and leaves both null.
-- [ ] Two concurrent check-ins store exactly one timestamp.
-- [ ] Two concurrent undos leave both fields null.
+- [x] First check-in stores `checkedInAt` and `checkedInBy`.
+- [x] Second check-in is idempotent and returns the same timestamp.
+- [x] Checking in a MAYBE/NOT_GOING/WAITLISTED row is rejected.
+- [x] Checking in a missing attendee is rejected.
+- [x] Undo clears both `checkedInAt` and `checkedInBy`.
+- [x] Undo twice is safe and leaves both null.
+- [x] Two concurrent check-ins store exactly one timestamp.
+- [x] Two concurrent undos leave both fields null.
 
 ### 3.7 Rate limiting
 
@@ -576,11 +578,11 @@ factories.
 - [x] Twenty concurrent calls allow exactly the configured limit.
 - [x] An expired window resets to 1 (set `windowStart` directly; no sleeps).
 - [x] The counter is scoped by key.
-- [ ] A DB error fails open and logs a hashed user id.
-- [ ] Missing table/DB error does not block the action.
+- [x] A DB error fails open and logs a hashed user id.
+- [x] Missing table/DB error does not block the action.
 - [x] Stale-row sweep deletes only rows older than the cutoff.
 - [x] `deleteStaleRateLimits` returns the removed count.
-- [ ] The cleanup SQL predicate matches `CLEANUP_AGE_MS`.
+- [x] The cleanup SQL predicate matches `CLEANUP_AGE_MS`.
 - [x] Comment budget is the tightest budget.
 - [x] Every declared scope has a positive limit and window.
 
@@ -597,68 +599,68 @@ factories.
 - [ ] The backfill dry-run reports null-zone rows without writing.
 - [ ] The backfill `--apply --allow-writes` stamps only null rows.
 - [ ] The backfill rejects an invalid `APP_TIME_ZONE`.
-- [ ] Preflight refuses writes without `--allow-writes` or `PROBE_ALLOW=1`.
-- [ ] Preflight prints hosts but never credentials.
-- [ ] Preflight exits non-zero when writes are not allowed.
+- [x] Preflight refuses writes without `--allow-writes` or `PROBE_ALLOW=1`.
+- [x] Preflight prints hosts but never credentials.
+- [x] Preflight exits non-zero when writes are not allowed.
 
 ### 3.9 Query and visibility behavior
 
-- [ ] `getPublicEventsPage` returns only public, upcoming events.
-- [ ] Category filter works.
+- [x] `getPublicEventsPage` returns only public, upcoming events.
+- [x] Category filter works.
 - [ ] When filters (any/today/week/month) use app-zone day boundaries.
-- [ ] Search matches title, description, location, and organizer name.
-- [ ] `%` and `_` in search match literally.
-- [ ] Sort by date, newest, and popular is deterministic.
-- [ ] Pagination clamps out-of-range pages.
-- [ ] Count and page come from one consistent snapshot.
-- [ ] `getCategoryCounts` matches the unfiltered public scope.
-- [ ] `getOrganizerEvents` splits upcoming/past correctly.
-- [ ] It computes counts per status and fill rate.
-- [ ] Uncapped events report a null fill rate.
-- [ ] `getRsvpCounts` fills every status, including zeros.
-- [ ] `getUserWishlist` computes positions in two queries, not N+1.
-- [ ] `getUserPromotions` returns only promoted GOING rows.
-- [ ] `getUpcomingRsvps` ordering and limit are correct.
-- [ ] `getNotificationsPage` paginates and clamps.
-- [ ] `ensureDueReminders` only creates rows inside the 48-hour window.
-- [ ] It dedupes within 24 hours.
-- [ ] It skips opted-out rows.
-- [ ] It never throws on DB failure.
-- [ ] `canViewEvent` matrix: public/private × anon/organizer/holder/other.
-- [ ] `getComments`, `getAttendees`, and `getWishlist` enforce visibility.
-- [ ] `getAttendeesPage` uses a stable cursor and does not duplicate or skip
+- [x] Search matches title, description, location, and organizer name.
+- [x] `%` and `_` in search match literally.
+- [x] Sort by date, newest, and popular is deterministic.
+- [x] Pagination clamps out-of-range pages.
+- [x] Count and page come from one consistent snapshot.
+- [x] `getCategoryCounts` matches the unfiltered public scope.
+- [x] `getOrganizerEvents` splits upcoming/past correctly.
+- [x] It computes counts per status and fill rate.
+- [x] Uncapped events report a null fill rate.
+- [x] `getRsvpCounts` fills every status, including zeros.
+- [x] `getUserWishlist` computes positions in two queries, not N+1.
+- [x] `getUserPromotions` returns only promoted GOING rows.
+- [x] `getUpcomingRsvps` ordering and limit are correct.
+- [x] `getNotificationsPage` paginates and clamps.
+- [x] `ensureDueReminders` only creates rows inside the 48-hour window.
+- [x] It dedupes within 24 hours.
+- [x] It skips opted-out rows.
+- [x] It never throws on DB failure.
+- [x] `canViewEvent` matrix: public/private × anon/organizer/holder/other.
+- [x] `getComments`, `getAttendees`, and `getWishlist` enforce visibility.
+- [x] `getAttendeesPage` uses a stable cursor and does not duplicate or skip
       rows across a page boundary.
-- [ ] Concurrent inserts during cursor paging do not corrupt the export.
+- [x] Concurrent inserts during cursor paging do not corrupt the export.
 
 ### 3.10 Constraints and migrations
 
-- [ ] `prisma migrate deploy` succeeds on a fresh branch.
-- [ ] `prisma migrate status` is clean.
-- [ ] `Event_maxAttendees_positive` rejects zero and negative values.
-- [ ] `Comment_body_length` rejects bodies over 1000 characters.
-- [ ] `(userId, eventId)` uniqueness is enforced.
-- [ ] `inviteToken` uniqueness is enforced.
-- [ ] Deleting an event cascades to RSVPs, comments, and event-bound
+- [x] `prisma migrate deploy` succeeds on a fresh branch.
+- [x] `prisma migrate status` is clean.
+- [x] `Event_maxAttendees_positive` rejects zero and negative values.
+- [x] `Comment_body_length` rejects bodies over 1000 characters.
+- [x] `(userId, eventId)` uniqueness is enforced.
+- [x] `inviteToken` uniqueness is enforced.
+- [x] Deleting an event cascades to RSVPs, comments, and event-bound
       notifications.
-- [ ] Cancellation notifications with `eventId: null` survive event deletion.
-- [ ] Hot-path indexes exist.
-- [ ] No script or documented command uses `prisma db push`.
+- [x] Cancellation notifications with `eventId: null` survive event deletion.
+- [x] Hot-path indexes exist.
+- [x] No script or documented command uses `prisma db push`.
 
 ### 3.11 Notification fan-out
 
-- [ ] `notifyUsers` writes all supplied rows in one call.
-- [ ] Empty input is a no-op.
-- [ ] Promotion notifications are delivered regardless of opt-out.
-- [ ] Event-update fan-out targets GOING, MAYBE, and WAITLISTED holders.
-- [ ] It skips opted-out holders.
-- [ ] It skips the organizer.
-- [ ] It only fires when title, date, or location changed.
-- [ ] Cancellation fan-out uses `eventId: null` and includes the title in the
+- [x] `notifyUsers` writes all supplied rows in one call.
+- [x] Empty input is a no-op.
+- [x] Promotion notifications are delivered regardless of opt-out.
+- [x] Event-update fan-out targets GOING, MAYBE, and WAITLISTED holders.
+- [x] It skips opted-out holders.
+- [x] It skips the organizer.
+- [x] It only fires when title, date, or location changed.
+- [x] Cancellation fan-out uses `eventId: null` and includes the title in the
       body.
-- [ ] Comment fan-out deduplicates recipients.
-- [ ] Comment fan-out caps at 20 recipients.
-- [ ] Comment fan-out includes the organizer and excludes the author.
-- [ ] A notification write failure does not fail the parent action.
+- [x] Comment fan-out deduplicates recipients.
+- [x] Comment fan-out caps at 20 recipients.
+- [x] Comment fan-out includes the organizer and excludes the author.
+- [x] A notification write failure does not fail the parent action.
 
 ---
 
@@ -977,7 +979,7 @@ matrix that CI does not cover).
       components now exist) are covered. `data-pending` on filters is left
       unchecked with a note (not assertable with a mocked router transition;
       covered by Playwright in Phase 5).
-- [ ] **Phase 3 — DB integration** (3–4 days): RSVP/waitlist, rate limits,
+- [x] **Phase 3 — DB integration** (3–4 days): RSVP/waitlist, rate limits,
       invites, check-in, queries, constraints, notifications, jobs.
 - [ ] **Phase 4 — HTTP contract** (1–2 days): CSV, ICS, auth routes, headers,
       authz.

@@ -12,6 +12,7 @@ import {
   revokeInviteLinkCore,
   type InviteLinkResult as InviteLinkCoreResult,
 } from '@/lib/invite';
+import { checkInAttendeeCore, undoCheckInCore } from '@/lib/check-in';
 import { notifyUsers } from '@/lib/notifications';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import {
@@ -307,41 +308,11 @@ export async function checkInAttendee(
   const organizerId = await requireOrganizer(eventId);
   const limited = await enforceRateLimit('checkIn', organizerId);
   if (limited) return limited;
-  try {
-    // Single conditional write: only the first check-in can match
-    // `checkedInAt: null`. Under READ COMMITTED a concurrent second update
-    // blocks on the row lock, re-evaluates the predicate after the winner
-    // commits, and matches zero rows — so exactly one timestamp is stored.
-    const now = new Date();
-    const claimed = await prisma.rSVP.updateMany({
-      where: {
-        eventId,
-        userId: attendeeUserId,
-        status: 'GOING',
-        checkedInAt: null,
-      },
-      data: { checkedInAt: now, checkedInBy: organizerId },
-    });
 
-    if (claimed.count === 0) {
-      const rsvp = await prisma.rSVP.findUnique({
-        where: { userId_eventId: { userId: attendeeUserId, eventId } },
-        select: { status: true, checkedInAt: true },
-      });
-      if (!rsvp) return { ok: false, error: 'Attendee not found.' };
-      if (rsvp.status !== 'GOING') {
-        return { ok: false, error: 'Only Going attendees can be checked in.' };
-      }
-      // Already checked in: idempotent success with the stored timestamp.
-      return { ok: true, checkedInAt: rsvp.checkedInAt?.toISOString() ?? null };
-    }
-
-    revalidateEvent(eventId);
-    return { ok: true, checkedInAt: now.toISOString() };
-  } catch (error) {
-    console.error('checkInAttendee failed', { eventId, attendeeUserId, error });
-    return { ok: false, error: 'Check-in failed. Please retry.' };
-  }
+  const result = await checkInAttendeeCore(eventId, attendeeUserId, organizerId);
+  if (!result.ok) return result;
+  revalidateEvent(eventId);
+  return { ok: true, checkedInAt: result.checkedInAt };
 }
 
 /** Undo a check-in. Organizer-only, idempotent. */
@@ -352,23 +323,9 @@ export async function undoCheckIn(
   const organizerId = await requireOrganizer(eventId);
   const limited = await enforceRateLimit('checkIn', organizerId);
   if (limited) return limited;
-  try {
-    // Mirror of the check-in claim: clear only a row that is still checked in.
-    await prisma.rSVP.updateMany({
-      where: { eventId, userId: attendeeUserId, checkedInAt: { not: null } },
-      data: { checkedInAt: null, checkedInBy: null },
-    });
 
-    const rsvp = await prisma.rSVP.findUnique({
-      where: { userId_eventId: { userId: attendeeUserId, eventId } },
-      select: { checkedInAt: true },
-    });
-    if (!rsvp) return { ok: false, error: 'Attendee not found.' };
-
-    revalidateEvent(eventId);
-    return { ok: true, checkedInAt: rsvp.checkedInAt?.toISOString() ?? null };
-  } catch (error) {
-    console.error('undoCheckIn failed', { eventId, attendeeUserId, error });
-    return { ok: false, error: 'Undo check-in failed. Please retry.' };
-  }
+  const result = await undoCheckInCore(eventId, attendeeUserId, organizerId);
+  if (!result.ok) return result;
+  revalidateEvent(eventId);
+  return { ok: true, checkedInAt: result.checkedInAt };
 }

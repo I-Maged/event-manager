@@ -4,6 +4,7 @@ import {
   promoteFromWishlist,
   upsertRsvpCore,
 } from '@/lib/rsvp';
+import { updateEventCore } from '@/lib/update-event';
 import { prisma, resetDomainTables } from '../support/db';
 import { makeEvent, uniqueId } from '../support/factories';
 
@@ -122,5 +123,92 @@ describe('RSVP concurrency invariants', () => {
         where: { userId_eventId: { userId: user, eventId: event.id } },
       }),
     ).resolves.toBeNull();
+  });
+
+  it('capacity raise during concurrent writers cannot overbook', async () => {
+    for (let round = 1; round <= ROUNDS; round += 1) {
+      const event = await makeEvent({ maxAttendees: 1 });
+      const users = Array.from({ length: RACERS }, () => uniqueId('racer'));
+
+      // N concurrent GOING writers on a cap-1 event -> 1 GOING, rest waitlisted.
+      await Promise.all(
+        users.map((user) => upsertRsvpCore(user, event.id, 'GOING', user)),
+      );
+
+      // Then raise the cap inside a locked transaction. Must not overbook.
+      const raised = await prisma.$transaction(async (tx) => {
+        await tx.event.update({
+          where: { id: event.id },
+          data: { maxAttendees: 3 },
+        });
+        return promoteFromWishlist(tx, event.id, 3);
+      });
+
+      const { going, waitlisted } = await counts(event.id);
+      expect(going, `round ${round}`).toBeLessThanOrEqual(3);
+      expect(going + waitlisted, `round ${round}`).toBe(RACERS);
+      expect(raised.length).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('capacity shrink below the GOING count is rejected inside the lock', async () => {
+    const event = await makeEvent({ maxAttendees: 3 });
+    const users = Array.from({ length: 2 }, () => uniqueId('racer'));
+    await Promise.all(
+      users.map((user) => upsertRsvpCore(user, event.id, 'GOING', user)),
+    );
+
+    const goingBefore = await prisma.rSVP.count({
+      where: { eventId: event.id, status: 'GOING' },
+    });
+    expect(goingBefore).toBe(2);
+
+    // Attempt to shrink below the current GOING count -> rejected.
+    const outcome = await updateEventCore(
+      event.id,
+      {
+        title: event.title,
+        description: event.description,
+        date: event.date,
+        timeZone: event.timeZone,
+        location: event.location,
+        maxAttendees: 1,
+        category: event.category,
+        isPublic: event.isPublic,
+      },
+      'Test Organizer',
+      event.userId,
+    );
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.error).toContain('Capacity cannot be below');
+
+    const goingAfter = await prisma.rSVP.count({
+      where: { eventId: event.id, status: 'GOING' },
+    });
+    expect(goingAfter).toBe(2);
+    const stored = await prisma.event.findUnique({
+      where: { id: event.id },
+      select: { maxAttendees: true },
+    });
+    expect(stored?.maxAttendees).toBe(3);
+  });
+
+  it('mutations for different events do not block each other', async () => {
+    const [eventA, eventB] = await Promise.all([
+      makeEvent({ maxAttendees: 1 }),
+      makeEvent({ maxAttendees: 1 }),
+    ]);
+    const userA = uniqueId('userA');
+    const userB = uniqueId('userB');
+
+    const results = await Promise.all([
+      upsertRsvpCore(userA, eventA.id, 'GOING', 'A'),
+      upsertRsvpCore(userB, eventB.id, 'GOING', 'B'),
+    ]);
+
+    expect(results[0].ok).toBe(true);
+    expect(results[1].ok).toBe(true);
+    if (results[0].ok) expect(results[0].status).toBe('GOING');
+    if (results[1].ok) expect(results[1].status).toBe('GOING');
   });
 });

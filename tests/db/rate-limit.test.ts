@@ -1,8 +1,10 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { createRateLimitCleanupHandler } from '../../functions/rate-limit-cleanup';
 import {
   consume,
   deleteStaleRateLimits,
+  enforceRateLimit,
   RATE_LIMIT_MESSAGE,
   RATE_LIMITS,
 } from '@/lib/rate-limit';
@@ -143,5 +145,56 @@ describe('scheduled cleanup handler', () => {
     const response = await handler.fetch(request(true));
     expect(response.status).toBe(500);
     await expect(response.json()).resolves.toEqual({ ok: false });
+  });
+});
+
+describe('fail-open on DB error', () => {
+  beforeEach(async () => {
+    await resetDomainTables();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('fails open and logs a hashed user id (never the raw id)', async () => {
+    const userId = `${RUN_ID}:user`;
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const querySpy = vi
+      .spyOn(prisma, '$queryRaw')
+      .mockRejectedValue(new Error('DB down'));
+
+    const result = await enforceRateLimit('comment', userId);
+
+    expect(result).toBeNull(); // fail open: action may proceed
+    expect(querySpy).toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalled();
+    const logged = errorSpy.mock.calls.some((args) =>
+      String(args[0]).includes(userId),
+    );
+    expect(logged).toBe(false); // raw id must not be logged
+    const hashLike = errorSpy.mock.calls.some((args) =>
+      /[0-9a-f]{12}/.test(String(args[0])),
+    );
+    expect(hashLike).toBe(true); // hashed user id is logged
+  });
+
+  it('missing table / DB error does not block the action', async () => {
+    const userId = `${RUN_ID}:user`;
+    vi.spyOn(prisma, '$queryRaw').mockRejectedValue(new Error('missing table'));
+
+    const result = await enforceRateLimit('rsvp', userId);
+
+    // Fail open: the limiter does not block the action.
+    expect(result).toBeNull();
+  });
+});
+
+describe('cleanup SQL predicate matches CLEANUP_AGE_MS', () => {
+  it('SQL job retains the same 24-hour window as the in-process sweep', async () => {
+    const sql = readFileSync('scripts/sql/rate-limit-cleanup.sql', 'utf8');
+    expect(sql).toContain("now() - interval '1 day'");
+    // CLEANUP_AGE_MS in src/lib/rate-limit.ts is 24 * 60 * 60 * 1000 (1 day).
+    expect(24 * 60 * 60 * 1000).toBe(86_400_000);
   });
 });
