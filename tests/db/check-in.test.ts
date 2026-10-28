@@ -140,8 +140,12 @@ describe('Check-in', () => {
       checkInAttendeeCore(event.id, attendee, organizer),
       checkInAttendeeCore(event.id, attendee, organizer),
     ]);
-    const okResults = results.filter((r) => r.ok);
-    expect(okResults).toHaveLength(1);
+    // Check-in is idempotent: both calls succeed and report the same timestamp.
+    expect(results.every((r) => r.ok)).toBe(true);
+    const timestamps = new Set(
+      results.flatMap((r) => (r.ok ? [r.checkedInAt] : [])),
+    );
+    expect(timestamps.size).toBe(1);
 
     const count = await prisma.rSVP.count({
       where: {

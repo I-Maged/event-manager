@@ -16,8 +16,14 @@ describe('Migrations', () => {
   });
 
   it('no script or documented command uses prisma db push', () => {
+    const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as {
+      scripts?: Record<string, string>;
+    };
+    for (const [name, command] of Object.entries(pkg.scripts ?? {})) {
+      expect(command, `package.json script "${name}"`).not.toMatch(/\bdb push\b/);
+    }
+
     const files = [
-      'package.json',
       'TESTING.md',
       'testing_plan.md',
       'scripts/test-db.ts',
@@ -36,7 +42,12 @@ describe('Migrations', () => {
       } catch {
         continue;
       }
-      expect(content).not.toMatch(/db push/);
+      // A prohibition ("never use prisma db push") is allowed; an actual
+      // command reference is not.
+      for (const line of content.split(/\r?\n/)) {
+        if (!/\bdb push\b/.test(line)) continue;
+        expect(line, file).toMatch(/never|\bnot\b|\bno\b|forbid|avoid|prohibit/i);
+      }
     }
   });
 });
@@ -150,7 +161,7 @@ describe('Hot-path indexes', () => {
 
   it('expected indexes exist on Event and RSVP', async () => {
     const indexes = await prisma.$queryRawUnsafe<{ indexname: string }[]>(
-      `SELECT indexname FROM pg_indexes WHERE tablename = 'Event'`,
+      `SELECT indexname::text AS indexname FROM pg_indexes WHERE tablename = 'Event'`,
     );
     const eventIndexNames = indexes.map((i) => i.indexname);
     expect(eventIndexNames).toEqual(expect.arrayContaining([
@@ -160,7 +171,7 @@ describe('Hot-path indexes', () => {
     ]));
 
     const rsvpIndexes = await prisma.$queryRawUnsafe<{ indexname: string }[]>(
-      `SELECT indexname FROM pg_indexes WHERE tablename = 'RSVP'`,
+      `SELECT indexname::text AS indexname FROM pg_indexes WHERE tablename = 'RSVP'`,
     );
     const rsvpIndexNames = rsvpIndexes.map((i) => i.indexname);
     expect(rsvpIndexNames).toEqual(expect.arrayContaining([

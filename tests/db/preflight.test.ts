@@ -47,6 +47,7 @@ describe('preflight guard', () => {
   });
 
   it('prints hosts but never credentials', () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     process.env.DATABASE_URL = 'postgresql://admin:secret-password@ep-abcd-pooler.c-6.aws.neon.tech/neondb?sslmode=require';
     process.env.DATABASE_URL_UNPOOLED = 'postgresql://admin:secret-password@ep-abcd.c-6.aws.neon.tech/neondb?sslmode=require';
@@ -54,7 +55,7 @@ describe('preflight guard', () => {
 
     requireProbeTarget('preflight');
 
-    const output = errorSpy.mock.calls
+    const output = [...logSpy.mock.calls, ...errorSpy.mock.calls]
       .map((args) => String(args[0]))
       .join('\n');
     expect(output).toContain('ep-abcd-pooler');

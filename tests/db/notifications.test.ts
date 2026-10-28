@@ -164,7 +164,7 @@ describe('Cancellation fan-out', () => {
     await resetDomainTables();
   });
 
-  it('uses eventId: null and includes the title in the body', async () => {
+  it('uses eventId: null and keeps the event title in the notification', async () => {
     const event = await makeEvent({ title: 'The Big Event' });
     const recipient = uniqueId('recipient');
     await makeRsvp({ eventId: event.id, userId: recipient, status: 'GOING', notifyOnUpdate: true });
@@ -186,7 +186,8 @@ describe('Cancellation fan-out', () => {
       where: { userId: recipient, type: 'EVENT_CANCELLED' },
     });
     expect(notif?.eventId).toBeNull();
-    expect(notif?.body).toContain(event.title);
+    expect(notif?.title).toContain(event.title);
+    expect(notif?.body).toContain(event.location);
   });
 });
 

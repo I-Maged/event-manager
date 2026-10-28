@@ -169,14 +169,17 @@ describe('fail-open on DB error', () => {
     expect(result).toBeNull(); // fail open: action may proceed
     expect(querySpy).toHaveBeenCalled();
     expect(errorSpy).toHaveBeenCalled();
-    const logged = errorSpy.mock.calls.some((args) =>
-      String(args[0]).includes(userId),
-    );
-    expect(logged).toBe(false); // raw id must not be logged
-    const hashLike = errorSpy.mock.calls.some((args) =>
-      /[0-9a-f]{12}/.test(String(args[0])),
-    );
-    expect(hashLike).toBe(true); // hashed user id is logged
+    const logged = errorSpy.mock.calls
+      .map((args) =>
+        args
+          .map((arg) =>
+            typeof arg === 'string' ? arg : JSON.stringify(arg),
+          )
+          .join(' '),
+      )
+      .join('\n');
+    expect(logged).not.toContain(userId); // raw id must not be logged
+    expect(logged).toMatch(/[0-9a-f]{12}/); // hashed user id is logged
   });
 
   it('missing table / DB error does not block the action', async () => {

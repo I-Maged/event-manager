@@ -57,8 +57,13 @@ export default defineConfig({
           environment: 'node',
           include: ['tests/http/**/*.test.ts'],
           setupFiles: ['tests/setup/db.ts'],
+          // One build + one server for the whole run; the app and the DB
+          // truncation must not race between files.
+          globalSetup: ['tests/http/global-setup.ts'],
+          fileParallelism: false,
+          sequence: { concurrent: false },
           testTimeout: 60_000,
-          hookTimeout: 60_000,
+          hookTimeout: 120_000,
         },
       },
     ],

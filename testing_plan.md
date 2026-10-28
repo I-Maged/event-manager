@@ -1,14 +1,15 @@
 # Testing Plan — Event Manager
 
 Status: in progress — Phase 0 (harness), Phase 1 (unit), Phase 2 (component),
-and Phase 3 (DB integration) implemented
-Last updated: 2026-10-27
+Phase 3 (DB integration), and Phase 4 (HTTP contract) implemented; Phase 5
+(E2E) and Phase 6 (hardening) remain.
+Last updated: 2026-10-28
 
 This document is the working checklist for building the test suite. It is
 phased so that useful coverage lands early. Phase 0 (harness), Phase 1 (unit),
-Phase 2 (component), and Phase 3 (DB integration) tests are implemented; Phase 4
-(HTTP contract) and Phase 5 (E2E) are still unchecked. Blocked or externally
-dependent items carry a note explaining what is missing.
+Phase 2 (component), Phase 3 (DB integration), and Phase 4 (HTTP contract) tests
+are implemented; Phase 5 (E2E) and Phase 6 are still unchecked. Blocked or
+externally dependent items carry a note explaining what is missing.
 
 ## Decisions already made
 
@@ -667,63 +668,102 @@ factories.
 ## Phase 4 — HTTP contract tests
 
 Environment: built app running with the test branch. Use real HTTP requests and
-the test DB for setup/assertions.
+the test DB for setup/assertions. Implemented in `tests/http/` (32 tests):
+`calendar.test.ts`, `attendees.test.ts`, `auth.test.ts`, `headers.test.ts`, with
+a Vitest global setup that builds/starts the app once and a roster of real auth
+users.
 
 ### 4.1 Calendar route
 
-- [ ] Public event returns 200.
-- [ ] Private event returns 200 for the organizer.
-- [ ] Private event returns 200 for an RSVP holder.
-- [ ] Private event returns 404 for an outsider.
-- [ ] Unknown event returns 404.
-- [ ] Content type is `text/calendar`.
-- [ ] Content disposition names the event.
-- [ ] Cache-Control is `no-store`.
-- [ ] ICS contains BEGIN/END, UID, DTSTAMP, DTSTART, DTEND, SUMMARY, LOCATION.
-- [ ] DTEND is exactly two hours after DTSTART.
-- [ ] Special characters in title/location/description are escaped.
-- [ ] Injected newlines cannot create new ICS properties.
-- [ ] Valid origin produces a URL property; invalid origin omits it.
+- [x] Public event returns 200.
+- [x] Private event returns 200 for the organizer.
+- [x] Private event returns 200 for an RSVP holder.
+- [x] Private event returns 404 for an outsider.
+- [x] Unknown event returns 404.
+- [x] Content type is `text/calendar`.
+- [x] Content disposition names the event.
+- [x] Cache-Control is `no-store`.
+- [x] ICS contains BEGIN/END, UID, DTSTAMP, DTSTART, DTEND, SUMMARY, LOCATION.
+- [x] DTEND is exactly two hours after DTSTART.
+- [x] Special characters in title/location/description are escaped.
+- [x] Injected newlines cannot create new ICS properties.
+- [x] Valid origin produces a URL property. The missing/invalid origin fallback
+      is covered by `tests/unit/calendar.test.ts`; an HTTP request always has an
+      origin, so the route's fallback is not reachable from this layer.
 
 ### 4.2 Attendee CSV route
 
-- [ ] Signed-out request returns 401.
-- [ ] Non-organizer returns 404.
-- [ ] Unknown event returns 404.
-- [ ] Organizer gets 200 and the CSV header.
-- [ ] Status, name, joined_at, and checked_in columns are correct.
-- [ ] Commas, quotes, and newlines are quoted correctly.
-- [ ] `=`, `+`, `-`, and `@` names get a leading apostrophe.
-- [ ] Leading tab/CR formula injection is handled or the gap is documented.
-- [ ] 1,200 attendees stream across 500-row pages.
-- [ ] No attendee is duplicated or skipped across page boundaries.
-- [ ] Cache-Control is `private, no-store`.
-- [ ] A client abort does not crash the server.
+- [x] Signed-out request returns 401.
+- [x] Non-organizer returns 404.
+- [x] Unknown event returns 404.
+- [x] Organizer gets 200 and the CSV header.
+- [x] Status, name, joined_at, and checked_in columns are correct.
+- [x] Commas, quotes, and newlines are quoted correctly.
+- [x] `=`, `+`, `-`, and `@` names get a leading apostrophe.
+- [x] Leading tab/CR formula injection is a documented gap: `csvCell` only
+      prefixes `= + - @`, so a name beginning with a tab or CR is quoted but not
+      prefixed. Tracked in `TESTING.md` (Known gaps).
+- [x] 1,200 attendees stream across 500-row pages.
+- [x] No attendee is duplicated or skipped across page boundaries.
+- [x] Cache-Control is `private, no-store`.
+- [x] A client abort does not crash the server; the next request succeeds.
 - [ ] Stream failure returns a controlled error, not a partial silent success.
+      Needs fault injection against the separately started app process; the
+      server-side catch logs and errors the stream. Deferred to Phase 6.
 
 ### 4.3 Auth routes
 
-- [ ] Sign-up succeeds with valid input.
-- [ ] Sign-up rejects invalid input.
-- [ ] Sign-in succeeds and sets a session cookie.
-- [ ] Sign-in with a bad password fails without a session.
-- [ ] Sign-out clears the session.
-- [ ] Protected routes redirect signed-out users to the login URL.
-- [ ] Signed-in users can access protected routes.
-- [ ] Confirm whether the test auth branch requires email verification.
+- [x] Sign-up succeeds with valid input and establishes a session.
+- [x] Sign-up rejects invalid input (missing email, short password, duplicate).
+- [x] Sign-in succeeds and sets a session cookie.
+- [x] Sign-in with a bad password fails without a session.
+- [x] Sign-out clears the session.
+- [x] Protected routes redirect signed-out users to the login URL (307).
+- [x] Signed-in users can access protected routes.
+- [x] The test auth branch does not require email verification (sign-up returns
+      an immediate session). Covered by the sign-up test.
 
 ### 4.4 Headers and security
 
-- [ ] HSTS header is present.
-- [ ] `X-Frame-Options: DENY` is present.
-- [ ] `X-Content-Type-Options: nosniff` is present.
-- [ ] Referrer policy is present.
-- [ ] Permissions policy is present.
-- [ ] CSP-Report-Only is present on every route.
-- [ ] Private event HTML never contains the private title for an outsider.
-- [ ] Private event metadata/title uses the not-found title for an outsider.
-- [ ] API 404 responses do not disclose whether a private event exists.
-- [ ] `Cache-Control` is private/no-store on per-user data.
+- [x] HSTS header is present.
+- [x] `X-Frame-Options: DENY` is present.
+- [x] `X-Content-Type-Options: nosniff` is present.
+- [x] Referrer policy is present.
+- [x] Permissions policy is present.
+- [x] CSP-Report-Only is present on pages, protected redirects, and API routes.
+- [x] Private event HTML never contains the private title for an outsider.
+      Next 16 streams the page, so the status is 200 with the not-found body.
+- [x] Private event metadata/title uses the not-found title for an outsider.
+- [x] API 404/401 responses do not disclose whether a private event exists.
+- [x] `Cache-Control` is private/no-store on per-user data.
+
+---
+
+### Phase 4 infrastructure notes (implemented 2026-10-28)
+
+**App lifecycle.** `tests/http/global-setup.ts` loads `.env.test`, runs the
+safety guard, builds once, starts `next start -p <port>` on `TEST_BASE_URL`, and
+stops it in teardown. It reuses a server already listening on the port. The
+`http` Vitest project runs files serially. There is no cross-process write
+visibility problem: events created with the test Prisma client are immediately
+visible to the app (verified directly).
+
+**Auth endpoints and cookies.** Neon Auth is mounted at `/api/auth`. The real
+endpoints are `POST /api/auth/sign-up/email`, `POST /api/auth/sign-in/email`,
+`POST /api/auth/sign-out`, and `GET /api/auth/get-session`. Cookies are
+`__Secure-neon-auth.session_token` and `__Secure-neon-auth.local.session_data`.
+State-changing calls must send `Origin: TEST_BASE_URL` (`localhost`, never
+`127.0.0.1`).
+
+**Auth rate limits.** Better Auth limits `/sign-up` and `/sign-in` to 3 requests
+per 10 seconds. The global setup creates four roster users (organizer, holder,
+outsider, other) once and each test file adopts their stored session cookies.
+The helpers retry on 429 using `X-Retry-After`, so sign-up/sign-in coverage
+still runs.
+
+**Streaming not-found.** Next 16 sends headers before `notFound()` renders on
+the streamed event detail page: outsiders get 200 with the generic not-found
+content/title, never the private title. API routes keep 404/401 semantics.
 
 ---
 
@@ -981,8 +1021,8 @@ matrix that CI does not cover).
       covered by Playwright in Phase 5).
 - [x] **Phase 3 — DB integration** (3–4 days): RSVP/waitlist, rate limits,
       invites, check-in, queries, constraints, notifications, jobs.
-- [ ] **Phase 4 — HTTP contract** (1–2 days): CSV, ICS, auth routes, headers,
-      authz.
+- [x] **Phase 4 — HTTP contract** (1–2 days): CSV, ICS, auth routes, headers,
+      authz. 32 tests green on a fresh branch (2026-10-28).
 - [ ] **Phase 5 — E2E** (3–4 days): auth, browse, lifecycle, RSVP, invites,
       comments, dashboard, notifications, security, a11y, resilience.
 - [ ] **Phase 6 — Hardening** (1–2 days): flake quarantine, coverage,
@@ -999,8 +1039,9 @@ after Phases 0–1.
 - [x] `npm test` runs unit + component suites with no DB, env, or network.
 - [x] `npm run test:db` runs on an ephemeral branch, applies migrations, proves
       all invariants, cleans up, and refuses production. Verified end to end on
-      2026-10-27 (2 files / 14 tests on a fresh branch).
-- [ ] `npm run test:http` covers CSV, ICS, auth routes, and security headers.
+      2026-10-28 (9 files / 126 tests on a fresh branch).
+- [x] `npm run test:http` covers CSV, ICS, auth routes, and security headers
+      (4 files / 32 tests on a fresh branch).
 - [ ] `npm run test:e2e` covers the P0 journeys deterministically in Chromium
       and one mobile viewport, with traces on failure. Infrastructure verified
       (2 Playwright projects run green); only the smoke spec exists so far.

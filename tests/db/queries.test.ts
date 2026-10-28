@@ -78,15 +78,28 @@ describe('Public events page (getPublicEventsPageCore)', () => {
   });
 
   it('sort by date, newest, popular is deterministic', async () => {
-    await makeEvent({ title: 'A', date: new Date(Date.now() + 2 * 86_400_000) });
-    await makeEvent({ title: 'B', date: new Date(Date.now() + 1 * 86_400_000) });
-    await makeEvent({ title: 'C', date: new Date(Date.now() + 3 * 86_400_000) });
+    const base = Date.now();
+    await makeEvent({
+      title: 'A',
+      date: new Date(base + 2 * 86_400_000),
+      createdAt: new Date(base - 3_000),
+    });
+    await makeEvent({
+      title: 'B',
+      date: new Date(base + 1 * 86_400_000),
+      createdAt: new Date(base - 2_000),
+    });
+    await makeEvent({
+      title: 'C',
+      date: new Date(base + 3 * 86_400_000),
+      createdAt: new Date(base - 1_000),
+    });
 
     const byDate = await getPublicEventsPageCore({ ...baseParams, sort: 'date' });
     expect(byDate.events.map((e) => e.title)).toEqual(['B', 'A', 'C']);
 
     const byNewest = await getPublicEventsPageCore({ ...baseParams, sort: 'newest' });
-    expect(byNewest.events.map((e) => e.title)).toEqual(['C', 'A', 'B']);
+    expect(byNewest.events.map((e) => e.title)).toEqual(['C', 'B', 'A']);
   });
 
   it('pagination clamps out-of-range pages', async () => {
@@ -275,7 +288,8 @@ describe('Notifications page', () => {
     }
     const page = await getNotificationsPage(user, 999);
     expect(page.page).toBe(page.pageCount);
-    expect(page.notifications.length).toBe(20);
+    // Page size is 20, so the last page of 25 holds the remaining 5.
+    expect(page.notifications.length).toBe(5);
     expect(page.total).toBe(25);
   });
 });
@@ -288,8 +302,32 @@ describe('ensureDueReminders', () => {
   it('only creates rows inside the 48-hour window', async () => {
     const user = uniqueId('user');
     const now = new Date();
-    const due = { id: uniqueId('e'), notifyOnUpdate: true, event: { id: uniqueId('e'), title: 'T', date: new Date(now.getTime() + 24 * 60 * 60 * 1000) } };
-    const far = { id: uniqueId('e2'), notifyOnUpdate: true, event: { id: uniqueId('e2'), title: 'T2', date: new Date(now.getTime() + 10 * 86_400_000) } };
+    const dueEvent = await makeEvent({
+      title: 'T',
+      date: new Date(now.getTime() + 24 * 60 * 60 * 1000),
+    });
+    const farEvent = await makeEvent({
+      title: 'T2',
+      date: new Date(now.getTime() + 10 * 86_400_000),
+    });
+    const due = {
+      id: uniqueId('rsvp'),
+      notifyOnUpdate: true,
+      event: {
+        id: dueEvent.id,
+        title: dueEvent.title,
+        date: dueEvent.date,
+      },
+    };
+    const far = {
+      id: uniqueId('rsvp'),
+      notifyOnUpdate: true,
+      event: {
+        id: farEvent.id,
+        title: farEvent.title,
+        date: farEvent.date,
+      },
+    };
 
     await ensureDueReminders(user, [due, far]);
     const count = await prisma.notification.count({
@@ -301,10 +339,14 @@ describe('ensureDueReminders', () => {
   it('dedupes within 24 hours', async () => {
     const user = uniqueId('user');
     const now = new Date();
+    const event = await makeEvent({
+      title: 'T',
+      date: new Date(now.getTime() + 24 * 60 * 60 * 1000),
+    });
     const candidate = {
-      id: uniqueId('e'),
+      id: uniqueId('rsvp'),
       notifyOnUpdate: true,
-      event: { id: uniqueId('e'), title: 'T', date: new Date(now.getTime() + 24 * 60 * 60 * 1000) },
+      event: { id: event.id, title: event.title, date: event.date },
     };
     await ensureDueReminders(user, [candidate]);
     await ensureDueReminders(user, [candidate]);

@@ -21,7 +21,7 @@ exists today and how to add tests safely.
 | Unit | `npm test` | Vitest `node` | No |
 | Component | `npm test` | Vitest `jsdom` + Testing Library | No |
 | DB integration | `npm run test:db` | Vitest `node`, serial | Ephemeral Neon branch |
-| HTTP contract | `npm run test:http` | Vitest `node` + running app | Ephemeral Neon branch |
+| HTTP contract | `npm run test:http` | Vitest `node` + built app | Ephemeral Neon branch |
 | E2E | `npm run test:e2e` | Playwright, production build | Ephemeral Neon branch |
 
 `npm test` is always safe: it makes no network calls and never reads a
@@ -115,6 +115,39 @@ Steps for one run:
 10. `npm run db:test:down` deletes the branch and removes `.env.test`.
     `npm run db:test:status` prints the current target (hosts only).
 
+## Known issues and gotchas
+
+### HTTP test app lifecycle
+
+`npm run test:http` builds and starts the production app itself: Vitest's
+global setup (`tests/http/global-setup.ts`) runs `next build` once, starts
+`next start` on `TEST_BASE_URL`, creates a small roster of auth users, and
+tears the server down after the run. If something is already listening on the
+port (for example a CI-managed `next start`), the helper reuses it.
+
+Set `HTTP_TEST_SKIP_BUILD=1` to reuse an existing `.next` build. Set
+`HTTP_TEST_VERBOSE=1` to see the app's stdout/stderr.
+
+The HTTP project runs files serially (`fileParallelism: false`): it truncates
+domain tables between tests and must not race other files.
+
+### Auth rate limits in tests
+
+Better Auth rate-limits `/sign-up` and `/sign-in` to 3 requests per 10 seconds.
+`global-setup.ts` therefore creates four reusable users once (organizer,
+holder, outsider, other) and stores their session cookies; tests adopt those
+cookies instead of signing in again. The helpers retry politely (honouring
+`X-Retry-After`) when a test does hit the limit, so sign-up/sign-in coverage
+still runs against the real endpoints.
+
+### Note: private event detail pages return 200, not 404
+
+Next 16 streams the event page, so `notFound()` renders after the response
+headers are sent. Outsiders receive status `200` with the generic not-found
+content and `<title>Event not found</title>`; the private event's title,
+description, and metadata are never included. API routes (`/calendar`,
+`/attendees`) still return `404`/`401` and do not disclose existence.
+
 ### Auth origin rule
 
 Better Auth validates the browser `Origin` on state-changing auth calls
@@ -161,9 +194,11 @@ TEST_DB_AUTH_HOST=…
 ```
 
 The auth variables are not optional decoration: `next build` and `next start`
-load `.env` for any missing variable, so a run without them would silently use
-the **production** auth service while writing to the test branch. The guard
-rejects that, and Playwright refuses to start if the auth URL is missing.
+load `.env` for any missing variable. The HTTP global setup loads `.env.test`
+and passes those values to the `next build`/`next start` child processes, so
+the app always talks to the branch auth service. If you start the app yourself,
+export the `.env.test` values first. Never leave `.env` pointing at test
+credentials after the test session, and never commit `.env.test`.
 
 `.env.test` contains credentials and is gitignored. Never commit it, paste it
 into an issue, or print it.
@@ -210,7 +245,9 @@ Additional rules:
 - Credentials must never appear in logs or uploaded artifacts.
 
 `npm run test:db` without a prepared `.env.test` fails loudly on purpose.
-`npm run test:http` currently exits 0 with "No test files found" (Phase 4).
+`npm run test:http` requires `.env.test`; it builds and starts the app itself
+on `TEST_BASE_URL` (port 3100 by default), then stops it. An already-running
+server on that port is reused.
 Playwright skips its specs and does not start the app when `.env.test` is
 missing or `TEST_DB_ALLOW` is not `1`. If `.env.test` *is* present but lacks a
 branch-scoped `NEON_AUTH_BASE_URL`, it fails instead of silently using
@@ -225,7 +262,7 @@ production auth.
 | `npm test` | Unit + component projects. Fast, no DB, no network. |
 | `npm run test:watch` | Watch mode for unit + component. |
 | `npm run test:db` | DB integration project, serial, ephemeral branch. |
-| `npm run test:http` | HTTP contract project (no tests yet). |
+| `npm run test:http` | HTTP contract project: builds + starts the app, 4 specs. |
 | `npm run test:e2e` | Playwright projects: desktop Chromium + Pixel 7. |
 | `npm run test:all` | Unit + component, DB, HTTP, E2E. |
 | `npm run test:ci` | Unit + component, then DB. The CI-safe subset. |
@@ -261,7 +298,7 @@ Pick the lowest layer that can observe the failure:
    `tests/db/`. Build fixtures with `tests/support/factories.ts`, call the
    request-free cores (`*Core` functions) rather than server actions.
 4. **Route handler contract** (status, headers, CSV/ICS bytes) →
-   `tests/http/` once Phase 4 lands.
+   `tests/http/` with the built app started by the HTTP global setup.
 5. **User-visible journey** → `tests/e2e/` with Playwright and a real user.
 
 Guidelines:
@@ -309,15 +346,17 @@ Some things cannot be automated in this setup and stay manual:
 
 ---
 
-## Known gaps (Phase 0 state)
+## Known gaps (after Phase 4)
 
-- The `http` project has no tests; Phase 4 adds CSV, ICS, auth-route, and
-  header contracts.
-- The `components` project contains only a harness smoke test; Phase 2 adds
-  the real client state-machine coverage.
-- E2E contains only a smoke spec. Authenticated journeys need the Neon Auth
-  test-user helpers; branch auth provisioning itself is wired into
-  `db:test:up`.
+- Playwright E2E contains only a smoke spec. Authenticated journeys need the
+  Neon Auth test-user helpers (the HTTP roster in
+  `tests/http/helpers/roster.ts` is a starting point); branch auth provisioning
+  itself is wired into `db:test:up`.
+- HTTP contract gaps: the origin-less ICS URL fallback is covered by unit
+  tests only (an HTTP request always has an origin); CSV stream failure needs
+  fault injection against the separate app process (client abort is covered);
+  and `csvCell` neutralizes `= + - @` but not a leading tab/CR (quoted, but not
+  apostrophe-prefixed).
 - CI is not wired yet. The intended job split is in `testing_plan.md`.
 - Optional tooling (`fast-check`, `ical.js`, `csv-parse`) is not installed.
 - Runtime validation of `test-base` and the ephemeral branch still requires a

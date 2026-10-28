@@ -4,7 +4,7 @@ import {
   upsertRsvpCore,
 } from '@/lib/rsvp';
 import { prisma, resetDomainTables } from '../support/db';
-import { makeEvent, uniqueId } from '../support/factories';
+import { makeEvent, makeRsvp, pastDate, uniqueId } from '../support/factories';
 
 describe('RSVP core — capacity and waitlist', () => {
   beforeEach(async () => {
@@ -51,14 +51,18 @@ describe('RSVP core — capacity and waitlist', () => {
     const user = uniqueId('user');
     const first = await upsertRsvpCore(user, event.id, 'GOING', 'Ada');
     expect(first.ok).toBe(true);
-    const firstId = (first as { id?: string }).id ?? null;
+    const firstRow = await prisma.rSVP.findUnique({
+      where: { userId_eventId: { userId: user, eventId: event.id } },
+      select: { id: true },
+    });
+    expect(firstRow).not.toBeNull();
 
     const second = await upsertRsvpCore(user, event.id, 'GOING', 'Ada');
     expect(second.ok).toBe(true);
     const row = await prisma.rSVP.findUnique({
       where: { userId_eventId: { userId: user, eventId: event.id } },
     });
-    expect(row?.id).toBe(firstId);
+    expect(row?.id).toBe(firstRow!.id);
     const count = await prisma.rSVP.count({
       where: { eventId: event.id, userId: user },
     });
@@ -70,7 +74,11 @@ describe('RSVP core — capacity and waitlist', () => {
     const user = uniqueId('user');
     const first = await upsertRsvpCore(user, event.id, 'GOING', 'Ada');
     expect(first.ok).toBe(true);
-    const firstId = (first as { id?: string }).id ?? null;
+    const firstRow = await prisma.rSVP.findUnique({
+      where: { userId_eventId: { userId: user, eventId: event.id } },
+      select: { id: true },
+    });
+    expect(firstRow).not.toBeNull();
 
     const second = await upsertRsvpCore(user, event.id, 'MAYBE', 'Ada');
     expect(second.ok).toBe(true);
@@ -78,7 +86,7 @@ describe('RSVP core — capacity and waitlist', () => {
     const row = await prisma.rSVP.findUnique({
       where: { userId_eventId: { userId: user, eventId: event.id } },
     });
-    expect(row?.id).toBe(firstId);
+    expect(row?.id).toBe(firstRow!.id);
     expect(row?.status).toBe('MAYBE');
   });
 
@@ -461,9 +469,9 @@ describe('Cancellation', () => {
   });
 
   it('cancel on an ended event is rejected without writes', async () => {
-    const event = await makeEvent({ date: new Date(Date.now() - 60_000) });
+    const event = await makeEvent({ date: pastDate(1) });
     const user = uniqueId('late');
-    await upsertRsvpCore(user, event.id, 'GOING', 'late');
+    await makeRsvp({ eventId: event.id, userId: user, status: 'GOING' });
     const before = await prisma.rSVP.count({
       where: { eventId: event.id, userId: user },
     });
