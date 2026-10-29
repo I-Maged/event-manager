@@ -115,4 +115,34 @@ test.describe('RSVP and waitlist', () => {
     // Roster only renders for the organizer, and they are the current user here.
     await expect(page.getByText('E2E Organizer')).toBeVisible();
   });
+
+  test('two-context last-seat RSVP race resolves without overbooking @slow @nightly', async ({ browser }) => {
+    const roster = readRoster();
+    const event = await seedEvent({
+      title: 'Last seat event',
+      maxAttendees: 1,
+      userId: roster.organizer.userId,
+    });
+
+    const org = await newRolePage(browser, 'organizer');
+    const att = await newRolePage(browser, 'attendee');
+    await org.page.goto(`/events/${event.id}`);
+    await att.page.goto(`/events/${event.id}`);
+
+    await Promise.all([
+      org.page.getByRole('button', { name: 'Going' }).click(),
+      att.page.getByRole('button', { name: 'Going' }).click(),
+    ]);
+    await org.page.waitForTimeout(1000);
+    await att.page.waitForTimeout(1000);
+
+    const rsvps = await prisma.rSVP.findMany({ where: { eventId: event.id } });
+    const going = rsvps.filter((r: any) => r.status === 'GOING');
+    const waitlisted = rsvps.filter((r: any) => r.status === 'WAITLISTED');
+    expect(going.length).toBe(1);
+    expect(waitlisted.length).toBe(1);
+
+    await org.context.close();
+    await att.context.close();
+  });
 });

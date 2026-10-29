@@ -819,7 +819,7 @@ Chromium plus one mobile viewport. Each spec owns its fixtures and cleans up.
 - [x] Joining the wishlist shows the queue position.
 - [ ] A second user cancelling promotes the first user.
 - [ ] The promoted user sees the "You got in!" banner.
-- [ ] Dismiss hides the banner and it stays hidden after reload.
+- [x] Dismiss hides the banner and it stays hidden after reload.
 - [x] Notify toggle persists after reload.
 - [x] Past events are read-only.
 - [x] Ended events reject RSVP attempts.
@@ -859,62 +859,62 @@ Chromium plus one mobile viewport. Each spec owns its fixtures and cleans up.
 
 ### 5.8 Organizer dashboard
 
-- [ ] Stats show upcoming, going, wishlisted, past, and average fill.
-- [ ] Upcoming/past/all views work.
-- [ ] Search filters the dashboard.
-- [ ] Sort by date, fill, and newest works.
-- [ ] Empty states render for each view.
-- [ ] A non-organizer does not see another organizer's events.
-- [ ] The CSV link points at the export route.
+- [x] Stats show upcoming, going, wishlisted, past, and average fill.
+- [x] Upcoming/past/all views work.
+- [x] Search filters the dashboard.
+- [x] Sort by date, fill, and newest works.
+- [x] Empty states render for each view.
+- [x] A non-organizer does not see another organizer's events.
+- [x] The CSV link points at the export route.
 
 ### 5.9 Notifications
 
-- [ ] Promotion notifications appear.
-- [ ] Event-update notifications appear.
-- [ ] Cancellation notifications appear with no dead event link.
-- [ ] Comment notifications appear.
-- [ ] Reminder notifications appear for an event inside 48 hours.
-- [ ] Unread bell count matches the notifications page.
-- [ ] Mark one read updates the count.
-- [ ] Mark all read clears the count.
-- [ ] 57 notifications paginate 20 per page.
-- [ ] `?page=999` clamps.
-- [ ] Marking a row on page 2 keeps the page.
+- [x] Promotion notifications appear.
+- [x] Event-update notifications appear.
+- [x] Cancellation notifications appear with no dead event link.
+- [x] Comment notifications appear.
+- [x] Reminder notifications appear for an event inside 48 hours.
+- [x] Unread bell count matches the notifications page.
+- [x] Mark one read updates the count.
+- [x] Mark all read clears the count.
+- [x] 57 notifications paginate 20 per page.
+- [x] `?page=999` clamps.
+- [x] Marking a row on page 2 keeps the page.
 
 ### 5.10 Calendar links
 
-- [ ] The ICS link downloads a valid file.
-- [ ] The Google Calendar link contains the expected event parameters.
+- [x] The ICS link downloads a valid file.
+- [x] The Google Calendar link contains the expected event parameters.
 
 ### 5.11 Security and authorization matrix
 
-- [ ] Outsider cannot edit an event.
-- [ ] Outsider cannot delete an event.
-- [ ] Outsider cannot check in attendees.
-- [ ] Outsider cannot export attendees.
-- [ ] Outsider cannot read a private event.
-- [ ] Users cannot read another user's notifications.
-- [ ] Stored XSS in an event title/description/comment does not execute.
-- [ ] CSV injection payloads are neutralized in the export.
+- [x] Outsider cannot edit an event.
+- [x] Outsider cannot delete an event.
+- [x] Outsider cannot check in attendees.
+- [x] Outsider cannot export attendees.
+- [x] Outsider cannot read a private event.
+- [x] Users cannot read another user's notifications.
+- [x] Stored XSS in an event title/description/comment does not execute.
+- [x] CSV injection payloads are neutralized in the export.
 - [ ] Two tabs checking in the same attendee store one timestamp.
 - [ ] Two tabs undoing the same check-in leave both fields null.
 
 ### 5.12 Resilience and accessibility
 
-- [ ] DB outage renders the error boundary, not a raw 500.
-- [ ] The error reference digest is shown.
-- [ ] The server log contains one correlatable `[request error]` line.
-- [ ] Restoring the DB and clicking "Try again" recovers the page.
-- [ ] Axe scan on home, events, detail, create, dashboard, wishlist,
+- [x] DB outage renders the error boundary, not a raw 500.
+- [x] The error reference digest is shown.
+- [x] The server log contains one correlatable `[request error]` line.
+- [x] Restoring the DB and clicking "Try again" recovers the page.
+- [x] Axe scan on home, events, detail, create, dashboard, wishlist,
       notifications, and auth pages reports no serious/critical issues.
 - [ ] Filters, RSVP controls, and forms are keyboard navigable.
 - [ ] Async errors are announced (`role="alert"` or live region).
-- [ ] Mobile viewport has no horizontal overflow.
-- [ ] Mobile nav, filters, and cards remain usable.
+- [x] Mobile viewport has no horizontal overflow.
+- [x] Mobile nav, filters, and cards remain usable.
 
 ### 5.13 External flows
 
-- [ ] Google sign-in click starts the provider redirect; abort before consent.
+- [x] Google sign-in click starts the provider redirect; abort before consent.
 - [ ] Document that the full Google consent flow remains manual.
 - [ ] Optional: run Firefox/WebKit if cross-browser support is required.
 
@@ -1021,11 +1021,11 @@ matrix that CI does not cover).
 - [x] **Phase 4 — HTTP contract** (1–2 days): CSV, ICS, auth routes, headers,
       authz. 32 tests green on a fresh branch (2026-10-28).
 - [~] **Phase 5 — E2E** (in progress): Slice A (harness), Slice B, most of Slice C, and Wave 0/1 are implemented;
-      55 Playwright tests pass on the ephemeral branch (1 opt-in db-down
-      scenario). Callback URLs, `data-pending`, auth roster, cross-run
-      truncation, dedicated E2E port, seed/context helpers, expanded auth
-      coverage, and @smoke tags are in place. Recovery automation and the
-      remaining permutation checklist are still open; see `phase-5-e2e.md`.
+      133 Playwright tests pass on the ephemeral branch (1 opt-in db-down
+      scenario including automated recovery). Callback URLs, `data-pending`,
+      auth, browse/events/RSVP/wishlist/invites/comments/dashboard/
+      notifications/calendar/security/a11y/responsive coverage, @smoke tags,
+      and an @slow last-seat race are in place; see `phase-5-e2e.md`.
 - [ ] **Phase 6 — Hardening** (1–2 days): flake quarantine, coverage,
       documentation, retire obsolete scripts.
 
