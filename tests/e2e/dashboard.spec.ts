@@ -12,7 +12,7 @@ test.describe('Organizer dashboard', () => {
     await resetDomainTables();
   });
 
-  test('dashboard renders for organizer', async ({ page }) => {
+  test('dashboard renders for organizer @smoke', async ({ page }) => {
     const roster = readRoster();
     await prisma.event.create({
       data: {

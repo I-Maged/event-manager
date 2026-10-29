@@ -60,6 +60,7 @@ export async function undoCheckInCore(
   attendeeUserId: string,
   organizerId: string,
 ): Promise<CheckInCoreResult> {
+  void organizerId;
   try {
     await prisma.rSVP.updateMany({
       where: { eventId, userId: attendeeUserId, checkedInAt: { not: null } },

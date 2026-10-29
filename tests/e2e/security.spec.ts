@@ -12,7 +12,7 @@ test.describe('Security', () => {
     await resetDomainTables();
   });
 
-  test('private title is absent for an outsider', async ({ browser }) => {
+  test('private title is absent for an outsider @smoke', async ({ browser }) => {
     const roster = readRoster();
     const event = await prisma.event.create({
       data: {

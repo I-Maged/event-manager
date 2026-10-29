@@ -11,7 +11,7 @@ test.describe('Responsive @mobile', () => {
     await resetDomainTables();
   });
 
-  test('no horizontal overflow on home @mobile', async ({ page }) => {
+  test('no horizontal overflow on home @mobile @smoke', async ({ page }) => {
     await page.goto('/');
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth,

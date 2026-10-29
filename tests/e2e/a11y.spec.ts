@@ -11,7 +11,7 @@ test.describe('Accessibility', () => {
   });
 
   for (const path of ['/', '/events', '/auth/sign-in', '/auth/sign-up']) {
-    test(`axe clean on ${path}`, async ({ page }) => {
+    test(`axe clean on ${path} @smoke`, async ({ page }) => {
       await page.goto(path);
       await runAxe(page);
     });

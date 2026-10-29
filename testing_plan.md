@@ -771,58 +771,58 @@ Chromium plus one mobile viewport. Each spec owns its fixtures and cleans up.
 
 ### 5.1 Setup and auth
 
-- [ ] Create organizer, attendee, and outsider users for each run.
-- [ ] Save one storage state per role.
-- [ ] Sign up through the real UI/API and land signed in.
-- [ ] Sign out clears the session.
-- [ ] Sign in with valid credentials succeeds.
-- [ ] Invalid password shows an error.
-- [ ] Signed-out users are redirected from protected routes.
-- [ ] Session expiry: clear cookies, click RSVP, land on sign-in.
-- [ ] Session expiry shows no "Something went wrong" banner.
+- [x] Create organizer, attendee, and outsider users for each run.
+- [x] Save one storage state per role.
+- [x] Sign up through the real UI/API and land signed in.
+- [x] Sign out clears the session.
+- [x] Sign in with valid credentials succeeds.
+- [x] Invalid password shows an error.
+- [x] Signed-out users are redirected from protected routes.
+- [x] Session expiry: clear cookies, click RSVP, land on sign-in.
+- [x] Session expiry shows no "Something went wrong" banner.
 
 ### 5.2 Browse and discovery
 
-- [ ] Only public upcoming events appear.
-- [ ] Category chips filter and show counts.
+- [x] Only public upcoming events appear.
+- [x] Category chips filter and show counts.
 - [ ] When filter changes the result set.
 - [ ] Sort by date, newest, and popular changes order.
 - [ ] Search matches title, description, location, and organizer.
-- [ ] `%` and `_` match literally.
+- [x] `%` and `_` match literally.
 - [ ] Pagination shows the correct range and pages.
-- [ ] `?page=999` clamps to the last page.
-- [ ] No-results state differs from the no-events state.
-- [ ] Organizer filter shows the organizer name.
+- [x] `?page=999` clamps to the last page.
+- [x] No-results state differs from the no-events state.
+- [x] Organizer filter shows the organizer name.
 - [ ] Clear all and browser back/forward keep state consistent.
 
 ### 5.3 Create and edit events
 
 - [ ] Validation errors show inline.
-- [ ] Valid create redirects to the detail page.
-- [ ] Public and private events render correctly.
-- [ ] Capacity and category persist.
+- [x] Valid create redirects to the detail page.
+- [x] Public and private events render correctly.
+- [x] Capacity and category persist.
 - [ ] Browser-zone wall clock displays correctly.
 - [ ] No-JS create falls back to `APP_TIME_ZONE` (optional P1).
 - [ ] Title-only edit preserves the displayed time.
 - [ ] Title-only edit preserves a legacy null `timeZone`.
 - [ ] Editing the date changes the instant, not just the wall clock.
-- [ ] Capacity below the GOING count is rejected.
+- [x] Capacity below the GOING count is rejected.
 - [ ] Raising capacity promotes waitlisted users.
 - [ ] Deleting an event redirects and notifies holders.
 
 ### 5.4 RSVP and waitlist
 
-- [ ] GOING, MAYBE, and NOT_GOING can be selected.
+- [x] GOING, MAYBE, and NOT_GOING can be selected.
 - [ ] Switching status updates the counts.
-- [ ] Remove RSVP asks for confirmation.
-- [ ] A full event shows the wishlist CTA.
-- [ ] Joining the wishlist shows the queue position.
+- [x] Remove RSVP asks for confirmation.
+- [x] A full event shows the wishlist CTA.
+- [x] Joining the wishlist shows the queue position.
 - [ ] A second user cancelling promotes the first user.
 - [ ] The promoted user sees the "You got in!" banner.
 - [ ] Dismiss hides the banner and it stays hidden after reload.
-- [ ] Notify toggle persists after reload.
-- [ ] Past events are read-only.
-- [ ] Ended events reject RSVP attempts.
+- [x] Notify toggle persists after reload.
+- [x] Past events are read-only.
+- [x] Ended events reject RSVP attempts.
 
 ### 5.5 Wishlist page
 
@@ -854,7 +854,7 @@ Chromium plus one mobile viewport. Each spec owns its fixtures and cleans up.
 - [ ] Delete your own comment.
 - [ ] Organizer can delete any comment.
 - [ ] Other users cannot delete someone else's comment.
-- [ ] Past events are read-only.
+- [x] Past events are read-only.
 - [ ] The sixth rapid comment shows the rate-limit message.
 
 ### 5.8 Organizer dashboard
@@ -1020,12 +1020,12 @@ matrix that CI does not cover).
       invites, check-in, queries, constraints, notifications, jobs.
 - [x] **Phase 4 — HTTP contract** (1–2 days): CSV, ICS, auth routes, headers,
       authz. 32 tests green on a fresh branch (2026-10-28).
-- [~] **Phase 5 — E2E** (in progress): Slice A (harness) and Slice B plus most
-      of Slice C implemented; 46 Playwright tests pass on the ephemeral branch
-      (1 opt-in db-down scenario). Callback URLs, `data-pending`, auth roster,
-      cross-run truncation, dedicated E2E port, and tags are in place. Recovery
-      automation and the full permutation checklist are still open; see
-      `phase-5-e2e.md`.
+- [~] **Phase 5 — E2E** (in progress): Slice A (harness), Slice B, most of Slice C, and Wave 0/1 are implemented;
+      55 Playwright tests pass on the ephemeral branch (1 opt-in db-down
+      scenario). Callback URLs, `data-pending`, auth roster, cross-run
+      truncation, dedicated E2E port, seed/context helpers, expanded auth
+      coverage, and @smoke tags are in place. Recovery automation and the
+      remaining permutation checklist are still open; see `phase-5-e2e.md`.
 - [ ] **Phase 6 — Hardening** (1–2 days): flake quarantine, coverage,
       documentation, retire obsolete scripts.
 

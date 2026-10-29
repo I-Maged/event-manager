@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 import { E2E_ENABLED, E2E_SKIP_REASON } from './support/env';
 import { storageStatePath } from './support/fixtures';
 import { readRoster } from './support/fixtures';
-import { resetDomainTables, prisma } from './support/db';
+import { resetDomainTables, prisma, seedEvent, seedRsvp } from './support/db';
+import { newRolePage } from './support/context';
 
 test.describe('RSVP and waitlist', () => {
   test.use({ storageState: storageStatePath('organizer') });
@@ -14,36 +15,24 @@ test.describe('RSVP and waitlist', () => {
 
   async function createEvent(cap: number | null = null) {
     const roster = readRoster();
-    const event = await prisma.event.create({
-      data: {
-        title: 'RSVP event',
-        description: 'desc',
-        date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        timeZone: 'Europe/Berlin',
-        location: 'Somewhere',
-        maxAttendees: cap,
-        isPublic: true,
-        category: 'OTHER',
-        userId: roster.organizer.userId,
-        organizerName: 'Org',
-      },
+    return seedEvent({
+      title: 'RSVP event',
+      maxAttendees: cap,
+      userId: roster.organizer.userId,
+      organizerName: 'Org',
     });
-    return event;
   }
 
-  test('GOING, MAYBE and NOT_GOING can be selected', async ({ page }) => {
+  test('GOING, MAYBE and NOT_GOING can be selected @smoke', async ({ page }) => {
     const event = await createEvent();
     await page.goto(`/events/${event.id}`);
-    await page.getByRole('button', { name: 'Going' }).click();
-    await expect(page.getByRole('button', { name: 'Going' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    await page.getByRole('button', { name: 'Maybe' }).click();
-    await expect(page.getByRole('button', { name: 'Maybe' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    for (const label of ['Going', 'Maybe', "Can't go"]) {
+      await page.getByRole('button', { name: new RegExp(`^${label}$`, 'i') }).click();
+      await expect(page.getByRole('button', { name: new RegExp(`^${label}$`, 'i') })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+    }
   });
 
   test('full event shows the wishlist CTA', async ({ page }) => {
@@ -58,7 +47,23 @@ test.describe('RSVP and waitlist', () => {
       },
     });
     await page.goto(`/events/${event.id}`);
-    await expect(page.getByRole('button', { name: /wishlist/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Join wishlist/i })).toBeVisible();
+  });
+
+  test('joining the wishlist shows the queue position', async ({ page }) => {
+    const roster = readRoster();
+    const event = await createEvent(1);
+    await prisma.rSVP.create({
+      data: {
+        eventId: event.id,
+        userId: 'other-user',
+        status: 'GOING',
+        attendeeName: 'Other',
+      },
+    });
+    await page.goto(`/events/${event.id}`);
+    await page.getByRole('button', { name: /Join wishlist/i }).click();
+    await expect(page.getByText(/on the wishlist/i)).toBeVisible();
   });
 
   test('ended event is read-only', async ({ page }) => {
@@ -69,5 +74,45 @@ test.describe('RSVP and waitlist', () => {
     });
     await page.goto(`/events/${event.id}`);
     await expect(page.getByText('This event has ended.', { exact: true })).toBeVisible();
+  });
+
+  test('remove RSVP asks for confirmation and removes it when accepted', async ({ page }) => {
+    const event = await createEvent();
+    await page.goto(`/events/${event.id}`);
+    await page.getByRole('button', { name: 'Going' }).click();
+    await expect(page.getByRole('button', { name: 'Going' })).toHaveAttribute('aria-pressed', 'true');
+
+    page.on('dialog', (dialog) => dialog.accept());
+    await page.getByRole('button', { name: 'Remove RSVP' }).click();
+    await expect(page.getByRole('button', { name: 'Going' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  test('remove RSVP does nothing when confirmation is declined', async ({ page }) => {
+    const event = await createEvent();
+    await page.goto(`/events/${event.id}`);
+    await page.getByRole('button', { name: 'Going' }).click();
+
+    page.on('dialog', (dialog) => dialog.dismiss());
+    await page.getByRole('button', { name: 'Remove RSVP' }).click();
+    await expect(page.getByRole('button', { name: 'Going' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('notify toggle persists after reload', async ({ page }) => {
+    const event = await createEvent();
+    await page.goto(`/events/${event.id}`);
+    await page.getByRole('button', { name: 'Going' }).click();
+    const checkbox = page.getByRole('checkbox', { name: /Notify me/i });
+    await expect(checkbox).toBeChecked();
+    await checkbox.uncheck();
+    await page.reload();
+    await expect(page.getByRole('checkbox', { name: /Notify me/i })).not.toBeChecked();
+  });
+
+  test('attendee name appears in the roster', async ({ page }) => {
+    const event = await createEvent();
+    await page.goto(`/events/${event.id}`);
+    await page.getByRole('button', { name: 'Going' }).click();
+    // Roster only renders for the organizer, and they are the current user here.
+    await expect(page.getByText('E2E Organizer')).toBeVisible();
   });
 });

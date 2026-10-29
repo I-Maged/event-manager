@@ -26,7 +26,7 @@ test.describe('Private events and invites', () => {
     return page.url();
   }
 
-  test('organizer can create an invite link', async ({ page }) => {
+  test('organizer can create an invite link @smoke', async ({ page }) => {
     await createPrivateEvent(page);
     await page.getByRole('button', { name: 'Create invite link' }).click();
     await expect(page.getByRole('status')).toContainText('Invite link ready');

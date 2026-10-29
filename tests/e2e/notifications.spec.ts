@@ -12,7 +12,7 @@ test.describe('Notifications', () => {
     await resetDomainTables();
   });
 
-  test('empty state renders', async ({ page }) => {
+  test('empty state renders @smoke', async ({ page }) => {
     await page.goto('/notifications');
     await expect(page.getByText('Nothing yet.')).toBeVisible();
   });

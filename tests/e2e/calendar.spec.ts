@@ -12,7 +12,7 @@ test.describe('Calendar links', () => {
     await resetDomainTables();
   });
 
-  test('ICS link downloads a valid file', async ({ page }) => {
+  test('ICS link downloads a valid file @smoke', async ({ page }) => {
     const roster = readRoster();
     const event = await prisma.event.create({
       data: {

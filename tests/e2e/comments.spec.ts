@@ -29,7 +29,7 @@ test.describe('Comments', () => {
     });
   }
 
-  test('add comment and count updates', async ({ page }) => {
+  test('add comment and count updates @smoke', async ({ page }) => {
     const event = await createEvent();
     await page.goto(`/events/${event.id}`);
     await page.getByPlaceholder('Ask a question or share details…').fill('Hello world');

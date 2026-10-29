@@ -37,6 +37,7 @@ export async function updateEventCore(
   organizerName: string | null,
   userId: string,
 ): Promise<UpdateEventCoreOutcome> {
+  void userId;
   return prisma.$transaction(
     async (tx) => {
       // Must be the first statement: everything below is a read-then-write

@@ -1,11 +1,13 @@
 # Phase 5 — Playwright E2E Implementation Plan
 
 Status (2026-10-29): Slice A (harness), Slice B (core journeys), and the bulk of
-Slice C are implemented. `npm run test:e2e` passes 46 tests in Chromium plus the
+Slice C are implemented. Wave 0/1 is now also complete on top of that: shared
+seed/context helpers, expanded auth coverage, 23 @smoke tests, and component-test
+support for callback URLs. `npm run test:e2e` passes 55 tests in Chromium plus the
 mobile project (1 worker); the opt-in db-down scenario also passes separately.
 Callback URLs and the `data-pending` cover were added, closing the corresponding
 Phase 2/Phase 5 gaps. Acceptance criteria below are partially met; remaining
-gaps are full permutation coverage and automated recovery.
+gaps are full permutation coverage, the @slow races, and automated recovery.
 
 Source of truth for implementation of Phase 5 (browser E2E). Continue slice by slice from this file. Update checkboxes in `testing_plan.md` as slices land. Do not implement items marked deferred to Phase 6.
 
