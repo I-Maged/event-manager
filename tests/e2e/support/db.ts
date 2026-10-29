@@ -86,6 +86,7 @@ export type SeedEventOptions = {
   category?: any;
   userId?: string;
   organizerName?: string | null;
+  inviteToken?: string | null;
 };
 
 export async function seedEvent(
@@ -110,6 +111,7 @@ export async function seedEvent(
       category: overrides.category ?? 'OTHER',
       userId: overrides.userId ?? roster.organizer.userId,
       organizerName: overrides.organizerName ?? 'Org',
+      inviteToken: overrides.inviteToken ?? null,
     },
   });
 }
@@ -160,6 +162,24 @@ export async function seedNotification(
       ...overrides,
     },
   });
+}
+
+export async function seedComments(
+  eventId: string,
+  count: number,
+  userId: string,
+  authorName = 'Seeded commenter',
+): Promise<void> {
+  for (let i = 0; i < count; i += 1) {
+    await prisma.comment.create({
+      data: {
+        eventId,
+        userId,
+        authorName,
+        body: `Seeded comment ${i + 1}`,
+      },
+    });
+  }
 }
 
 export async function seedRateLimit(

@@ -826,36 +826,36 @@ Chromium plus one mobile viewport. Each spec owns its fixtures and cleans up.
 
 ### 5.5 Wishlist page
 
-- [ ] Positions render correctly.
-- [ ] Leaving the wishlist works.
-- [ ] Promoted section renders and can be dismissed.
-- [ ] Ended wishlist entries show "Event ended" instead of leave.
-- [ ] Empty state renders.
+- [x] Positions render correctly.
+- [x] Leaving the wishlist works.
+- [x] Promoted section renders and can be dismissed.
+- [x] Ended wishlist entries show "Event ended" instead of leave.
+- [x] Empty state renders.
 
 ### 5.6 Private events and invites
 
-- [ ] Outsider gets 404 for a private event.
-- [ ] Organizer can create an invite link.
+- [x] Outsider gets 404 for a private event.
+- [x] Organizer can create an invite link.
 - [ ] Creating twice returns the same link.
-- [ ] Invite preview hides the description for private events.
-- [ ] Signed-out invite page prompts sign-in.
-- [ ] Accepting the invite creates a GOING RSVP.
-- [ ] Accepting a full event creates a WAITLISTED RSVP.
-- [ ] Regenerating invalidates the old link.
-- [ ] Revoking invalidates the link.
-- [ ] The host is redirected away from the invite page.
+- [x] Invite preview hides the description for private events.
+- [x] Signed-out invite page prompts sign-in.
+- [x] Accepting the invite creates a GOING RSVP.
+- [x] Accepting a full event creates a WAITLISTED RSVP.
+- [x] Regenerating invalidates the old link.
+- [x] Revoking invalidates the link.
+- [x] The host is redirected away from the invite page.
 - [ ] Two tabs creating a link concurrently return the same token.
 
 ### 5.7 Comments
 
-- [ ] Add a comment and see it appear with the author name.
-- [ ] Comment count updates.
-- [ ] 51 seeded comments show "Comments (51)" while 50 render.
-- [ ] Delete your own comment.
-- [ ] Organizer can delete any comment.
-- [ ] Other users cannot delete someone else's comment.
+- [x] Add a comment and see it appear with the author name.
+- [x] Comment count updates.
+- [x] 51 seeded comments show "Comments (51)" while 50 render.
+- [x] Delete your own comment.
+- [x] Organizer can delete any comment.
+- [x] Other users cannot delete someone else's comment.
 - [x] Past events are read-only.
-- [ ] The sixth rapid comment shows the rate-limit message.
+- [x] The sixth rapid comment shows the rate-limit message.
 
 ### 5.8 Organizer dashboard
 
