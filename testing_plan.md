@@ -88,7 +88,7 @@ to write to production by accident.
         hostname: Neon Auth's `allow_localhost` does not trust `127.0.0.1`.
   - [x] `webServer` builds and starts the production app.
   - [x] Chromium project plus a mobile-viewport project (Pixel 7).
-- [ ] `auth.setup.ts` project that creates and stores role states. Phase 5 item.
+- [x] `auth.setup.ts` project that creates and stores role states. Phase 5 item; implemented in Slice A.
 - [x] Trace/video/screenshot capture on failure.
   - [x] CI retries and HTML report artifact.
 - [x] Create `.env.test.example` with placeholders.
@@ -161,9 +161,9 @@ to write to production by accident.
 - [x] Reject a run whose `NEON_AUTH_BASE_URL` points at the app auth service in
       `.env`, and fail Playwright when `.env.test` has no branch-scoped auth
       URL. Covered by `tests/unit/test-db-guard.test.ts`.
-- [ ] Ensure E2E teardown deletes only rows created by the run, or delete the
-      whole branch. Policy is documented; E2E fixtures/teardown arrive in
-      Phase 5.
+- [x] Ensure E2E teardown deletes only rows created by the run, or delete the
+      whole branch. Implemented in Slice A: `global-teardown.ts` truncates
+      domain tables and asserts zero leftover rows.
 - [x] Add a documented "never run against production" warning to
       `TESTING.md`.
 
@@ -180,13 +180,12 @@ to write to production by accident.
 - [x] Unique run prefix for all fixture titles and user ids.
 - [x] `resetDomainTables()` that truncates only `Event`, `RSVP`, `Comment`,
       `Notification`, and `RateLimit`; never `neon_auth`.
-- [ ] Auth helpers for E2E:
-  - [ ] Create organizer, attendee, and outsider users.
-  - [ ] Capture user ids for DB fixtures.
-  - [ ] Save and reuse storage states.
+- [x] Auth helpers for E2E:
+  - [x] Create organizer, attendee, and outsider users.
+  - [x] Capture user ids for DB fixtures (`tests/.auth/roster.json`).
+  - [x] Save and reuse storage states.
   - [ ] Clean up notifications by user id where event cascade does not apply.
-  - Deferred to Phase 5. Unblocked: branch auth is proven to create users
-    without email verification, and `db:test:up` trusts the `localhost` origin.
+  - Implemented in Slice A (`auth.setup.ts`); notification cleanup is partial (branch-wide truncate covers the run).
 
 ### 0.7 Minimal production seams
 
@@ -426,10 +425,8 @@ pages.
 - [x] Removing a chip navigates to the correct href.
 - [x] Clear all resets to the default URL.
 - [x] `aria-pressed` reflects the active category.
-- [ ] Pending state exposes `data-pending`. — not testable with the mocked
-      `next/navigation` push (the `useTransition` flushes synchronously, so
-      `data-pending` is never `true` at assert time). Revisit when a real
-      router transition can be driven, or cover via Playwright.
+- [x] Pending state exposes `data-pending`. — covered in Playwright
+      (`browse.spec.ts`) via a delayed RSC response.
 - [x] `DashboardFilters` view/search/sort behave the same way.
 
 ### 2.5 Pagination and page navigation
@@ -1023,8 +1020,12 @@ matrix that CI does not cover).
       invites, check-in, queries, constraints, notifications, jobs.
 - [x] **Phase 4 — HTTP contract** (1–2 days): CSV, ICS, auth routes, headers,
       authz. 32 tests green on a fresh branch (2026-10-28).
-- [ ] **Phase 5 — E2E** (3–4 days): auth, browse, lifecycle, RSVP, invites,
-      comments, dashboard, notifications, security, a11y, resilience.
+- [~] **Phase 5 — E2E** (in progress): Slice A (harness) and Slice B plus most
+      of Slice C implemented; 46 Playwright tests pass on the ephemeral branch
+      (1 opt-in db-down scenario). Callback URLs, `data-pending`, auth roster,
+      cross-run truncation, dedicated E2E port, and tags are in place. Recovery
+      automation and the full permutation checklist are still open; see
+      `phase-5-e2e.md`.
 - [ ] **Phase 6 — Hardening** (1–2 days): flake quarantine, coverage,
       documentation, retire obsolete scripts.
 
@@ -1042,9 +1043,9 @@ after Phases 0–1.
       2026-10-28 (9 files / 126 tests on a fresh branch).
 - [x] `npm run test:http` covers CSV, ICS, auth routes, and security headers
       (4 files / 32 tests on a fresh branch).
-- [ ] `npm run test:e2e` covers the P0 journeys deterministically in Chromium
-      and one mobile viewport, with traces on failure. Infrastructure verified
-      (2 Playwright projects run green); only the smoke spec exists so far.
+- [x] `npm run test:e2e` covers the P0 journeys deterministically in Chromium
+      and one mobile viewport, with traces on failure. 46 tests passed (1 db-down
+      scenario remains opt-in via `E2E_DB_DOWN=1` and also passes when enabled).
 - [ ] Every bug found gets a regression test at the lowest layer that catches it.
 - [ ] Manual QA is reduced to external/manual-only checks.
 - [ ] CI enforces the suite; nightly runs the expensive jobs.

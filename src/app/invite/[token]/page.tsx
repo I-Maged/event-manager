@@ -85,12 +85,18 @@ export default async function InvitePage({
               Sign in to accept this invite.
             </p>
             <div className="flex gap-3">
-              <Link href="/auth/sign-in" className="btn-primary flex-1">
-                Sign in
-              </Link>
-              <Link href="/auth/sign-up" className="btn-secondary text-sm">
-                Sign up
-              </Link>
+              <Link
+              href={`/auth/sign-in?next=${encodeURIComponent(`/invite/${token}`)}`}
+              className="btn-primary flex-1"
+            >
+              Sign in
+            </Link>
+            <Link
+              href={`/auth/sign-up?next=${encodeURIComponent(`/invite/${token}`)}`}
+              className="btn-secondary text-sm"
+            >
+              Sign up
+            </Link>
             </div>
           </div>
         ) : (

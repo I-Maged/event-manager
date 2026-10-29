@@ -1,13 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { authClient } from '@/lib/auth/client';
 import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 import { useActionFeedback } from '@/lib/useActionFeedback';
 
-export default function SignInPage() {
+function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next');
+  const nextPath =
+    next && next.startsWith('/') && !next.startsWith('//') ? next : '/';
   const { pending: isPending, error, setError, run } = useActionFeedback();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -26,7 +31,7 @@ export default function SignInPage() {
       setError(result.error.message || 'Failed to sign in. Try again');
       return;
     }
-    router.push('/');
+    router.push(nextPath);
     router.refresh();
   }
 
@@ -81,11 +86,20 @@ export default function SignInPage() {
 
         <p className="text-sm text-center text-muted">
           No account yet?{' '}
-          <Link href="/auth/sign-up" className="text-primary hover:underline">
+          <Link href="/auth/sign-up" className="text-primary underline hover:underline">
             Sign up
           </Link>
         </p>
       </div>
     </div>
+  );
+}
+
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <SignInForm />
+    </Suspense>
   );
 }

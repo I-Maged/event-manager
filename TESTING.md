@@ -263,7 +263,10 @@ production auth.
 | `npm run test:watch` | Watch mode for unit + component. |
 | `npm run test:db` | DB integration project, serial, ephemeral branch. |
 | `npm run test:http` | HTTP contract project: builds + starts the app, 4 specs. |
-| `npm run test:e2e` | Playwright projects: desktop Chromium + Pixel 7. |
+| `npm run test:e2e` | Playwright projects: desktop Chromium + Pixel 7 (serial, 1 worker). |
+| `npm run test:e2e:smoke` | `@smoke` tagged critical journeys only. |
+| `npm run test:e2e:mobile` | Pixel 7 project, responsive tests only. |
+| `npm run test:e2e:dbdown` | `@dbdown` scenario (requires `E2E_DB_DOWN=1`). |
 | `npm run test:all` | Unit + component, DB, HTTP, E2E. |
 | `npm run test:ci` | Unit + component, then DB. The CI-safe subset. |
 | `npm run db:test:base` | One-time: create/baseline the data-free `test-base`. |
@@ -348,10 +351,13 @@ Some things cannot be automated in this setup and stay manual:
 
 ## Known gaps (after Phase 4)
 
-- Playwright E2E contains only a smoke spec. Authenticated journeys need the
-  Neon Auth test-user helpers (the HTTP roster in
-  `tests/http/helpers/roster.ts` is a starting point); branch auth provisioning
-  itself is wired into `db:test:up`.
+- Playwright E2E: Slice A–C are implemented and 46 tests pass on an ephemeral
+  branch (`npm run test:e2e`); the db-down scenario is opt-in
+  (`E2E_DB_DOWN=1 npm run test:e2e -- --grep @dbdown`). Auth storage states are
+  created by `tests/e2e/auth.setup.ts`; DB rows are truncated per run and
+  verified empty after. E2E (port 3200) and HTTP (port 3100) must never share a
+  branch concurrently. Remaining work: full callback/error-path permutations and
+  automated recovery (currently boundary + log only).
 - HTTP contract gaps: the origin-less ICS URL fallback is covered by unit
   tests only (an HTTP request always has an origin); CSV stream failure needs
   fault injection against the separate app process (client abort is covered);
