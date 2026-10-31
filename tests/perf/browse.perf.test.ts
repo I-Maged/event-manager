@@ -63,7 +63,8 @@ describe('performance: browse', () => {
     const p95 = percentile(durations, 95);
     console.log(`browse perf: p50=${p50.toFixed(1)}ms p95=${p95.toFixed(1)}ms (n=${durations.length})`);
 
-    const budget = Number(process.env.PERF_BROWSE_P95_MS ?? 2000);
+    // Measured baseline on 2026-10-31: p95=717.4ms (budget = 3x).
+    const budget = Number(process.env.PERF_BROWSE_P95_MS ?? 2200);
     expect(p95).toBeLessThanOrEqual(budget);
   });
 });

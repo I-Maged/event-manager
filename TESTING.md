@@ -404,8 +404,7 @@ Some things cannot be automated in this setup and stay manual:
   asserted at the stream layer (`tests/unit/attendee-csv.test.ts`, via the
   injected page fetcher in `src/lib/attendee-csv.ts`) because a stream cannot
   change its status after the first chunk — client abort is covered over HTTP;
-  and `csvCell` neutralizes `= + - @` but not a leading tab/CR (quoted, but not
-  apostrophe-prefixed).
+  and `csvCell` now neutralizes leading tab/CR as well as `= + - @`.
 - E2E repeatability: fixed (Finding F1, 2026-10-30). `--repeat-each=2` used to
   collapse from ~11 minutes in because the Neon Auth SDK refreshed its
   session-data cookie during an RSC render and Next 16 rejects the write. The

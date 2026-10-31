@@ -93,7 +93,7 @@ describe('Attendee CSV route (4.2)', () => {
 
   it('formula-injection prefix names get a leading apostrophe', async () => {
     const { event } = await organizerEvent();
-    for (const attendeeName of ['=1+1', '+SUM(A1)', '-DATA', '@evil']) {
+    for (const attendeeName of ['=1+1', '+SUM(A1)', '-DATA', '@evil', '\tcmd', '\rcmd']) {
       await makeRsvp({
         eventId: event.id,
         userId: uniqueId('user'),
@@ -105,13 +105,14 @@ describe('Attendee CSV route (4.2)', () => {
     const res = await request(`${baseUrl}/api/events/${event.id}/attendees`);
     expect(res.status).toBe(200);
     const rows = csvRows(await res.text());
-    expect(rows).toHaveLength(5);
+    expect(rows).toHaveLength(7);
     for (const row of rows.slice(1)) {
       const nameCell = row.split(',')[1];
       expect(nameCell).toMatch(/^"/);
       const inner = nameCell.slice(1, -1).replace(/""/g, '"');
-      expect(inner).not.toMatch(/^[=+\-@]/);
-      expect(inner).toMatch(/^'[=+\-@]/);
+      expect(inner).not.toMatch(/^[ \t\r\n=+\-@]/);
+      expect(inner).toMatch(/^'[ \t\r\n=+\-@]/);
+
     }
   });
 

@@ -19,7 +19,10 @@ export const ATTENDEE_CSV_HEADER = 'status,name,joined_at,checked_in\n';
 
 /** Prevent spreadsheet formula injection + escape quotes. */
 export function csvCell(value: string): string {
-  const safe = /^[=+\-@]/.test(value) ? `'${value}` : value;
+  // Neutralize spreadsheet formula injection. Leading whitespace, tab, or CR
+  // before a formula prefix is included because spreadsheet apps may trim
+  // the cell before evaluating it.
+  const safe = /^[ \t\r\n=+\-@]/.test(value) ? `'${value}` : value;
   return `"${safe.replace(/"/g, '""')}"`;
 }
 

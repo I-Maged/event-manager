@@ -58,6 +58,10 @@ describe('CSV cells', () => {
     expect(csvCell('-1')).toBe(`"'-1"`);
     expect(csvCell('@cmd')).toBe(`"'@cmd"`);
     expect(csvCell('plain')).toBe('"plain"');
+    expect(csvCell('\tcmd')).toBe(`"'${'\t'}cmd"`);
+    expect(csvCell('\rcmd')).toBe(`"'${'\r'}cmd"`);
+    expect(csvCell(' =cmd')).toBe(`"' =cmd"`);
+    expect(csvCell('foo	=bar')).toBe('"foo	=bar"');
   });
 
   it('formats a roster row with an ISO timestamp and an empty check-in', () => {

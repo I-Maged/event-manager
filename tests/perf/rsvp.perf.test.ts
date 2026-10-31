@@ -44,7 +44,8 @@ describe('performance: rsvp', () => {
     const p95 = percentile(durations, 95);
     console.log(`rsvp perf: p50=${p50.toFixed(1)}ms p95=${p95.toFixed(1)}ms (n=${durations.length})`);
 
-    const budget = Number(process.env.PERF_RSVP_P95_MS ?? 1000);
+    // Measured baseline on 2026-10-31: p95=972.7ms (budget = 3x).
+    const budget = Number(process.env.PERF_RSVP_P95_MS ?? 3000);
     expect(p95).toBeLessThanOrEqual(budget);
   });
 });

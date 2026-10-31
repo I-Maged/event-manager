@@ -24,7 +24,14 @@ export default defineConfig({
       reporter: ['text-summary', 'lcov'],
       include: ['src/lib/**'],
       exclude: ['src/generated/**'],
-      // Report-only initially; calibrate thresholds to measured - 2 in a later run.
+      // Calibrated from a clean 2026-10-31 run (lines 89.41, statements 88.11,
+      // branches 81.25, functions 84.71); gate at measured - 2.
+      thresholds: {
+        lines: 87,
+        statements: 86,
+        branches: 79,
+        functions: 82,
+      },
     },
     projects: [
       {
