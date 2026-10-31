@@ -46,7 +46,6 @@ test.describe('Security', () => {
       body: '<img src=x onerror=window.__xss=true>',
     });
     await page.goto(`/events/${event.id}`);
-    await page.waitForTimeout(500);
     const xss = await page.evaluate(() => (window as any).__xss === true);
     expect(xss || triggered).toBeFalsy();
   });

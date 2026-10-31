@@ -61,7 +61,7 @@ test.describe('Wishlist', () => {
     await page.goto('/wishlist');
     page.on('dialog', (dialog) => dialog.accept());
     await page.getByRole('button', { name: 'Leave wishlist' }).click();
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
     await page.reload();
     await expect(page.getByText('Your wishlist is empty')).toBeVisible();
   });

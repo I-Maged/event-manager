@@ -46,7 +46,6 @@ test.describe('Notifications', () => {
     await page.goto('/notifications');
     await expect(page.getByText('(1 unread)')).toBeVisible();
     await page.getByRole('button', { name: 'Mark read' }).first().click();
-    await page.waitForTimeout(500);
     await page.reload();
     await expect(page.getByText('(1 unread)')).toHaveCount(0);
   });
@@ -107,7 +106,6 @@ test.describe('Notifications', () => {
     }
     await page.goto('/notifications?page=2');
     await page.getByRole('button', { name: 'Mark read' }).first().click();
-    await page.waitForTimeout(500);
     await expect(page).toHaveURL(/page=2/);
   });
 

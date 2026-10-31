@@ -133,8 +133,10 @@ test.describe('RSVP and waitlist', () => {
       org.page.getByRole('button', { name: 'Going' }).click(),
       att.page.getByRole('button', { name: 'Going' }).click(),
     ]);
-    await org.page.waitForTimeout(1000);
-    await att.page.waitForTimeout(1000);
+    await expect.poll(async () => {
+      const rows = await prisma.rSVP.findMany({ where: { eventId: event.id } });
+      return rows.length;
+    }).toBe(2);
 
     const rsvps = await prisma.rSVP.findMany({ where: { eventId: event.id } });
     const going = rsvps.filter((r: any) => r.status === 'GOING');

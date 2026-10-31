@@ -18,6 +18,14 @@ export default defineConfig({
     // The http project lands in Phase 4; until then `npm run test:http` is a
     // clean no-op instead of a "no test files" failure.
     passWithNoTests: true,
+    coverage: {
+      provider: 'v8',
+      reportsDirectory: 'coverage',
+      reporter: ['text-summary', 'lcov'],
+      include: ['src/lib/**'],
+      exclude: ['src/generated/**'],
+      // Report-only initially; calibrate thresholds to measured - 2 in a later run.
+    },
     projects: [
       {
         extends: true,
@@ -48,6 +56,19 @@ export default defineConfig({
           sequence: { concurrent: false },
           testTimeout: 60_000,
           hookTimeout: 60_000,
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'perf',
+          environment: 'node',
+          include: ['tests/perf/**/*.test.ts'],
+          setupFiles: ['tests/setup/db.ts'],
+          fileParallelism: false,
+          sequence: { concurrent: false },
+          testTimeout: 180_000,
+          hookTimeout: 120_000,
         },
       },
       {

@@ -301,6 +301,10 @@ production auth.
 | `npm run verify` | Typecheck + scoped lint + probes + production build. |
 | `npm run verify:full` | `verify` plus `test:all`. |
 | `npm run verify:db` | Alias for `test:db`. |
+| `npm run test:coverage` | Unit + component + DB with v8 coverage reports. Requires a branch. |
+| `npm run test:perf` | Nightly performance smoke (`tests/perf/**`). Requires a branch. |
+| `npm run db:test:drift` | Compare the migrated branch schema to `prisma/schema.prisma`. Requires `.env.test`. |
+| `npm run test:branch` | Create a branch, run the supplied command, and delete the branch in `finally`. |
 
 The legacy probe scripts (`scripts/timezone-check.ts`,
 `scripts/search-check.ts`, `scripts/rate-limit-check.ts`,
@@ -355,6 +359,18 @@ These are deliberate and must preserve runtime behaviour:
 
 ---
 
+## Suite hygiene
+
+- `tests/unit/test-hygiene.test.ts` scans every file under `tests/e2e/` and fails
+  on `waitForTimeout` or any `.only` focus, so neither can regress unnoticed.
+- Performance budgets (`PERF_BROWSE_P95_MS`, `PERF_RSVP_P95_MS`) are measured
+  locally and calibrated from a real branch before gating.
+- Quarantine policy: a flaky spec may be tagged `@quarantine` in its title only
+  if it is never in `@smoke`, carries one issue link and one owner, and is
+  reviewed weekly. The quarantine list must be empty at Phase 6 close.
+- Coverage uses `@vitest/coverage-v8`, reports to `coverage/`, and is report-only
+  until thresholds are calibrated.
+
 ## Manual-only checks
 
 Some things cannot be automated in this setup and stay manual:
@@ -398,5 +414,6 @@ Some things cannot be automated in this setup and stay manual:
   `phase-6-hardening.md` (Finding F1).
 - CI is not wired yet. The intended job split is in `testing_plan.md`.
 - Optional tooling (`fast-check`, `ical.js`, `csv-parse`) is not installed.
+- Legacy probes (`timezone-check`, `search-check`, `rate-limit-check`, `rsvp-concurrency`) retired; parity covered by Vitest.
 - Runtime validation of `test-base` and the ephemeral branch still requires a
   valid `NEON_API_KEY` and `NEON_PROJECT_ID`.

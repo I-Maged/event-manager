@@ -1,6 +1,6 @@
 # Phase 6 — Hardening and Operations Implementation Plan
 
-Status (2026-10-30): **S0, S1, and S2 implemented; Finding F1 fixed.** Fault
+Status (2026-10-31): **S0, S1, S2, S3, S4, and S5 implemented; Finding F1 fixed.** S6 remains. Fault
 injection (6 tests), script CLIs (5), `when` day boundaries (4), the CSV stream
 extraction + tests (5 unit), the S0 baseline, and the render-safe session fix
 (8 tests) are in. Suites: `npm test` = 33 files / 225, `test:db` = 11 files /

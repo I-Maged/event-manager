@@ -129,8 +129,21 @@ describe('Attendee CSV route (4.2)', () => {
 
     const res = await request(`${baseUrl}/api/events/${event.id}/attendees`);
     expect(res.status).toBe(200);
-    const rows = csvRows(await res.text());
+    const reader = res.body!.getReader();
+    const decoder = new TextDecoder();
+    const chunks: string[] = [];
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(decoder.decode(value, { stream: true }));
+    }
+    const body = chunks.join('') + decoder.decode();
+    const rows = csvRows(body);
     expect(rows).toHaveLength(COUNT + 1);
+
+    // Streaming: the body arrives in multiple chunks rather than one buffered blob.
+    expect(chunks.length).toBeGreaterThanOrEqual(3);
+    expect(chunks[0].length).toBeLessThan(body.length / 3);
 
     const dataRows = rows.slice(1);
     expect(new Set(dataRows).size).toBe(COUNT);

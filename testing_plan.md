@@ -956,19 +956,19 @@ coverage — do not read them that way.
 
 ### 6.2 Performance smoke (optional, P2)
 
-- [ ] Browse page with 500 events responds within an agreed p95.
-- [ ] RSVP mutation responds within an agreed p95 on the test branch.
-- [ ] Confirm no N+1 in wishlist position calculation.
-- [ ] Confirm the CSV export streams without buffering the whole file.
+- [x] Browse page with 500 events responds within an agreed p95.
+- [x] RSVP mutation responds within an agreed p95 on the test branch.
+- [x] Confirm no N+1 in wishlist position calculation.
+- [x] Confirm the CSV export streams without buffering the whole file.
 
 ### 6.3 Migration and deployment safety
 
 - [ ] Fresh-branch migration apply is part of CI.
 - [ ] Migration drift check is part of CI.
-- [ ] CHECK constraints are covered by tests.
-- [ ] Cascades are covered by tests.
-- [ ] `prisma db push` is forbidden in scripts and documentation.
-- [ ] Test DB branch deletion runs even when tests fail.
+- [x] CHECK constraints are covered by tests.
+- [x] Cascades are covered by tests.
+- [x] `prisma db push` is forbidden in scripts and documentation.
+- [x] Test DB branch deletion runs even when tests fail (local wrapper; CI `if: always()` pending).
 
 ### 6.4 Documentation
 

@@ -65,7 +65,6 @@ test.describe('Organizer dashboard', () => {
     await seedEvent({ title: 'Other dashboard event', userId: roster.organizer.userId });
     await page.goto('/my-events');
     await page.getByLabel('Search your events').fill('Searchable');
-    await page.waitForTimeout(500);
     await expect(page.getByText('Searchable dashboard event')).toBeVisible();
     await expect(page.getByText('Other dashboard event')).toHaveCount(0);
   });

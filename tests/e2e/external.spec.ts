@@ -11,7 +11,6 @@ test.describe('External flows', () => {
     await button.click().catch(() => {});
     // We cannot assert the external URL reliably; the automated check stops at abort.
     // Documented: full Google consent flow remains manual.
-    await page.waitForTimeout(500);
     expect(true).toBeTruthy();
   });
 });

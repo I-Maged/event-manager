@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { prisma, resetDomainTables } from '../support/db';
 import { makeComment, makeEvent, makeNotification, makeRsvp, uniqueId } from '../support/factories';
@@ -13,6 +14,20 @@ describe('Migrations', () => {
     // query the schema tables, migrations applied cleanly.
     const count = await prisma.event.count();
     expect(typeof count).toBe('number');
+  });
+
+  it('schema and migrations agree (migrate drift)', () => {
+    const result = spawnSync('npx', ['tsx', 'scripts/migrate-drift.ts'], {
+      stdio: 'pipe',
+      shell: true,
+      env: process.env,
+      encoding: 'utf8',
+    });
+    if (result.status !== 0) {
+      console.error(result.stdout);
+      console.error(result.stderr);
+    }
+    expect(result.status).toBe(0);
   });
 
   it('no script or documented command uses prisma db push', () => {

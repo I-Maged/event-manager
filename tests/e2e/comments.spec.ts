@@ -48,7 +48,7 @@ test.describe('Comments', () => {
       const box = page.getByPlaceholder('Ask a question or share details…');
       await box.fill(`Comment ${i}`);
       await page.getByRole('button', { name: 'Post comment' }).click();
-      await page.waitForTimeout(100);
+      await expect(page.getByText(`Comment ${i}`)).toBeVisible();
     }
     await expect(page.locator('.alert-error').filter({ hasText: /too many/i })).toBeVisible();
   });
@@ -71,7 +71,6 @@ test.describe('Comments', () => {
     await expect(page.getByText('Delete me')).toBeVisible();
     page.on('dialog', (dialog) => dialog.accept());
     await page.getByRole('button', { name: 'Delete' }).first().click();
-    await page.waitForTimeout(500);
     await expect(page.getByText('Delete me')).toHaveCount(0);
   });
 
@@ -83,7 +82,6 @@ test.describe('Comments', () => {
     await expect(page.getByText('Organizer can delete this')).toBeVisible();
     page.on('dialog', (dialog) => dialog.accept());
     await page.getByRole('button', { name: 'Delete' }).first().click();
-    await page.waitForTimeout(500);
     await expect(page.getByText('Organizer can delete this')).toHaveCount(0);
   });
 
@@ -134,7 +132,6 @@ test.describe('Comments', () => {
       body: 'XSS author body',
     });
     await page.goto(`/events/${event.id}`);
-    await page.waitForTimeout(500);
     const xss = await page.evaluate(() => (window as any).__xss === true);
     expect(xss || triggered).toBeFalsy();
   });
