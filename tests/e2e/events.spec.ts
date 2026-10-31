@@ -156,4 +156,31 @@ test.describe('Events', () => {
     await expect(page.locator('.alert-error')).toBeVisible();
     await prisma.rateLimit.deleteMany({ where: { key: `eventCreate:${roster.organizer.userId}` } });
   });
+
+  test('title-only edit leaves the date and time field unchanged', async ({ page }) => {
+    const url = await createEvent(page, { title: 'Preserve time event' });
+    await page.goto(url + '/edit');
+    const before = await page.getByLabel('Date and time').inputValue();
+    await page.getByLabel('Title').fill('Preserve time event renamed');
+    await page.getByRole('button', { name: /save|update|create/i }).click();
+    await page.waitForURL(url);
+    await page.goto(url + '/edit');
+    await expect(page.getByLabel('Date and time')).toHaveValue(before);
+  });
+
+  test('title-only edit preserves a legacy null time zone', async ({ page }) => {
+    const roster = readRoster();
+    const event = await seedEvent({
+      title: 'Legacy null zone event',
+      timeZone: null,
+      userId: roster.organizer.userId,
+    });
+    await page.goto(`/events/${event.id}/edit`);
+    const before = await page.getByLabel('Date and time').inputValue();
+    await page.getByLabel('Title').fill('Legacy null zone event renamed');
+    await page.getByRole('button', { name: /save|update|create/i }).click();
+    await page.waitForURL(`/events/${event.id}`);
+    await page.goto(`/events/${event.id}/edit`);
+    await expect(page.getByLabel('Date and time')).toHaveValue(before);
+  });
 });
