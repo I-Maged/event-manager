@@ -137,6 +137,13 @@ describe('Attendee CSV route (4.2)', () => {
     expect(dataRows.length).toBe(COUNT);
   });
 
+  /**
+   * Mid-export database failures are asserted at the stream layer
+   * (`tests/unit/attendee-csv.test.ts`): by the time a page fails, the response
+   * status `200` and the CSV headers are already on the wire, so the only
+   * honest contract is an errored body plus one server log line. This layer
+   * keeps the happy path, headers, and client-abort behaviour.
+   */
   it('a client abort does not take down the server', async () => {
     const { event } = await organizerEvent();
     await makeRsvp({

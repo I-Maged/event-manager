@@ -170,6 +170,41 @@ test.describe('Auth signed-in navbar', () => {
     ).toBeVisible();
   });
 
+  /**
+   * F1 guard: with the session-data cache cookie gone (expired cache), the
+   * render must refresh the session through the guarded writer instead of
+   * failing with `Cookies can only be modified in a Server Action or Route
+   * Handler` and showing the error boundary. The SDK-level reproduction lives
+   * in `tests/unit/auth-session-render.test.ts`.
+   */
+  test('an expired session cache still renders signed-in pages', async ({
+    browser,
+  }) => {
+    const { context, page } = await newRolePage(browser, 'organizer');
+    try {
+      const roster = readRoster();
+      const cookies = await context.cookies();
+      expect(cookies.some((c) => c.name.endsWith('session_data'))).toBe(true);
+
+      await context.clearCookies();
+      await context.addCookies(
+        cookies.filter((c) => !c.name.endsWith('session_data')),
+      );
+
+      await page.goto('/account');
+      await expect(page.getByRole('heading', { name: 'Account' })).toBeVisible();
+      // The email is in both the navbar and the account row; scope to the row.
+      await expect(
+        page
+          .getByRole('definition')
+          .filter({ hasText: roster.organizer.email }),
+      ).toBeVisible();
+      await expect(page.getByText('Something went wrong')).toHaveCount(0);
+    } finally {
+      await context.close();
+    }
+  });
+
   test('sign-out clears the session @smoke', async ({ page }) => {
     await page.goto('/account');
     await page.getByRole('button', { name: 'Sign out' }).click();
@@ -177,6 +212,7 @@ test.describe('Auth signed-in navbar', () => {
     await page.goto('/account');
     await expect(page).toHaveURL(/\/auth\/sign-in/);
   });
+
 });
 
 test.describe('Auth security', () => {

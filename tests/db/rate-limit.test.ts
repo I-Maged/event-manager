@@ -138,13 +138,22 @@ describe('scheduled cleanup handler', () => {
     await expect(response.json()).resolves.toEqual({ ok: true, deleted: 0 });
   });
 
-  it('returns 500 when the cleanup query fails', async () => {
-    const handler = createRateLimitCleanupHandler(async () => {
-      throw new Error('boom');
-    });
-    const response = await handler.fetch(request(true));
-    expect(response.status).toBe(500);
-    await expect(response.json()).resolves.toEqual({ ok: false });
+  it('returns 500 and logs exactly one correlatable line when the cleanup query fails', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const handler = createRateLimitCleanupHandler(async () => {
+        throw new Error('boom');
+      });
+      const response = await handler.fetch(request(true));
+      expect(response.status).toBe(500);
+      await expect(response.json()).resolves.toEqual({ ok: false });
+
+      // The job runs unattended: a failure must be visible in the log, once.
+      expect(errorSpy).toHaveBeenCalledTimes(1);
+      expect(String(errorSpy.mock.calls[0]?.[0])).toContain('rate-limit GC failed');
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 });
 

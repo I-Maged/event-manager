@@ -15,6 +15,7 @@ import {
   getWaitlistPosition,
 } from '@/lib/events';
 import { ensureDueReminders, getNotificationsPage } from '@/lib/notifications';
+import { addDaysInZone } from '@/lib/time';
 import { prisma, resetDomainTables } from '../support/db';
 import {
   makeComment,
@@ -32,6 +33,99 @@ const baseParams: EventListParams = {
   sort: 'date',
   when: 'any',
 };
+
+/**
+ * `when` windows are anchored to local midnight in `APP_TIME_ZONE`
+ * (`Europe/Berlin` from the test env), never to `now + N * 24h`: on a DST day
+ * those differ by an hour. `getPublicEventsPageCore` takes an injected `now`,
+ * so these are exact boundary assertions with no fake timers and no sleeps.
+ */
+describe('When filters use app-zone day boundaries', () => {
+  beforeEach(async () => {
+    await resetDomainTables();
+  });
+
+  it('today ends at local midnight on the spring-forward day', async () => {
+    // 2026-03-29 is 23 hours long in Europe/Berlin (clocks jump 02:00 -> 03:00).
+    const now = new Date('2026-03-29T21:30:00Z'); // 23:30 local (UTC+2)
+    const earlierToday = await makeEvent({
+      date: new Date('2026-03-29T21:29:00Z'),
+    });
+    const lastMinute = await makeEvent({
+      date: new Date('2026-03-29T21:45:00Z'),
+    });
+    const afterMidnight = await makeEvent({
+      date: new Date('2026-03-29T22:30:00Z'), // 00:30 local the next day
+    });
+
+    const page = await getPublicEventsPageCore(
+      { ...baseParams, when: 'today' },
+      now,
+    );
+    const ids = page.events.map((event) => event.id);
+
+    expect(ids).toContain(lastMinute.id);
+    // Lower bound is `now`, so an event earlier the same local day is past.
+    expect(ids).not.toContain(earlierToday.id);
+    // Upper bound is the next local midnight, not `now + 24h` (22:00Z vs 22:30Z
+    // would both be inside a 24-hour window).
+    expect(ids).not.toContain(afterMidnight.id);
+  });
+
+  it('today spans the whole 25-hour fall-back day', async () => {
+    // 2026-10-25 is 25 hours long in Europe/Berlin (clocks fall back).
+    const now = new Date('2026-10-25T10:00:00Z'); // 11:00 local (UTC+1)
+    const boundary = addDaysInZone(now, 1);
+    const lastMinute = await makeEvent({
+      date: new Date(boundary.getTime() - 60_000),
+    });
+    const afterMidnight = await makeEvent({
+      date: new Date(boundary.getTime() + 60_000),
+    });
+
+    const page = await getPublicEventsPageCore(
+      { ...baseParams, when: 'today' },
+      now,
+    );
+    const ids = page.events.map((event) => event.id);
+
+    expect(ids).toContain(lastMinute.id);
+    expect(ids).not.toContain(afterMidnight.id);
+  });
+
+  it.each([
+    { when: 'week' as const, days: 7 },
+    { when: 'month' as const, days: 30 },
+  ])('$when stops at local midnight $days days out', async ({ when, days }) => {
+    const now = new Date('2026-05-12T09:15:00Z');
+    const boundary = addDaysInZone(now, days);
+    const inside = await makeEvent({
+      date: new Date(boundary.getTime() - 60_000),
+    });
+    const outside = await makeEvent({
+      date: new Date(boundary.getTime() + 60_000),
+    });
+
+    const page = await getPublicEventsPageCore({ ...baseParams, when }, now);
+    const ids = page.events.map((event) => event.id);
+
+    expect(ids).toContain(inside.id);
+    expect(ids).not.toContain(outside.id);
+  });
+
+  it('any keeps only upcoming events and starts at now', async () => {
+    const now = new Date('2026-06-01T12:00:00Z');
+    const past = await makeEvent({ date: new Date('2026-06-01T11:59:00Z') });
+    const exactlyNow = await makeEvent({ date: new Date('2026-06-01T12:00:00Z') });
+    const later = await makeEvent({ date: new Date('2026-06-05T12:00:00Z') });
+
+    const page = await getPublicEventsPageCore(baseParams, now);
+    const ids = page.events.map((event) => event.id);
+
+    expect(ids).not.toContain(past.id);
+    expect(ids).toEqual(expect.arrayContaining([exactlyNow.id, later.id]));
+  });
+});
 
 describe('Public events page (getPublicEventsPageCore)', () => {
   beforeEach(async () => {

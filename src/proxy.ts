@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth/server";
+import { authHandler } from "@/lib/auth/server";
 
 export default async function proxy(request: NextRequest) {
-  const response = await auth.middleware({ loginUrl: "/auth/sign-in" })(request);
+  const response = await authHandler.middleware({ loginUrl: "/auth/sign-in" })(
+    request,
+  );
   if (response.status >= 300 && response.status < 400) {
     const location = response.headers.get("location") ?? "";
     if (location.includes("/auth/sign-in")) {

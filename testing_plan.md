@@ -1,15 +1,20 @@
 # Testing Plan — Event Manager
 
-Status: in progress — Phase 0 (harness), Phase 1 (unit), Phase 2 (component),
-Phase 3 (DB integration), and Phase 4 (HTTP contract) implemented; Phase 5
-(E2E) and Phase 6 (hardening) remain.
-Last updated: 2026-10-28
+Status: in progress — Phase 0 (harness) through Phase 5 (E2E) implemented;
+Phase 6 (hardening) in progress. Fault injection (6.1) and the gaps deferred
+from 3.8, 3.9, and 4.2 are done. A full validation run on 2026-10-31 passed:
+`npm test` (33 files / 225 tests), `test:db` (11 files / 142 tests),
+`test:http` (4 files / 32 tests), and `test:e2e` (134 tests, including the
+@nightly last-seat RSVP race and the F1 expired-session-cache guard).
+Remaining work: performance smoke, deployment safety, coverage thresholds,
+flake quarantine, CI, and retiring the obsolete probe scripts.
+Last updated: 2026-10-31
 
 This document is the working checklist for building the test suite. It is
 phased so that useful coverage lands early. Phase 0 (harness), Phase 1 (unit),
 Phase 2 (component), Phase 3 (DB integration), and Phase 4 (HTTP contract) tests
-are implemented; Phase 5 (E2E) and Phase 6 are still unchecked. Blocked or
-externally dependent items carry a note explaining what is missing.
+are implemented, Phase 5 (E2E) is implemented, and Phase 6 is partly checked.
+Blocked or externally dependent items carry a note explaining what is missing.
 
 ## Decisions already made
 
@@ -590,22 +595,28 @@ factories.
 - [x] It deletes stale rows and returns the count with the header (handler
       contract with an injected query, plus the sweep test against the DB).
 - [x] It never deletes fresh rows.
-- [ ] It returns 500 and logs on DB failure. (500 is asserted; the log line is
-      not.)
-- [ ] The manual cleanup script dry-run reports without deleting.
-- [ ] The manual cleanup script `--apply` deletes and reports the count.
-- [ ] The backfill dry-run reports null-zone rows without writing.
-- [ ] The backfill `--apply --allow-writes` stamps only null rows.
-- [ ] The backfill rejects an invalid `APP_TIME_ZONE`.
+- [x] It returns 500 and logs on DB failure (`rate-limit GC failed`, exactly
+      one line, asserted in `tests/db/rate-limit.test.ts`).
+- [x] The manual cleanup script dry-run reports without deleting.
+- [x] The manual cleanup script `--apply` deletes and reports the count.
+- [x] The backfill dry-run reports null-zone rows without writing.
+- [x] The backfill `--apply --allow-writes` stamps only null rows.
+- [x] The backfill rejects an invalid `APP_TIME_ZONE`.
 - [x] Preflight refuses writes without `--allow-writes` or `PROBE_ALLOW=1`.
 - [x] Preflight prints hosts but never credentials.
 - [x] Preflight exits non-zero when writes are not allowed.
+
+The five script assertions run the real CLIs through `tsx`
+(`tests/db/scripts.test.ts`) with the branch URLs passed explicitly, so flag
+wiring, exit codes, printed counts, and the no-write guarantee are all covered.
 
 ### 3.9 Query and visibility behavior
 
 - [x] `getPublicEventsPage` returns only public, upcoming events.
 - [x] Category filter works.
-- [ ] When filters (any/today/week/month) use app-zone day boundaries.
+- [x] When filters (any/today/week/month) use app-zone day boundaries
+      (`tests/db/queries.test.ts`: lower bound is `now`, upper bounds are local
+      midnight, including a 23-hour and a 25-hour DST day).
 - [x] Search matches title, description, location, and organizer name.
 - [x] `%` and `_` in search match literally.
 - [x] Sort by date, newest, and popular is deterministic.
@@ -704,9 +715,12 @@ users.
 - [x] No attendee is duplicated or skipped across page boundaries.
 - [x] Cache-Control is `private, no-store`.
 - [x] A client abort does not crash the server; the next request succeeds.
-- [ ] Stream failure returns a controlled error, not a partial silent success.
-      Needs fault injection against the separately started app process; the
-      server-side catch logs and errors the stream. Deferred to Phase 6.
+- [x] Stream failure returns a controlled error, not a partial silent success.
+      The stream moved to `src/lib/attendee-csv.ts` with an injected page
+      fetcher; `tests/unit/attendee-csv.test.ts` proves a mid-export DB error
+      rejects the reader (never a clean close) and logs one
+      `attendee CSV stream failed` line. Status cannot change after the first
+      chunk, so this is asserted at the stream layer rather than over HTTP.
 
 ### 4.3 Auth routes
 
@@ -924,13 +938,21 @@ Chromium plus one mobile viewport. Each spec owns its fixtures and cleans up.
 
 ### 6.1 Fault injection
 
-- [ ] Rate limiter fails open on DB error.
-- [ ] Promotion notification failure does not roll back promotion.
-- [ ] Cancellation notification failure does not fail the cancel.
-- [ ] Comment notification failure does not fail the comment.
-- [ ] Check-in returns `{ok:false}` rather than throwing on DB failure.
-- [ ] Reminder creation never throws into the page render.
-- [ ] Event update notification failure does not fail the edit.
+- [x] Rate limiter fails open on DB error (`tests/db/rate-limit.test.ts`;
+      plus the limiter-outage case in `tests/db/fault-injection.test.ts`).
+- [x] Promotion notification failure does not roll back promotion.
+- [x] Cancellation notification failure does not fail the cancel.
+- [x] Comment notification failure does not fail the comment.
+- [x] Check-in returns `{ok:false}` rather than throwing on DB failure.
+- [x] Reminder creation never throws into the page render
+      (`tests/db/queries.test.ts`).
+- [x] Event update notification failure does not fail the edit.
+
+`tests/db/fault-injection.test.ts` drives the request-free cores and rejects
+one Prisma call per test via `tests/support/faults.ts`. The server actions add
+auth and redirects only; their ordering (commit first, best-effort fan-out
+second) is exercised end-to-end in Phase 5, so these tests are not action-level
+coverage — do not read them that way.
 
 ### 6.2 Performance smoke (optional, P2)
 
@@ -987,7 +1009,8 @@ Coverage targets:
 
 ## Traceability to the old manual QA checklist
 
-- [ ] Session-expiry redirect: E2E auth + `RsvpControls` redirect-digest test.
+- [x] Session-expiry redirect: E2E auth (expired-session-cache guard) +
+       `RsvpControls` redirect-digest test.
 - [ ] DB outage boundary: resilience job + manual retry confirmation.
 - [ ] Past-date RSVP: DB core tests + E2E past event.
 - [ ] Wall clock stability: unit time tests + DB edit tests + E2E timezone.
@@ -1021,13 +1044,16 @@ matrix that CI does not cover).
 - [x] **Phase 4 — HTTP contract** (1–2 days): CSV, ICS, auth routes, headers,
       authz. 32 tests green on a fresh branch (2026-10-28).
 - [~] **Phase 5 — E2E** (in progress): Slice A (harness), Slice B, most of Slice C, and Wave 0/1 are implemented;
-      133 Playwright tests pass on the ephemeral branch (1 opt-in db-down
-      scenario including automated recovery). Callback URLs, `data-pending`,
-      auth, browse/events/RSVP/wishlist/invites/comments/dashboard/
-      notifications/calendar/security/a11y/responsive coverage, @smoke tags,
-      and an @slow last-seat race are in place; see `phase-5-e2e.md`.
-- [ ] **Phase 6 — Hardening** (1–2 days): flake quarantine, coverage,
-      documentation, retire obsolete scripts.
+      134 Playwright tests pass on the ephemeral branch (1 opt-in db-down
+      scenario including automated recovery). This includes callback URLs,
+      `data-pending`, auth, browse/events/RSVP/wishlist/invites/comments/
+      dashboard/notifications/calendar/security/a11y/responsive coverage,
+      @smoke tags, an @slow last-seat @nightly race, and the F1 expired-
+      session-cache guard (2026-10-31); see `phase-5-e2e.md`.
+- [~] **Phase 6 — Hardening** (in progress): 6.1 fault injection and the
+      deferred 3.8/3.9/4.2 items are implemented (2026-10-30); remaining work is
+      performance smoke, deployment safety, coverage, flake quarantine, CI, and
+      retiring the obsolete scripts (see `phase-6-hardening.md`).
 
 Approximate total: 2–3 weeks for one engineer, with useful coverage landing
 after Phases 0–1.

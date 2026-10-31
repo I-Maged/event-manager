@@ -140,6 +140,31 @@ cookies instead of signing in again. The helpers retry politely (honouring
 `X-Retry-After`) when a test does hit the limit, so sign-up/sign-in coverage
 still runs against the real endpoints.
 
+### Session refresh during render
+
+The Neon Auth Next adapter writes its rotated session cookie inside
+`getSession()`, which happens during RSC renders where Next 16 throws
+`Cookies can only be modified in a Server Action or Route Handler`. The app
+therefore has two auth entry points (`src/lib/auth/server.ts`):
+
+- `authHandler` — the Next adapter. Used by `/api/auth/[...path]` and `proxy.ts`,
+  the places where writes are legal.
+- `auth` — a framework-agnostic `createAuthServer` whose cookie `set` goes
+  through `src/lib/auth/cookie-write.ts`. A render-time write is skipped and
+  logged; everything else still throws. Session data is still returned, so the
+  page renders signed in.
+
+Regression coverage: `tests/unit/auth-cookie-write.test.ts`,
+`tests/unit/auth-session-render.test.ts` (drives the real SDK with a rotating
+`/get-session` and a throwing cookie store), and the E2E guard in
+`tests/e2e/auth.spec.ts` (expired `session_data` cookie, `/account` still
+renders signed in).
+
+To exercise this manually, delete the `local.session_data` cookie in the
+browser and reload a protected page; it must render, and the server log should
+show `[neon-auth] skipped session cookie refresh during render` only if the SDK
+minted new data.
+
 ### Note: private event detail pages return 200, not 404
 
 Next 16 streams the event page, so `notFound()` renders after the response
@@ -359,10 +384,18 @@ Some things cannot be automated in this setup and stay manual:
   branch concurrently. Remaining work: full callback/error-path permutations and
   automated recovery (currently boundary + log only).
 - HTTP contract gaps: the origin-less ICS URL fallback is covered by unit
-  tests only (an HTTP request always has an origin); CSV stream failure needs
-  fault injection against the separate app process (client abort is covered);
+  tests only (an HTTP request always has an origin); CSV stream failure is
+  asserted at the stream layer (`tests/unit/attendee-csv.test.ts`, via the
+  injected page fetcher in `src/lib/attendee-csv.ts`) because a stream cannot
+  change its status after the first chunk — client abort is covered over HTTP;
   and `csvCell` neutralizes `= + - @` but not a leading tab/CR (quoted, but not
   apostrophe-prefixed).
+- E2E repeatability: fixed (Finding F1, 2026-10-30). `--repeat-each=2` used to
+  collapse from ~11 minutes in because the Neon Auth SDK refreshed its
+  session-data cookie during an RSC render and Next 16 rejects the write. The
+  session read path now skips render-time cookie writes; see
+  [Session refresh during render](#session-refresh-during-render) and
+  `phase-6-hardening.md` (Finding F1).
 - CI is not wired yet. The intended job split is in `testing_plan.md`.
 - Optional tooling (`fast-check`, `ical.js`, `csv-parse`) is not installed.
 - Runtime validation of `test-base` and the ephemeral branch still requires a

@@ -1,0 +1,42 @@
+[test-db] target:
+DATABASE_URL          -> ep-aged-fire-b2mveh77-pooler.c-6.eu-central-1.aws.neon.tech
+DATABASE_URL_UNPOOLED -> ep-aged-fire-b2mveh77.c-6.eu-central-1.aws.neon.tech
+endpoint              -> ep-aged-fire-b2mveh77
+NEON_AUTH_BASE_URL    -> ep-aged-fire-b2mveh77.neonauth.c-6.eu-central-1.aws.neon.tech
+[test-db] target:
+DATABASE_URL          -> ep-aged-fire-b2mveh77-pooler.c-6.eu-central-1.aws.neon.tech
+DATABASE_URL_UNPOOLED -> ep-aged-fire-b2mveh77.c-6.eu-central-1.aws.neon.tech
+endpoint              -> ep-aged-fire-b2mveh77
+NEON_AUTH_BASE_URL    -> ep-aged-fire-b2mveh77.neonauth.c-6.eu-central-1.aws.neon.tech
+[test-db] target:
+DATABASE_URL          -> ep-aged-fire-b2mveh77-pooler.c-6.eu-central-1.aws.neon.tech
+DATABASE_URL_UNPOOLED -> ep-aged-fire-b2mveh77.c-6.eu-central-1.aws.neon.tech
+endpoint              -> ep-aged-fire-b2mveh77
+NEON_AUTH_BASE_URL    -> ep-aged-fire-b2mveh77.neonauth.c-6.eu-central-1.aws.neon.tech
+
+Running 2 tests using 1 worker
+
+[test-db] target:
+DATABASE_URL          -> ep-aged-fire-b2mveh77-pooler.c-6.eu-central-1.aws.neon.tech
+DATABASE_URL_UNPOOLED -> ep-aged-fire-b2mveh77.c-6.eu-central-1.aws.neon.tech
+endpoint              -> ep-aged-fire-b2mveh77
+NEON_AUTH_BASE_URL    -> ep-aged-fire-b2mveh77.neonauth.c-6.eu-central-1.aws.neon.tech
+  ✓  1 [setup] › tests\e2e\auth.setup.ts:83:6 › create e2e auth roster (10.3s)
+[test-db] target:
+DATABASE_URL          -> ep-aged-fire-b2mveh77-pooler.c-6.eu-central-1.aws.neon.tech
+DATABASE_URL_UNPOOLED -> ep-aged-fire-b2mveh77.c-6.eu-central-1.aws.neon.tech
+endpoint              -> ep-aged-fire-b2mveh77
+NEON_AUTH_BASE_URL    -> ep-aged-fire-b2mveh77.neonauth.c-6.eu-central-1.aws.neon.tech
+[test-db] target:
+DATABASE_URL          -> ep-aged-fire-b2mveh77-pooler.c-6.eu-central-1.aws.neon.tech
+DATABASE_URL_UNPOOLED -> ep-aged-fire-b2mveh77.c-6.eu-central-1.aws.neon.tech
+endpoint              -> ep-aged-fire-b2mveh77
+NEON_AUTH_BASE_URL    -> ep-aged-fire-b2mveh77.neonauth.c-6.eu-central-1.aws.neon.tech
+  ✓  2 [chromium] › tests\e2e\auth.spec.ts:188:7 › Auth signed-in navbar › an expired session cache still renders signed-in pages (2.1s)
+[test-db] target:
+DATABASE_URL          -> ep-aged-fire-b2mveh77-pooler.c-6.eu-central-1.aws.neon.tech
+DATABASE_URL_UNPOOLED -> ep-aged-fire-b2mveh77.c-6.eu-central-1.aws.neon.tech
+endpoint              -> ep-aged-fire-b2mveh77
+NEON_AUTH_BASE_URL    -> ep-aged-fire-b2mveh77.neonauth.c-6.eu-central-1.aws.neon.tech
+
+  2 passed (23.4s)

@@ -1,17 +1,6 @@
 import { auth } from '@/lib/auth/server';
-import {
-  getAttendeesPage,
-  getEventById,
-  type AttendeeCsvRow,
-} from '@/lib/events';
-
-const PAGE_SIZE = 500;
-
-function csvCell(value: string): string {
-  // Prevent spreadsheet formula injection + escape quotes.
-  const safe = /^[=+\-@]/.test(value) ? `'${value}` : value;
-  return `"${safe.replace(/"/g, '""')}"`;
-}
+import { createAttendeeCsvStream } from '@/lib/attendee-csv';
+import { getAttendeesPage, getEventById } from '@/lib/events';
 
 export async function GET(
   req: Request,
@@ -28,45 +17,12 @@ export async function GET(
     return new Response('Not found', { status: 404 });
   }
 
-  const encoder = new TextEncoder();
-  const csvLine = (a: AttendeeCsvRow) =>
-    [
-      csvCell(a.status),
-      csvCell(a.attendeeName ?? ''),
-      csvCell(a.createdAt.toISOString()),
-      csvCell(a.checkedInAt?.toISOString() ?? ''),
-    ].join(',');
-
-  // Cursor-page the roster and stream it so a large export never buffers the
-  // whole attendee list (or the whole CSV) in memory.
-  let cancelled = false;
-  const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      controller.enqueue(encoder.encode('status,name,joined_at,checked_in\n'));
-      let cursor: string | undefined;
-      try {
-        for (;;) {
-          if (cancelled || req.signal.aborted) break;
-          const rows = await getAttendeesPage(event, userId, {
-            cursor,
-            take: PAGE_SIZE,
-          });
-          if (rows.length === 0) break;
-          controller.enqueue(
-            encoder.encode(rows.map(csvLine).join('\n') + '\n'),
-          );
-          if (rows.length < PAGE_SIZE) break;
-          cursor = rows[rows.length - 1].id;
-        }
-        if (!cancelled) controller.close();
-      } catch (error) {
-        console.error('attendee CSV stream failed', { eventId: id, error });
-        if (!cancelled) controller.error(error);
-      }
-    },
-    cancel() {
-      cancelled = true;
-    },
+  // Streaming (and the mid-export failure path) lives in `@/lib/attendee-csv`
+  // so it can be tested without a running app; see Phase 6 / 4.2.
+  const stream = createAttendeeCsvStream({
+    eventId: event.id,
+    signal: req.signal,
+    fetchPage: ({ cursor, take }) => getAttendeesPage(event, userId, { cursor, take }),
   });
 
   return new Response(stream, {
