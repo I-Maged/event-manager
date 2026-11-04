@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Event Manager Runtime Architecture",
+    "output": "event-manager.architecture.html",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    { "id": "browser-clients", "type": "external", "label": "Browser Clients", "sublabel": "React UI", "pos": [40, 300], "size": [150, 60] },
+    { "id": "next-server", "type": "backend", "label": "Next.js Server", "sublabel": "App Router runtime", "brand": "next-js", "pos": [220, 300], "size": [160, 60] },
+    { "id": "auth-layer", "type": "security", "label": "Auth Layer", "sublabel": "Neon Auth SDK + proxy", "brand": "neon", "pos": [220, 120], "size": [160, 60] },
+    { "id": "server-actions", "type": "backend", "label": "Server Actions & Routes", "sublabel": "mutations + route handlers", "pos": [420, 300], "size": [170, 60] },
+    { "id": "domain-services", "type": "backend", "label": "Domain Services", "sublabel": "events · RSVP · invites", "pos": [630, 300], "size": [180, 60] },
+    { "id": "rate-limiter", "type": "security", "label": "Rate Limiter", "sublabel": "per-user windows + sweep", "pos": [630, 120], "size": [180, 60] },
+    { "id": "data-access", "type": "backend", "label": "Data Access", "sublabel": "Prisma client + Neon adapter", "brand": "prisma", "pos": [850, 300], "size": [170, 60] },
+    { "id": "neon-postgres", "type": "database", "label": "Neon Postgres", "sublabel": "managed PostgreSQL", "brand": "postgresql", "pos": [1060, 300], "size": [160, 60] },
+    { "id": "gc-function", "type": "cloud", "label": "RateLimit GC", "sublabel": "Neon Function + trigger", "brand": "neon", "pos": [1060, 120], "size": [160, 60] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Application server boundary", "wraps": ["next-server", "auth-layer", "server-actions", "domain-services", "rate-limiter", "data-access"], "pad": 24 },
+    { "kind": "region", "label": "Neon managed services", "wraps": ["neon-postgres", "gc-function"], "pad": 24 },
+    { "kind": "security-group", "label": "Browser client", "wraps": ["browser-clients"], "pad": 16 }
+  ],
+  "connections": [
+    { "id": "browser-to-server", "from": "browser-clients", "to": "next-server", "label": "HTTPS + session cookie", "variant": "emphasis", "labelAt": [205, 374] },
+    { "id": "server-to-auth", "from": "auth-layer", "to": "next-server", "label": "verify session", "variant": "security", "labelAt": [300, 240] },
+    { "id": "server-to-actions", "from": "next-server", "to": "server-actions", "label": "RSC / server actions", "labelAt": [400, 374] },
+    { "id": "actions-to-domain", "from": "server-actions", "to": "domain-services", "label": "core mutations/queries", "labelAt": [610, 374] },
+    { "id": "domain-to-data", "from": "domain-services", "to": "data-access", "label": "query" },
+    { "id": "data-to-postgres", "from": "data-access", "to": "neon-postgres", "label": "SQL" },
+    { "id": "gc-to-postgres", "from": "gc-function", "to": "neon-postgres", "label": "hourly cleanup", "variant": "dashed", "labelAt": [1140, 240] }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Primary data path", "items": ["Browser request → Next.js Server → Server Actions → Domain Services → Prisma/Neon adapter → Neon Postgres", "Read renders stay server-cached; writes run through transactional cores"] },
+    { "dot": "emerald", "title": "External dependencies", "items": ["Neon Auth for managed identity, session cookies, and OAuth/Google sign-in", "Neon Postgres via pooled DATABASE_URL and the PrismaNeon adapter", "Neon Function trigger for hourly RateLimit garbage collection"] },
+    { "dot": "rose", "title": "Security & trust", "items": ["Auth middleware protects account, event creation/edit, wishlist, notifications", "Application code vs. Neon-managed service boundary", "CSP report-only, HSTS, strict origin referrer, security headers"] },
+    { "dot": "amber", "title": "Runtime invariants", "items": ["RSVP/waitlist promotion protected by per-event advisory locks", "Per-user rate limits with in-process sweep plus durable RateLimit table", "Notifications fan out to opted-in holders with 20-recipient cap"] }
+  ]
+}
