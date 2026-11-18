@@ -617,6 +617,42 @@ export async function canViewEvent(
   return rsvp !== null;
 }
 
+/**
+ * Best-effort capacity estimate for an organizer's new event: rounded median of
+ * `maxAttendees` among the organizer's past events in the same category.
+ * Prefers same location when there are enough samples. Returns null with < 2.
+ */
+export async function capacityHint(
+  userId: string,
+  category: EventCategory,
+  location: string,
+): Promise<number | null> {
+  if (!userId) return null;
+  const sameCategory = await prisma.event.findMany({
+    where: { userId, category, maxAttendees: { not: null } },
+    select: { maxAttendees: true, location: true },
+  });
+  if (sameCategory.length < 2) return null;
+
+  const loc = location.trim().toLowerCase();
+  const sameLoc = loc
+    ? sameCategory.filter((e) => e.location.trim().toLowerCase() === loc)
+    : [];
+  const pool = sameLoc.length >= 3 ? sameLoc : sameCategory;
+
+  const values = pool
+    .map((e) => e.maxAttendees)
+    .filter((n): n is number => n != null)
+    .sort((a, b) => a - b);
+  if (values.length < 2) return null;
+  const mid = Math.floor(values.length / 2);
+  const median =
+    values.length % 2 === 0
+      ? (values[mid - 1] + values[mid]) / 2
+      : values[mid];
+  return Math.round(median);
+}
+
 export function spotsLeft(
   event: Event,
   goingCount: number,

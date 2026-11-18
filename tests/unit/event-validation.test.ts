@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseEventForm } from '@/lib/event-validation';
+import { parseEventForm, parseCopilotSuggestion, validateCopilotSuggestion } from '@/lib/event-validation';
 import { DEFAULT_TIME_ZONE, zonedTimeToUtc } from '@/lib/time';
 
 /**
@@ -182,5 +182,30 @@ describe('parseEventForm dates and zones', () => {
       ok: false,
       error: 'A valid date and time is required.',
     });
+  });
+});
+
+describe('copilot suggestion validation', () => {
+  it('accepts a full valid suggestion', () => {
+    const s = { title: 'T', description: 'D', category: 'TECH', capacity: 42 };
+    expect(validateCopilotSuggestion(s)).toBe(true);
+    expect(parseCopilotSuggestion(s)).toEqual(s);
+  });
+  it('accepts partial and null capacity', () => {
+    expect(validateCopilotSuggestion({ title: 'T' })).toBe(true);
+    expect(validateCopilotSuggestion({ capacity: null })).toBe(true);
+    expect(validateCopilotSuggestion({})).toBe(true);
+  });
+  it('rejects invalid values', () => {
+    expect(validateCopilotSuggestion({ category: 'NOPE' })).toBe(false);
+    expect(validateCopilotSuggestion({ title: 'x'.repeat(201) })).toBe(false);
+    expect(validateCopilotSuggestion({ description: '' })).toBe(false);
+    expect(validateCopilotSuggestion({ capacity: 0 })).toBe(false);
+    expect(validateCopilotSuggestion({ capacity: 1.5 })).toBe(false);
+    expect(validateCopilotSuggestion(null)).toBe(false);
+    expect(validateCopilotSuggestion('str')).toBe(false);
+  });
+  it('parseCopilotSuggestion returns null on invalid', () => {
+    expect(parseCopilotSuggestion({ category: 'NOPE' })).toBeNull();
   });
 });

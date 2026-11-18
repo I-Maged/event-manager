@@ -44,6 +44,13 @@ export async function updateEvent(
   const outcome = await updateEventCore(eventId, parsed.data, organizerName, userId);
 
   if (!outcome.ok) return { error: outcome.error };
+
+  const auditId = (formData.get('auditId') as string | null)?.trim() ?? '';
+  if (auditId) {
+    await prisma.copilotAudit
+      .update({ where: { id: auditId }, data: { accepted: true, eventId } })
+      .catch(() => {});
+  }
   const { before, promoted, timeZone } = outcome;
 
   void embedEventNow({
