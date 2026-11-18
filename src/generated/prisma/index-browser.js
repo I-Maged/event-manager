@@ -188,6 +188,19 @@ exports.Prisma.UserTasteScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CopilotAuditScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  eventId: 'eventId',
+  input: 'input',
+  model: 'model',
+  rawOutput: 'rawOutput',
+  suggestion: 'suggestion',
+  accepted: 'accepted',
+  error: 'error',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.AIUsageScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -203,6 +216,15 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -211,6 +233,12 @@ exports.Prisma.QueryMode = {
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 exports.EventCategory = exports.$Enums.EventCategory = {
   MUSIC: 'MUSIC',
@@ -247,6 +275,7 @@ exports.Prisma.ModelName = {
   Notification: 'Notification',
   RateLimit: 'RateLimit',
   UserTaste: 'UserTaste',
+  CopilotAudit: 'CopilotAudit',
   AIUsage: 'AIUsage'
 };
 

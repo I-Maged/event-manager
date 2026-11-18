@@ -52,6 +52,7 @@ model Event {
   rsvps RSVP[]
   comments Comment[]
   notifications Notification[]
+  copilotAudits CopilotAudit[]
 
   @@index([userId, date])
   @@index([isPublic, date])
@@ -172,6 +173,24 @@ model UserTaste {
   eventCount Int     @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+/// Audit log for organizer copilot (description drafting) calls.
+model CopilotAudit {
+  id          String   @id @default(cuid())
+  userId      String
+  eventId     String?
+  event       Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  input       Json
+  model       String
+  rawOutput   String?
+  suggestion  Json?
+  accepted    Boolean  @default(false)
+  error       String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([eventId])
 }
 
 /// Audit/cost log for AI (OpenRouter) calls.

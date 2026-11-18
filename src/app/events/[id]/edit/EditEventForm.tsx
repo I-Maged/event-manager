@@ -1,11 +1,13 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState, useTransition } from 'react';
 import Link from 'next/link';
 import type { EventCategory } from '@/generated/prisma';
 import { EVENT_CATEGORIES } from '@/lib/categories';
 import { updateEvent } from './actions';
+import { draftEventDescription } from '../../new/actions';
 import { DeleteEventButton } from './DeleteEventButton';
+import type { CopilotSuggestion } from '@/lib/event-validation';
 
 export type EditEventInitial = {
   eventId: string;
@@ -19,8 +21,56 @@ export type EditEventInitial = {
   category: EventCategory;
 };
 
+function splitBullets(raw: string): string[] {
+  return raw
+    .split(/\n|,/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 export function EditEventForm({ initial }: { initial: EditEventInitial }) {
   const [state, formAction, isPending] = useActionState(updateEvent, null);
+
+  const [title, setTitle] = useState(initial.title);
+  const [description, setDescription] = useState(initial.description);
+  const [location, setLocation] = useState(initial.location);
+  const [maxAttendees, setMaxAttendees] = useState(initial.maxAttendees);
+  const [category, setCategory] = useState<EventCategory>(initial.category);
+  const [bullets, setBullets] = useState('');
+  const [suggestion, setSuggestion] = useState<CopilotSuggestion | null>(null);
+  const [auditId, setAuditId] = useState('');
+  const [copilotError, setCopilotError] = useState<string | null>(null);
+  const [copilotPending, startCopilot] = useTransition();
+
+  async function handleDraft() {
+    setCopilotError(null);
+    startCopilot(async () => {
+      const res = await draftEventDescription(
+        {
+          title,
+          bullets: splitBullets(bullets),
+          category,
+          location,
+        },
+        initial.eventId,
+      );
+      if (!res.ok) {
+        setCopilotError(res.error);
+        return;
+      }
+      setSuggestion(res.suggestion);
+      setAuditId(res.auditId);
+    });
+  }
+
+  function applySuggestion() {
+    if (!suggestion) return;
+    if (suggestion.title) setTitle(suggestion.title);
+    if (suggestion.description) setDescription(suggestion.description);
+    if (suggestion.category) setCategory(suggestion.category);
+    if (suggestion.capacity != null) setMaxAttendees(String(suggestion.capacity));
+    setSuggestion(null);
+  }
 
   return (
     <div className="card p-8 space-y-6">
@@ -29,6 +79,7 @@ export function EditEventForm({ initial }: { initial: EditEventInitial }) {
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="eventId" value={initial.eventId} />
         <input type="hidden" name="timeZone" value={initial.timeZone} />
+        <input type="hidden" name="auditId" value={auditId} readOnly />
 
         <div className="space-y-1.5">
           <label htmlFor="title" className="block text-sm font-medium">
@@ -40,8 +91,23 @@ export function EditEventForm({ initial }: { initial: EditEventInitial }) {
             type="text"
             required
             maxLength={200}
-            defaultValue={initial.title}
             className="input-field"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="bullets" className="block text-sm font-medium">
+            Bullet points <span className="text-muted">(for drafting)</span>
+          </label>
+          <textarea
+            id="bullets"
+            rows={3}
+            placeholder="One point per line"
+            className="input-field"
+            value={bullets}
+            onChange={(e) => setBullets(e.target.value)}
           />
         </div>
 
@@ -54,10 +120,53 @@ export function EditEventForm({ initial }: { initial: EditEventInitial }) {
             name="description"
             required
             rows={4}
-            defaultValue={initial.description}
             className="input-field"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
         </div>
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleDraft}
+            disabled={copilotPending}
+            className="btn-secondary text-sm"
+          >
+            {copilotPending ? 'Drafting…' : 'Draft description'}
+          </button>
+        </div>
+
+        {copilotError && <div className="alert-error">{copilotError}</div>}
+
+        {suggestion && (
+          <div className="rounded-md border border-border p-3 space-y-2 bg-surface">
+            <p className="text-sm font-medium">Suggested (review & apply)</p>
+            {suggestion.title && (
+              <p className="text-sm">
+                <span className="text-muted">Title:</span> {suggestion.title}
+              </p>
+            )}
+            {suggestion.description && (
+              <p className="text-sm whitespace-pre-wrap">
+                <span className="text-muted">Description:</span> {suggestion.description}
+              </p>
+            )}
+            {suggestion.category && (
+              <p className="text-sm">
+                <span className="text-muted">Category:</span> {suggestion.category}
+              </p>
+            )}
+            {suggestion.capacity != null && (
+              <p className="text-sm">
+                <span className="text-muted">Capacity:</span> {suggestion.capacity}
+              </p>
+            )}
+            <button type="button" onClick={applySuggestion} className="btn-primary text-sm">
+              Apply all
+            </button>
+          </div>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
@@ -83,8 +192,9 @@ export function EditEventForm({ initial }: { initial: EditEventInitial }) {
               type="text"
               required
               maxLength={300}
-              defaultValue={initial.location}
               className="input-field"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
             />
           </div>
         </div>
@@ -100,8 +210,9 @@ export function EditEventForm({ initial }: { initial: EditEventInitial }) {
             min={1}
             step={1}
             placeholder="Leave empty for unlimited"
-            defaultValue={initial.maxAttendees}
             className="input-field"
+            value={maxAttendees}
+            onChange={(e) => setMaxAttendees(e.target.value)}
           />
         </div>
 
@@ -113,12 +224,13 @@ export function EditEventForm({ initial }: { initial: EditEventInitial }) {
             id="category"
             name="category"
             required
-            defaultValue={initial.category}
             className="input-field"
+            value={category}
+            onChange={(e) => setCategory(e.target.value as EventCategory)}
           >
-            {EVENT_CATEGORIES.map((category) => (
-              <option key={category.value} value={category.value}>
-                {category.label}
+            {EVENT_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
               </option>
             ))}
           </select>

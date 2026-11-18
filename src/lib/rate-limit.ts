@@ -14,7 +14,8 @@ export type RateLimitScope =
   | 'commentDelete'
   | 'checkIn'
   | 'nlSearch'
-  | 'recommendation';
+  | 'recommendation'
+  | 'copilot';
 
 /**
  * Per-user budgets for the actions that write (or fan out notifications).
@@ -39,6 +40,7 @@ export const RATE_LIMITS: Record<
   checkIn: { limit: 60, windowMs: 60_000 },
   nlSearch: { limit: 20, windowMs: 60 * 60_000 },
   recommendation: { limit: 30, windowMs: 60_000 },
+  copilot: { limit: 10, windowMs: 60 * 60_000 },
 };
 
 /**

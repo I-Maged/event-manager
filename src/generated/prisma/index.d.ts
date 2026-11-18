@@ -46,6 +46,11 @@ export type RateLimit = $Result.DefaultSelection<Prisma.$RateLimitPayload>
  */
 export type UserTaste = $Result.DefaultSelection<Prisma.$UserTastePayload>
 /**
+ * Model CopilotAudit
+ * Audit log for organizer copilot (description drafting) calls.
+ */
+export type CopilotAudit = $Result.DefaultSelection<Prisma.$CopilotAuditPayload>
+/**
  * Model AIUsage
  * Audit/cost log for AI (OpenRouter) calls.
  */
@@ -285,6 +290,16 @@ export class PrismaClient<
     * ```
     */
   get userTaste(): Prisma.UserTasteDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.copilotAudit`: Exposes CRUD operations for the **CopilotAudit** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CopilotAudits
+    * const copilotAudits = await prisma.copilotAudit.findMany()
+    * ```
+    */
+  get copilotAudit(): Prisma.CopilotAuditDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.aIUsage`: Exposes CRUD operations for the **AIUsage** model.
@@ -748,6 +763,7 @@ export namespace Prisma {
     Notification: 'Notification',
     RateLimit: 'RateLimit',
     UserTaste: 'UserTaste',
+    CopilotAudit: 'CopilotAudit',
     AIUsage: 'AIUsage'
   };
 
@@ -764,7 +780,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "event" | "rSVP" | "comment" | "notification" | "rateLimit" | "userTaste" | "aIUsage"
+      modelProps: "event" | "rSVP" | "comment" | "notification" | "rateLimit" | "userTaste" | "copilotAudit" | "aIUsage"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1212,6 +1228,80 @@ export namespace Prisma {
           }
         }
       }
+      CopilotAudit: {
+        payload: Prisma.$CopilotAuditPayload<ExtArgs>
+        fields: Prisma.CopilotAuditFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CopilotAuditFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CopilotAuditPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CopilotAuditFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CopilotAuditPayload>
+          }
+          findFirst: {
+            args: Prisma.CopilotAuditFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CopilotAuditPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CopilotAuditFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CopilotAuditPayload>
+          }
+          findMany: {
+            args: Prisma.CopilotAuditFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CopilotAuditPayload>[]
+          }
+          create: {
+            args: Prisma.CopilotAuditCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CopilotAuditPayload>
+          }
+          createMany: {
+            args: Prisma.CopilotAuditCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.CopilotAuditCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CopilotAuditPayload>[]
+          }
+          delete: {
+            args: Prisma.CopilotAuditDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CopilotAuditPayload>
+          }
+          update: {
+            args: Prisma.CopilotAuditUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CopilotAuditPayload>
+          }
+          deleteMany: {
+            args: Prisma.CopilotAuditDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CopilotAuditUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.CopilotAuditUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CopilotAuditPayload>[]
+          }
+          upsert: {
+            args: Prisma.CopilotAuditUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CopilotAuditPayload>
+          }
+          aggregate: {
+            args: Prisma.CopilotAuditAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCopilotAudit>
+          }
+          groupBy: {
+            args: Prisma.CopilotAuditGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CopilotAuditGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CopilotAuditCountArgs<ExtArgs>
+            result: $Utils.Optional<CopilotAuditCountAggregateOutputType> | number
+          }
+        }
+      }
       AIUsage: {
         payload: Prisma.$AIUsagePayload<ExtArgs>
         fields: Prisma.AIUsageFieldRefs
@@ -1415,6 +1505,7 @@ export namespace Prisma {
     notification?: NotificationOmit
     rateLimit?: RateLimitOmit
     userTaste?: UserTasteOmit
+    copilotAudit?: CopilotAuditOmit
     aIUsage?: AIUsageOmit
   }
 
@@ -1499,12 +1590,14 @@ export namespace Prisma {
     rsvps: number
     comments: number
     notifications: number
+    copilotAudits: number
   }
 
   export type EventCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rsvps?: boolean | EventCountOutputTypeCountRsvpsArgs
     comments?: boolean | EventCountOutputTypeCountCommentsArgs
     notifications?: boolean | EventCountOutputTypeCountNotificationsArgs
+    copilotAudits?: boolean | EventCountOutputTypeCountCopilotAuditsArgs
   }
 
   // Custom InputTypes
@@ -1537,6 +1630,13 @@ export namespace Prisma {
    */
   export type EventCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: NotificationWhereInput
+  }
+
+  /**
+   * EventCountOutputType without action
+   */
+  export type EventCountOutputTypeCountCopilotAuditsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CopilotAuditWhereInput
   }
 
 
@@ -1833,6 +1933,7 @@ export namespace Prisma {
     rsvps?: boolean | Event$rsvpsArgs<ExtArgs>
     comments?: boolean | Event$commentsArgs<ExtArgs>
     notifications?: boolean | Event$notificationsArgs<ExtArgs>
+    copilotAudits?: boolean | Event$copilotAuditsArgs<ExtArgs>
     _count?: boolean | EventCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["event"]>
 
@@ -1898,6 +1999,7 @@ export namespace Prisma {
     rsvps?: boolean | Event$rsvpsArgs<ExtArgs>
     comments?: boolean | Event$commentsArgs<ExtArgs>
     notifications?: boolean | Event$notificationsArgs<ExtArgs>
+    copilotAudits?: boolean | Event$copilotAuditsArgs<ExtArgs>
     _count?: boolean | EventCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type EventIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1909,6 +2011,7 @@ export namespace Prisma {
       rsvps: Prisma.$RSVPPayload<ExtArgs>[]
       comments: Prisma.$CommentPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
+      copilotAudits: Prisma.$CopilotAuditPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2324,6 +2427,7 @@ export namespace Prisma {
     rsvps<T extends Event$rsvpsArgs<ExtArgs> = {}>(args?: Subset<T, Event$rsvpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RSVPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     comments<T extends Event$commentsArgs<ExtArgs> = {}>(args?: Subset<T, Event$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends Event$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, Event$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    copilotAudits<T extends Event$copilotAuditsArgs<ExtArgs> = {}>(args?: Subset<T, Event$copilotAuditsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CopilotAuditPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2831,6 +2935,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Event.copilotAudits
+   */
+  export type Event$copilotAuditsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CopilotAudit
+     */
+    select?: CopilotAuditSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CopilotAudit
+     */
+    omit?: CopilotAuditOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CopilotAuditInclude<ExtArgs> | null
+    where?: CopilotAuditWhereInput
+    orderBy?: CopilotAuditOrderByWithRelationInput | CopilotAuditOrderByWithRelationInput[]
+    cursor?: CopilotAuditWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CopilotAuditScalarFieldEnum | CopilotAuditScalarFieldEnum[]
   }
 
   /**
@@ -8249,6 +8377,1145 @@ export namespace Prisma {
 
 
   /**
+   * Model CopilotAudit
+   */
+
+  export type AggregateCopilotAudit = {
+    _count: CopilotAuditCountAggregateOutputType | null
+    _min: CopilotAuditMinAggregateOutputType | null
+    _max: CopilotAuditMaxAggregateOutputType | null
+  }
+
+  export type CopilotAuditMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    eventId: string | null
+    model: string | null
+    rawOutput: string | null
+    accepted: boolean | null
+    error: string | null
+    createdAt: Date | null
+  }
+
+  export type CopilotAuditMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    eventId: string | null
+    model: string | null
+    rawOutput: string | null
+    accepted: boolean | null
+    error: string | null
+    createdAt: Date | null
+  }
+
+  export type CopilotAuditCountAggregateOutputType = {
+    id: number
+    userId: number
+    eventId: number
+    input: number
+    model: number
+    rawOutput: number
+    suggestion: number
+    accepted: number
+    error: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type CopilotAuditMinAggregateInputType = {
+    id?: true
+    userId?: true
+    eventId?: true
+    model?: true
+    rawOutput?: true
+    accepted?: true
+    error?: true
+    createdAt?: true
+  }
+
+  export type CopilotAuditMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    eventId?: true
+    model?: true
+    rawOutput?: true
+    accepted?: true
+    error?: true
+    createdAt?: true
+  }
+
+  export type CopilotAuditCountAggregateInputType = {
+    id?: true
+    userId?: true
+    eventId?: true
+    input?: true
+    model?: true
+    rawOutput?: true
+    suggestion?: true
+    accepted?: true
+    error?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type CopilotAuditAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CopilotAudit to aggregate.
+     */
+    where?: CopilotAuditWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CopilotAudits to fetch.
+     */
+    orderBy?: CopilotAuditOrderByWithRelationInput | CopilotAuditOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CopilotAuditWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CopilotAudits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CopilotAudits.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CopilotAudits
+    **/
+    _count?: true | CopilotAuditCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CopilotAuditMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CopilotAuditMaxAggregateInputType
+  }
+
+  export type GetCopilotAuditAggregateType<T extends CopilotAuditAggregateArgs> = {
+        [P in keyof T & keyof AggregateCopilotAudit]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCopilotAudit[P]>
+      : GetScalarType<T[P], AggregateCopilotAudit[P]>
+  }
+
+
+
+
+  export type CopilotAuditGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CopilotAuditWhereInput
+    orderBy?: CopilotAuditOrderByWithAggregationInput | CopilotAuditOrderByWithAggregationInput[]
+    by: CopilotAuditScalarFieldEnum[] | CopilotAuditScalarFieldEnum
+    having?: CopilotAuditScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CopilotAuditCountAggregateInputType | true
+    _min?: CopilotAuditMinAggregateInputType
+    _max?: CopilotAuditMaxAggregateInputType
+  }
+
+  export type CopilotAuditGroupByOutputType = {
+    id: string
+    userId: string
+    eventId: string | null
+    input: JsonValue
+    model: string
+    rawOutput: string | null
+    suggestion: JsonValue | null
+    accepted: boolean
+    error: string | null
+    createdAt: Date
+    _count: CopilotAuditCountAggregateOutputType | null
+    _min: CopilotAuditMinAggregateOutputType | null
+    _max: CopilotAuditMaxAggregateOutputType | null
+  }
+
+  type GetCopilotAuditGroupByPayload<T extends CopilotAuditGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CopilotAuditGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CopilotAuditGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CopilotAuditGroupByOutputType[P]>
+            : GetScalarType<T[P], CopilotAuditGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CopilotAuditSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    eventId?: boolean
+    input?: boolean
+    model?: boolean
+    rawOutput?: boolean
+    suggestion?: boolean
+    accepted?: boolean
+    error?: boolean
+    createdAt?: boolean
+    event?: boolean | CopilotAudit$eventArgs<ExtArgs>
+  }, ExtArgs["result"]["copilotAudit"]>
+
+  export type CopilotAuditSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    eventId?: boolean
+    input?: boolean
+    model?: boolean
+    rawOutput?: boolean
+    suggestion?: boolean
+    accepted?: boolean
+    error?: boolean
+    createdAt?: boolean
+    event?: boolean | CopilotAudit$eventArgs<ExtArgs>
+  }, ExtArgs["result"]["copilotAudit"]>
+
+  export type CopilotAuditSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    eventId?: boolean
+    input?: boolean
+    model?: boolean
+    rawOutput?: boolean
+    suggestion?: boolean
+    accepted?: boolean
+    error?: boolean
+    createdAt?: boolean
+    event?: boolean | CopilotAudit$eventArgs<ExtArgs>
+  }, ExtArgs["result"]["copilotAudit"]>
+
+  export type CopilotAuditSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    eventId?: boolean
+    input?: boolean
+    model?: boolean
+    rawOutput?: boolean
+    suggestion?: boolean
+    accepted?: boolean
+    error?: boolean
+    createdAt?: boolean
+  }
+
+  export type CopilotAuditOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "eventId" | "input" | "model" | "rawOutput" | "suggestion" | "accepted" | "error" | "createdAt", ExtArgs["result"]["copilotAudit"]>
+  export type CopilotAuditInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | CopilotAudit$eventArgs<ExtArgs>
+  }
+  export type CopilotAuditIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | CopilotAudit$eventArgs<ExtArgs>
+  }
+  export type CopilotAuditIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | CopilotAudit$eventArgs<ExtArgs>
+  }
+
+  export type $CopilotAuditPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CopilotAudit"
+    objects: {
+      event: Prisma.$EventPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      eventId: string | null
+      input: Prisma.JsonValue
+      model: string
+      rawOutput: string | null
+      suggestion: Prisma.JsonValue | null
+      accepted: boolean
+      error: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["copilotAudit"]>
+    composites: {}
+  }
+
+  type CopilotAuditGetPayload<S extends boolean | null | undefined | CopilotAuditDefaultArgs> = $Result.GetResult<Prisma.$CopilotAuditPayload, S>
+
+  type CopilotAuditCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CopilotAuditFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CopilotAuditCountAggregateInputType | true
+    }
+
+  export interface CopilotAuditDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CopilotAudit'], meta: { name: 'CopilotAudit' } }
+    /**
+     * Find zero or one CopilotAudit that matches the filter.
+     * @param {CopilotAuditFindUniqueArgs} args - Arguments to find a CopilotAudit
+     * @example
+     * // Get one CopilotAudit
+     * const copilotAudit = await prisma.copilotAudit.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CopilotAuditFindUniqueArgs>(args: SelectSubset<T, CopilotAuditFindUniqueArgs<ExtArgs>>): Prisma__CopilotAuditClient<$Result.GetResult<Prisma.$CopilotAuditPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CopilotAudit that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CopilotAuditFindUniqueOrThrowArgs} args - Arguments to find a CopilotAudit
+     * @example
+     * // Get one CopilotAudit
+     * const copilotAudit = await prisma.copilotAudit.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CopilotAuditFindUniqueOrThrowArgs>(args: SelectSubset<T, CopilotAuditFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CopilotAuditClient<$Result.GetResult<Prisma.$CopilotAuditPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CopilotAudit that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CopilotAuditFindFirstArgs} args - Arguments to find a CopilotAudit
+     * @example
+     * // Get one CopilotAudit
+     * const copilotAudit = await prisma.copilotAudit.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CopilotAuditFindFirstArgs>(args?: SelectSubset<T, CopilotAuditFindFirstArgs<ExtArgs>>): Prisma__CopilotAuditClient<$Result.GetResult<Prisma.$CopilotAuditPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CopilotAudit that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CopilotAuditFindFirstOrThrowArgs} args - Arguments to find a CopilotAudit
+     * @example
+     * // Get one CopilotAudit
+     * const copilotAudit = await prisma.copilotAudit.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CopilotAuditFindFirstOrThrowArgs>(args?: SelectSubset<T, CopilotAuditFindFirstOrThrowArgs<ExtArgs>>): Prisma__CopilotAuditClient<$Result.GetResult<Prisma.$CopilotAuditPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CopilotAudits that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CopilotAuditFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CopilotAudits
+     * const copilotAudits = await prisma.copilotAudit.findMany()
+     * 
+     * // Get first 10 CopilotAudits
+     * const copilotAudits = await prisma.copilotAudit.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const copilotAuditWithIdOnly = await prisma.copilotAudit.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CopilotAuditFindManyArgs>(args?: SelectSubset<T, CopilotAuditFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CopilotAuditPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CopilotAudit.
+     * @param {CopilotAuditCreateArgs} args - Arguments to create a CopilotAudit.
+     * @example
+     * // Create one CopilotAudit
+     * const CopilotAudit = await prisma.copilotAudit.create({
+     *   data: {
+     *     // ... data to create a CopilotAudit
+     *   }
+     * })
+     * 
+     */
+    create<T extends CopilotAuditCreateArgs>(args: SelectSubset<T, CopilotAuditCreateArgs<ExtArgs>>): Prisma__CopilotAuditClient<$Result.GetResult<Prisma.$CopilotAuditPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CopilotAudits.
+     * @param {CopilotAuditCreateManyArgs} args - Arguments to create many CopilotAudits.
+     * @example
+     * // Create many CopilotAudits
+     * const copilotAudit = await prisma.copilotAudit.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CopilotAuditCreateManyArgs>(args?: SelectSubset<T, CopilotAuditCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many CopilotAudits and returns the data saved in the database.
+     * @param {CopilotAuditCreateManyAndReturnArgs} args - Arguments to create many CopilotAudits.
+     * @example
+     * // Create many CopilotAudits
+     * const copilotAudit = await prisma.copilotAudit.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many CopilotAudits and only return the `id`
+     * const copilotAuditWithIdOnly = await prisma.copilotAudit.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends CopilotAuditCreateManyAndReturnArgs>(args?: SelectSubset<T, CopilotAuditCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CopilotAuditPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a CopilotAudit.
+     * @param {CopilotAuditDeleteArgs} args - Arguments to delete one CopilotAudit.
+     * @example
+     * // Delete one CopilotAudit
+     * const CopilotAudit = await prisma.copilotAudit.delete({
+     *   where: {
+     *     // ... filter to delete one CopilotAudit
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CopilotAuditDeleteArgs>(args: SelectSubset<T, CopilotAuditDeleteArgs<ExtArgs>>): Prisma__CopilotAuditClient<$Result.GetResult<Prisma.$CopilotAuditPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CopilotAudit.
+     * @param {CopilotAuditUpdateArgs} args - Arguments to update one CopilotAudit.
+     * @example
+     * // Update one CopilotAudit
+     * const copilotAudit = await prisma.copilotAudit.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CopilotAuditUpdateArgs>(args: SelectSubset<T, CopilotAuditUpdateArgs<ExtArgs>>): Prisma__CopilotAuditClient<$Result.GetResult<Prisma.$CopilotAuditPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CopilotAudits.
+     * @param {CopilotAuditDeleteManyArgs} args - Arguments to filter CopilotAudits to delete.
+     * @example
+     * // Delete a few CopilotAudits
+     * const { count } = await prisma.copilotAudit.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CopilotAuditDeleteManyArgs>(args?: SelectSubset<T, CopilotAuditDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CopilotAudits.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CopilotAuditUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CopilotAudits
+     * const copilotAudit = await prisma.copilotAudit.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CopilotAuditUpdateManyArgs>(args: SelectSubset<T, CopilotAuditUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CopilotAudits and returns the data updated in the database.
+     * @param {CopilotAuditUpdateManyAndReturnArgs} args - Arguments to update many CopilotAudits.
+     * @example
+     * // Update many CopilotAudits
+     * const copilotAudit = await prisma.copilotAudit.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more CopilotAudits and only return the `id`
+     * const copilotAuditWithIdOnly = await prisma.copilotAudit.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends CopilotAuditUpdateManyAndReturnArgs>(args: SelectSubset<T, CopilotAuditUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CopilotAuditPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one CopilotAudit.
+     * @param {CopilotAuditUpsertArgs} args - Arguments to update or create a CopilotAudit.
+     * @example
+     * // Update or create a CopilotAudit
+     * const copilotAudit = await prisma.copilotAudit.upsert({
+     *   create: {
+     *     // ... data to create a CopilotAudit
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CopilotAudit we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CopilotAuditUpsertArgs>(args: SelectSubset<T, CopilotAuditUpsertArgs<ExtArgs>>): Prisma__CopilotAuditClient<$Result.GetResult<Prisma.$CopilotAuditPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of CopilotAudits.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CopilotAuditCountArgs} args - Arguments to filter CopilotAudits to count.
+     * @example
+     * // Count the number of CopilotAudits
+     * const count = await prisma.copilotAudit.count({
+     *   where: {
+     *     // ... the filter for the CopilotAudits we want to count
+     *   }
+     * })
+    **/
+    count<T extends CopilotAuditCountArgs>(
+      args?: Subset<T, CopilotAuditCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CopilotAuditCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CopilotAudit.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CopilotAuditAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CopilotAuditAggregateArgs>(args: Subset<T, CopilotAuditAggregateArgs>): Prisma.PrismaPromise<GetCopilotAuditAggregateType<T>>
+
+    /**
+     * Group by CopilotAudit.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CopilotAuditGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CopilotAuditGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CopilotAuditGroupByArgs['orderBy'] }
+        : { orderBy?: CopilotAuditGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CopilotAuditGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCopilotAuditGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CopilotAudit model
+   */
+  readonly fields: CopilotAuditFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CopilotAudit.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CopilotAuditClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    event<T extends CopilotAudit$eventArgs<ExtArgs> = {}>(args?: Subset<T, CopilotAudit$eventArgs<ExtArgs>>): Prisma__EventClient<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CopilotAudit model
+   */
+  interface CopilotAuditFieldRefs {
+    readonly id: FieldRef<"CopilotAudit", 'String'>
+    readonly userId: FieldRef<"CopilotAudit", 'String'>
+    readonly eventId: FieldRef<"CopilotAudit", 'String'>
+    readonly input: FieldRef<"CopilotAudit", 'Json'>
+    readonly model: FieldRef<"CopilotAudit", 'String'>
+    readonly rawOutput: FieldRef<"CopilotAudit", 'String'>
+    readonly suggestion: FieldRef<"CopilotAudit", 'Json'>
+    readonly accepted: FieldRef<"CopilotAudit", 'Boolean'>
+    readonly error: FieldRef<"CopilotAudit", 'String'>
+    readonly createdAt: FieldRef<"CopilotAudit", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CopilotAudit findUnique
+   */
+  export type CopilotAuditFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CopilotAudit
+     */
+    select?: CopilotAuditSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CopilotAudit
+     */
+    omit?: CopilotAuditOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CopilotAuditInclude<ExtArgs> | null
+    /**
+     * Filter, which CopilotAudit to fetch.
+     */
+    where: CopilotAuditWhereUniqueInput
+  }
+
+  /**
+   * CopilotAudit findUniqueOrThrow
+   */
+  export type CopilotAuditFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CopilotAudit
+     */
+    select?: CopilotAuditSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CopilotAudit
+     */
+    omit?: CopilotAuditOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CopilotAuditInclude<ExtArgs> | null
+    /**
+     * Filter, which CopilotAudit to fetch.
+     */
+    where: CopilotAuditWhereUniqueInput
+  }
+
+  /**
+   * CopilotAudit findFirst
+   */
+  export type CopilotAuditFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CopilotAudit
+     */
+    select?: CopilotAuditSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CopilotAudit
+     */
+    omit?: CopilotAuditOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CopilotAuditInclude<ExtArgs> | null
+    /**
+     * Filter, which CopilotAudit to fetch.
+     */
+    where?: CopilotAuditWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CopilotAudits to fetch.
+     */
+    orderBy?: CopilotAuditOrderByWithRelationInput | CopilotAuditOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CopilotAudits.
+     */
+    cursor?: CopilotAuditWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CopilotAudits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CopilotAudits.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CopilotAudits.
+     */
+    distinct?: CopilotAuditScalarFieldEnum | CopilotAuditScalarFieldEnum[]
+  }
+
+  /**
+   * CopilotAudit findFirstOrThrow
+   */
+  export type CopilotAuditFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CopilotAudit
+     */
+    select?: CopilotAuditSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CopilotAudit
+     */
+    omit?: CopilotAuditOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CopilotAuditInclude<ExtArgs> | null
+    /**
+     * Filter, which CopilotAudit to fetch.
+     */
+    where?: CopilotAuditWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CopilotAudits to fetch.
+     */
+    orderBy?: CopilotAuditOrderByWithRelationInput | CopilotAuditOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CopilotAudits.
+     */
+    cursor?: CopilotAuditWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CopilotAudits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CopilotAudits.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CopilotAudits.
+     */
+    distinct?: CopilotAuditScalarFieldEnum | CopilotAuditScalarFieldEnum[]
+  }
+
+  /**
+   * CopilotAudit findMany
+   */
+  export type CopilotAuditFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CopilotAudit
+     */
+    select?: CopilotAuditSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CopilotAudit
+     */
+    omit?: CopilotAuditOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CopilotAuditInclude<ExtArgs> | null
+    /**
+     * Filter, which CopilotAudits to fetch.
+     */
+    where?: CopilotAuditWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CopilotAudits to fetch.
+     */
+    orderBy?: CopilotAuditOrderByWithRelationInput | CopilotAuditOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CopilotAudits.
+     */
+    cursor?: CopilotAuditWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CopilotAudits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CopilotAudits.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CopilotAudits.
+     */
+    distinct?: CopilotAuditScalarFieldEnum | CopilotAuditScalarFieldEnum[]
+  }
+
+  /**
+   * CopilotAudit create
+   */
+  export type CopilotAuditCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CopilotAudit
+     */
+    select?: CopilotAuditSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CopilotAudit
+     */
+    omit?: CopilotAuditOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CopilotAuditInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CopilotAudit.
+     */
+    data: XOR<CopilotAuditCreateInput, CopilotAuditUncheckedCreateInput>
+  }
+
+  /**
+   * CopilotAudit createMany
+   */
+  export type CopilotAuditCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CopilotAudits.
+     */
+    data: CopilotAuditCreateManyInput | CopilotAuditCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CopilotAudit createManyAndReturn
+   */
+  export type CopilotAuditCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CopilotAudit
+     */
+    select?: CopilotAuditSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CopilotAudit
+     */
+    omit?: CopilotAuditOmit<ExtArgs> | null
+    /**
+     * The data used to create many CopilotAudits.
+     */
+    data: CopilotAuditCreateManyInput | CopilotAuditCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CopilotAuditIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CopilotAudit update
+   */
+  export type CopilotAuditUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CopilotAudit
+     */
+    select?: CopilotAuditSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CopilotAudit
+     */
+    omit?: CopilotAuditOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CopilotAuditInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CopilotAudit.
+     */
+    data: XOR<CopilotAuditUpdateInput, CopilotAuditUncheckedUpdateInput>
+    /**
+     * Choose, which CopilotAudit to update.
+     */
+    where: CopilotAuditWhereUniqueInput
+  }
+
+  /**
+   * CopilotAudit updateMany
+   */
+  export type CopilotAuditUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CopilotAudits.
+     */
+    data: XOR<CopilotAuditUpdateManyMutationInput, CopilotAuditUncheckedUpdateManyInput>
+    /**
+     * Filter which CopilotAudits to update
+     */
+    where?: CopilotAuditWhereInput
+    /**
+     * Limit how many CopilotAudits to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CopilotAudit updateManyAndReturn
+   */
+  export type CopilotAuditUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CopilotAudit
+     */
+    select?: CopilotAuditSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CopilotAudit
+     */
+    omit?: CopilotAuditOmit<ExtArgs> | null
+    /**
+     * The data used to update CopilotAudits.
+     */
+    data: XOR<CopilotAuditUpdateManyMutationInput, CopilotAuditUncheckedUpdateManyInput>
+    /**
+     * Filter which CopilotAudits to update
+     */
+    where?: CopilotAuditWhereInput
+    /**
+     * Limit how many CopilotAudits to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CopilotAuditIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CopilotAudit upsert
+   */
+  export type CopilotAuditUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CopilotAudit
+     */
+    select?: CopilotAuditSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CopilotAudit
+     */
+    omit?: CopilotAuditOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CopilotAuditInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CopilotAudit to update in case it exists.
+     */
+    where: CopilotAuditWhereUniqueInput
+    /**
+     * In case the CopilotAudit found by the `where` argument doesn't exist, create a new CopilotAudit with this data.
+     */
+    create: XOR<CopilotAuditCreateInput, CopilotAuditUncheckedCreateInput>
+    /**
+     * In case the CopilotAudit was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CopilotAuditUpdateInput, CopilotAuditUncheckedUpdateInput>
+  }
+
+  /**
+   * CopilotAudit delete
+   */
+  export type CopilotAuditDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CopilotAudit
+     */
+    select?: CopilotAuditSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CopilotAudit
+     */
+    omit?: CopilotAuditOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CopilotAuditInclude<ExtArgs> | null
+    /**
+     * Filter which CopilotAudit to delete.
+     */
+    where: CopilotAuditWhereUniqueInput
+  }
+
+  /**
+   * CopilotAudit deleteMany
+   */
+  export type CopilotAuditDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CopilotAudits to delete
+     */
+    where?: CopilotAuditWhereInput
+    /**
+     * Limit how many CopilotAudits to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CopilotAudit.event
+   */
+  export type CopilotAudit$eventArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Event
+     */
+    select?: EventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Event
+     */
+    omit?: EventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventInclude<ExtArgs> | null
+    where?: EventWhereInput
+  }
+
+  /**
+   * CopilotAudit without action
+   */
+  export type CopilotAuditDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CopilotAudit
+     */
+    select?: CopilotAuditSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CopilotAudit
+     */
+    omit?: CopilotAuditOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CopilotAuditInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model AIUsage
    */
 
@@ -9412,6 +10679,22 @@ export namespace Prisma {
   export type UserTasteScalarFieldEnum = (typeof UserTasteScalarFieldEnum)[keyof typeof UserTasteScalarFieldEnum]
 
 
+  export const CopilotAuditScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    eventId: 'eventId',
+    input: 'input',
+    model: 'model',
+    rawOutput: 'rawOutput',
+    suggestion: 'suggestion',
+    accepted: 'accepted',
+    error: 'error',
+    createdAt: 'createdAt'
+  };
+
+  export type CopilotAuditScalarFieldEnum = (typeof CopilotAuditScalarFieldEnum)[keyof typeof CopilotAuditScalarFieldEnum]
+
+
   export const AIUsageScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -9433,6 +10716,21 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
   export const QueryMode: {
     default: 'default',
     insensitive: 'insensitive'
@@ -9447,6 +10745,15 @@ export namespace Prisma {
   };
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
   /**
@@ -9546,6 +10853,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -9585,6 +10906,7 @@ export namespace Prisma {
     rsvps?: RSVPListRelationFilter
     comments?: CommentListRelationFilter
     notifications?: NotificationListRelationFilter
+    copilotAudits?: CopilotAuditListRelationFilter
   }
 
   export type EventOrderByWithRelationInput = {
@@ -9607,6 +10929,7 @@ export namespace Prisma {
     rsvps?: RSVPOrderByRelationAggregateInput
     comments?: CommentOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
+    copilotAudits?: CopilotAuditOrderByRelationAggregateInput
   }
 
   export type EventWhereUniqueInput = Prisma.AtLeast<{
@@ -9632,6 +10955,7 @@ export namespace Prisma {
     rsvps?: RSVPListRelationFilter
     comments?: CommentListRelationFilter
     notifications?: NotificationListRelationFilter
+    copilotAudits?: CopilotAuditListRelationFilter
   }, "id" | "inviteToken">
 
   export type EventOrderByWithAggregationInput = {
@@ -9999,6 +11323,86 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"UserTaste"> | Date | string
   }
 
+  export type CopilotAuditWhereInput = {
+    AND?: CopilotAuditWhereInput | CopilotAuditWhereInput[]
+    OR?: CopilotAuditWhereInput[]
+    NOT?: CopilotAuditWhereInput | CopilotAuditWhereInput[]
+    id?: StringFilter<"CopilotAudit"> | string
+    userId?: StringFilter<"CopilotAudit"> | string
+    eventId?: StringNullableFilter<"CopilotAudit"> | string | null
+    input?: JsonFilter<"CopilotAudit">
+    model?: StringFilter<"CopilotAudit"> | string
+    rawOutput?: StringNullableFilter<"CopilotAudit"> | string | null
+    suggestion?: JsonNullableFilter<"CopilotAudit">
+    accepted?: BoolFilter<"CopilotAudit"> | boolean
+    error?: StringNullableFilter<"CopilotAudit"> | string | null
+    createdAt?: DateTimeFilter<"CopilotAudit"> | Date | string
+    event?: XOR<EventNullableScalarRelationFilter, EventWhereInput> | null
+  }
+
+  export type CopilotAuditOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventId?: SortOrderInput | SortOrder
+    input?: SortOrder
+    model?: SortOrder
+    rawOutput?: SortOrderInput | SortOrder
+    suggestion?: SortOrderInput | SortOrder
+    accepted?: SortOrder
+    error?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    event?: EventOrderByWithRelationInput
+  }
+
+  export type CopilotAuditWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: CopilotAuditWhereInput | CopilotAuditWhereInput[]
+    OR?: CopilotAuditWhereInput[]
+    NOT?: CopilotAuditWhereInput | CopilotAuditWhereInput[]
+    userId?: StringFilter<"CopilotAudit"> | string
+    eventId?: StringNullableFilter<"CopilotAudit"> | string | null
+    input?: JsonFilter<"CopilotAudit">
+    model?: StringFilter<"CopilotAudit"> | string
+    rawOutput?: StringNullableFilter<"CopilotAudit"> | string | null
+    suggestion?: JsonNullableFilter<"CopilotAudit">
+    accepted?: BoolFilter<"CopilotAudit"> | boolean
+    error?: StringNullableFilter<"CopilotAudit"> | string | null
+    createdAt?: DateTimeFilter<"CopilotAudit"> | Date | string
+    event?: XOR<EventNullableScalarRelationFilter, EventWhereInput> | null
+  }, "id">
+
+  export type CopilotAuditOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventId?: SortOrderInput | SortOrder
+    input?: SortOrder
+    model?: SortOrder
+    rawOutput?: SortOrderInput | SortOrder
+    suggestion?: SortOrderInput | SortOrder
+    accepted?: SortOrder
+    error?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: CopilotAuditCountOrderByAggregateInput
+    _max?: CopilotAuditMaxOrderByAggregateInput
+    _min?: CopilotAuditMinOrderByAggregateInput
+  }
+
+  export type CopilotAuditScalarWhereWithAggregatesInput = {
+    AND?: CopilotAuditScalarWhereWithAggregatesInput | CopilotAuditScalarWhereWithAggregatesInput[]
+    OR?: CopilotAuditScalarWhereWithAggregatesInput[]
+    NOT?: CopilotAuditScalarWhereWithAggregatesInput | CopilotAuditScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"CopilotAudit"> | string
+    userId?: StringWithAggregatesFilter<"CopilotAudit"> | string
+    eventId?: StringNullableWithAggregatesFilter<"CopilotAudit"> | string | null
+    input?: JsonWithAggregatesFilter<"CopilotAudit">
+    model?: StringWithAggregatesFilter<"CopilotAudit"> | string
+    rawOutput?: StringNullableWithAggregatesFilter<"CopilotAudit"> | string | null
+    suggestion?: JsonNullableWithAggregatesFilter<"CopilotAudit">
+    accepted?: BoolWithAggregatesFilter<"CopilotAudit"> | boolean
+    error?: StringNullableWithAggregatesFilter<"CopilotAudit"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"CopilotAudit"> | Date | string
+  }
+
   export type AIUsageWhereInput = {
     AND?: AIUsageWhereInput | AIUsageWhereInput[]
     OR?: AIUsageWhereInput[]
@@ -10083,6 +11487,7 @@ export namespace Prisma {
     rsvps?: RSVPCreateNestedManyWithoutEventInput
     comments?: CommentCreateNestedManyWithoutEventInput
     notifications?: NotificationCreateNestedManyWithoutEventInput
+    copilotAudits?: CopilotAuditCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateInput = {
@@ -10105,6 +11510,7 @@ export namespace Prisma {
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
     comments?: CommentUncheckedCreateNestedManyWithoutEventInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutEventInput
+    copilotAudits?: CopilotAuditUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventUpdateInput = {
@@ -10127,6 +11533,7 @@ export namespace Prisma {
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
     comments?: CommentUpdateManyWithoutEventNestedInput
     notifications?: NotificationUpdateManyWithoutEventNestedInput
+    copilotAudits?: CopilotAuditUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateInput = {
@@ -10149,6 +11556,7 @@ export namespace Prisma {
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
     comments?: CommentUncheckedUpdateManyWithoutEventNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutEventNestedInput
+    copilotAudits?: CopilotAuditUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type EventCreateManyInput = {
@@ -10548,6 +11956,96 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type CopilotAuditCreateInput = {
+    id?: string
+    userId: string
+    input: JsonNullValueInput | InputJsonValue
+    model: string
+    rawOutput?: string | null
+    suggestion?: NullableJsonNullValueInput | InputJsonValue
+    accepted?: boolean
+    error?: string | null
+    createdAt?: Date | string
+    event?: EventCreateNestedOneWithoutCopilotAuditsInput
+  }
+
+  export type CopilotAuditUncheckedCreateInput = {
+    id?: string
+    userId: string
+    eventId?: string | null
+    input: JsonNullValueInput | InputJsonValue
+    model: string
+    rawOutput?: string | null
+    suggestion?: NullableJsonNullValueInput | InputJsonValue
+    accepted?: boolean
+    error?: string | null
+    createdAt?: Date | string
+  }
+
+  export type CopilotAuditUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    input?: JsonNullValueInput | InputJsonValue
+    model?: StringFieldUpdateOperationsInput | string
+    rawOutput?: NullableStringFieldUpdateOperationsInput | string | null
+    suggestion?: NullableJsonNullValueInput | InputJsonValue
+    accepted?: BoolFieldUpdateOperationsInput | boolean
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneWithoutCopilotAuditsNestedInput
+  }
+
+  export type CopilotAuditUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    input?: JsonNullValueInput | InputJsonValue
+    model?: StringFieldUpdateOperationsInput | string
+    rawOutput?: NullableStringFieldUpdateOperationsInput | string | null
+    suggestion?: NullableJsonNullValueInput | InputJsonValue
+    accepted?: BoolFieldUpdateOperationsInput | boolean
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CopilotAuditCreateManyInput = {
+    id?: string
+    userId: string
+    eventId?: string | null
+    input: JsonNullValueInput | InputJsonValue
+    model: string
+    rawOutput?: string | null
+    suggestion?: NullableJsonNullValueInput | InputJsonValue
+    accepted?: boolean
+    error?: string | null
+    createdAt?: Date | string
+  }
+
+  export type CopilotAuditUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    input?: JsonNullValueInput | InputJsonValue
+    model?: StringFieldUpdateOperationsInput | string
+    rawOutput?: NullableStringFieldUpdateOperationsInput | string | null
+    suggestion?: NullableJsonNullValueInput | InputJsonValue
+    accepted?: BoolFieldUpdateOperationsInput | boolean
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CopilotAuditUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    input?: JsonNullValueInput | InputJsonValue
+    model?: StringFieldUpdateOperationsInput | string
+    rawOutput?: NullableStringFieldUpdateOperationsInput | string | null
+    suggestion?: NullableJsonNullValueInput | InputJsonValue
+    accepted?: BoolFieldUpdateOperationsInput | boolean
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type AIUsageCreateInput = {
     id?: string
     userId?: string | null
@@ -10711,6 +12209,12 @@ export namespace Prisma {
     none?: NotificationWhereInput
   }
 
+  export type CopilotAuditListRelationFilter = {
+    every?: CopilotAuditWhereInput
+    some?: CopilotAuditWhereInput
+    none?: CopilotAuditWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -10725,6 +12229,10 @@ export namespace Prisma {
   }
 
   export type NotificationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CopilotAuditOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -11129,6 +12637,139 @@ export namespace Prisma {
   export type UserTasteSumOrderByAggregateInput = {
     eventCount?: SortOrder
   }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type CopilotAuditCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventId?: SortOrder
+    input?: SortOrder
+    model?: SortOrder
+    rawOutput?: SortOrder
+    suggestion?: SortOrder
+    accepted?: SortOrder
+    error?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type CopilotAuditMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventId?: SortOrder
+    model?: SortOrder
+    rawOutput?: SortOrder
+    accepted?: SortOrder
+    error?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type CopilotAuditMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventId?: SortOrder
+    model?: SortOrder
+    rawOutput?: SortOrder
+    accepted?: SortOrder
+    error?: SortOrder
+    createdAt?: SortOrder
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
 
   export type AIUsageCountOrderByAggregateInput = {
     id?: SortOrder
@@ -11191,6 +12832,13 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type CopilotAuditCreateNestedManyWithoutEventInput = {
+    create?: XOR<CopilotAuditCreateWithoutEventInput, CopilotAuditUncheckedCreateWithoutEventInput> | CopilotAuditCreateWithoutEventInput[] | CopilotAuditUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: CopilotAuditCreateOrConnectWithoutEventInput | CopilotAuditCreateOrConnectWithoutEventInput[]
+    createMany?: CopilotAuditCreateManyEventInputEnvelope
+    connect?: CopilotAuditWhereUniqueInput | CopilotAuditWhereUniqueInput[]
+  }
+
   export type RSVPUncheckedCreateNestedManyWithoutEventInput = {
     create?: XOR<RSVPCreateWithoutEventInput, RSVPUncheckedCreateWithoutEventInput> | RSVPCreateWithoutEventInput[] | RSVPUncheckedCreateWithoutEventInput[]
     connectOrCreate?: RSVPCreateOrConnectWithoutEventInput | RSVPCreateOrConnectWithoutEventInput[]
@@ -11210,6 +12858,13 @@ export namespace Prisma {
     connectOrCreate?: NotificationCreateOrConnectWithoutEventInput | NotificationCreateOrConnectWithoutEventInput[]
     createMany?: NotificationCreateManyEventInputEnvelope
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
+  export type CopilotAuditUncheckedCreateNestedManyWithoutEventInput = {
+    create?: XOR<CopilotAuditCreateWithoutEventInput, CopilotAuditUncheckedCreateWithoutEventInput> | CopilotAuditCreateWithoutEventInput[] | CopilotAuditUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: CopilotAuditCreateOrConnectWithoutEventInput | CopilotAuditCreateOrConnectWithoutEventInput[]
+    createMany?: CopilotAuditCreateManyEventInputEnvelope
+    connect?: CopilotAuditWhereUniqueInput | CopilotAuditWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -11286,6 +12941,20 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type CopilotAuditUpdateManyWithoutEventNestedInput = {
+    create?: XOR<CopilotAuditCreateWithoutEventInput, CopilotAuditUncheckedCreateWithoutEventInput> | CopilotAuditCreateWithoutEventInput[] | CopilotAuditUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: CopilotAuditCreateOrConnectWithoutEventInput | CopilotAuditCreateOrConnectWithoutEventInput[]
+    upsert?: CopilotAuditUpsertWithWhereUniqueWithoutEventInput | CopilotAuditUpsertWithWhereUniqueWithoutEventInput[]
+    createMany?: CopilotAuditCreateManyEventInputEnvelope
+    set?: CopilotAuditWhereUniqueInput | CopilotAuditWhereUniqueInput[]
+    disconnect?: CopilotAuditWhereUniqueInput | CopilotAuditWhereUniqueInput[]
+    delete?: CopilotAuditWhereUniqueInput | CopilotAuditWhereUniqueInput[]
+    connect?: CopilotAuditWhereUniqueInput | CopilotAuditWhereUniqueInput[]
+    update?: CopilotAuditUpdateWithWhereUniqueWithoutEventInput | CopilotAuditUpdateWithWhereUniqueWithoutEventInput[]
+    updateMany?: CopilotAuditUpdateManyWithWhereWithoutEventInput | CopilotAuditUpdateManyWithWhereWithoutEventInput[]
+    deleteMany?: CopilotAuditScalarWhereInput | CopilotAuditScalarWhereInput[]
+  }
+
   export type RSVPUncheckedUpdateManyWithoutEventNestedInput = {
     create?: XOR<RSVPCreateWithoutEventInput, RSVPUncheckedCreateWithoutEventInput> | RSVPCreateWithoutEventInput[] | RSVPUncheckedCreateWithoutEventInput[]
     connectOrCreate?: RSVPCreateOrConnectWithoutEventInput | RSVPCreateOrConnectWithoutEventInput[]
@@ -11326,6 +12995,20 @@ export namespace Prisma {
     update?: NotificationUpdateWithWhereUniqueWithoutEventInput | NotificationUpdateWithWhereUniqueWithoutEventInput[]
     updateMany?: NotificationUpdateManyWithWhereWithoutEventInput | NotificationUpdateManyWithWhereWithoutEventInput[]
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
+  export type CopilotAuditUncheckedUpdateManyWithoutEventNestedInput = {
+    create?: XOR<CopilotAuditCreateWithoutEventInput, CopilotAuditUncheckedCreateWithoutEventInput> | CopilotAuditCreateWithoutEventInput[] | CopilotAuditUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: CopilotAuditCreateOrConnectWithoutEventInput | CopilotAuditCreateOrConnectWithoutEventInput[]
+    upsert?: CopilotAuditUpsertWithWhereUniqueWithoutEventInput | CopilotAuditUpsertWithWhereUniqueWithoutEventInput[]
+    createMany?: CopilotAuditCreateManyEventInputEnvelope
+    set?: CopilotAuditWhereUniqueInput | CopilotAuditWhereUniqueInput[]
+    disconnect?: CopilotAuditWhereUniqueInput | CopilotAuditWhereUniqueInput[]
+    delete?: CopilotAuditWhereUniqueInput | CopilotAuditWhereUniqueInput[]
+    connect?: CopilotAuditWhereUniqueInput | CopilotAuditWhereUniqueInput[]
+    update?: CopilotAuditUpdateWithWhereUniqueWithoutEventInput | CopilotAuditUpdateWithWhereUniqueWithoutEventInput[]
+    updateMany?: CopilotAuditUpdateManyWithWhereWithoutEventInput | CopilotAuditUpdateManyWithWhereWithoutEventInput[]
+    deleteMany?: CopilotAuditScalarWhereInput | CopilotAuditScalarWhereInput[]
   }
 
   export type EventCreateNestedOneWithoutRsvpsInput = {
@@ -11386,6 +13069,22 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type EventCreateNestedOneWithoutCopilotAuditsInput = {
+    create?: XOR<EventCreateWithoutCopilotAuditsInput, EventUncheckedCreateWithoutCopilotAuditsInput>
+    connectOrCreate?: EventCreateOrConnectWithoutCopilotAuditsInput
+    connect?: EventWhereUniqueInput
+  }
+
+  export type EventUpdateOneWithoutCopilotAuditsNestedInput = {
+    create?: XOR<EventCreateWithoutCopilotAuditsInput, EventUncheckedCreateWithoutCopilotAuditsInput>
+    connectOrCreate?: EventCreateOrConnectWithoutCopilotAuditsInput
+    upsert?: EventUpsertWithoutCopilotAuditsInput
+    disconnect?: EventWhereInput | boolean
+    delete?: EventWhereInput | boolean
+    connect?: EventWhereUniqueInput
+    update?: XOR<XOR<EventUpdateToOneWithWhereWithoutCopilotAuditsInput, EventUpdateWithoutCopilotAuditsInput>, EventUncheckedUpdateWithoutCopilotAuditsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -11639,6 +13338,52 @@ export namespace Prisma {
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
   }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type RSVPCreateWithoutEventInput = {
     id?: string
@@ -11734,6 +13479,40 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CopilotAuditCreateWithoutEventInput = {
+    id?: string
+    userId: string
+    input: JsonNullValueInput | InputJsonValue
+    model: string
+    rawOutput?: string | null
+    suggestion?: NullableJsonNullValueInput | InputJsonValue
+    accepted?: boolean
+    error?: string | null
+    createdAt?: Date | string
+  }
+
+  export type CopilotAuditUncheckedCreateWithoutEventInput = {
+    id?: string
+    userId: string
+    input: JsonNullValueInput | InputJsonValue
+    model: string
+    rawOutput?: string | null
+    suggestion?: NullableJsonNullValueInput | InputJsonValue
+    accepted?: boolean
+    error?: string | null
+    createdAt?: Date | string
+  }
+
+  export type CopilotAuditCreateOrConnectWithoutEventInput = {
+    where: CopilotAuditWhereUniqueInput
+    create: XOR<CopilotAuditCreateWithoutEventInput, CopilotAuditUncheckedCreateWithoutEventInput>
+  }
+
+  export type CopilotAuditCreateManyEventInputEnvelope = {
+    data: CopilotAuditCreateManyEventInput | CopilotAuditCreateManyEventInput[]
+    skipDuplicates?: boolean
+  }
+
   export type RSVPUpsertWithWhereUniqueWithoutEventInput = {
     where: RSVPWhereUniqueInput
     update: XOR<RSVPUpdateWithoutEventInput, RSVPUncheckedUpdateWithoutEventInput>
@@ -11826,6 +13605,38 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Notification"> | Date | string
   }
 
+  export type CopilotAuditUpsertWithWhereUniqueWithoutEventInput = {
+    where: CopilotAuditWhereUniqueInput
+    update: XOR<CopilotAuditUpdateWithoutEventInput, CopilotAuditUncheckedUpdateWithoutEventInput>
+    create: XOR<CopilotAuditCreateWithoutEventInput, CopilotAuditUncheckedCreateWithoutEventInput>
+  }
+
+  export type CopilotAuditUpdateWithWhereUniqueWithoutEventInput = {
+    where: CopilotAuditWhereUniqueInput
+    data: XOR<CopilotAuditUpdateWithoutEventInput, CopilotAuditUncheckedUpdateWithoutEventInput>
+  }
+
+  export type CopilotAuditUpdateManyWithWhereWithoutEventInput = {
+    where: CopilotAuditScalarWhereInput
+    data: XOR<CopilotAuditUpdateManyMutationInput, CopilotAuditUncheckedUpdateManyWithoutEventInput>
+  }
+
+  export type CopilotAuditScalarWhereInput = {
+    AND?: CopilotAuditScalarWhereInput | CopilotAuditScalarWhereInput[]
+    OR?: CopilotAuditScalarWhereInput[]
+    NOT?: CopilotAuditScalarWhereInput | CopilotAuditScalarWhereInput[]
+    id?: StringFilter<"CopilotAudit"> | string
+    userId?: StringFilter<"CopilotAudit"> | string
+    eventId?: StringNullableFilter<"CopilotAudit"> | string | null
+    input?: JsonFilter<"CopilotAudit">
+    model?: StringFilter<"CopilotAudit"> | string
+    rawOutput?: StringNullableFilter<"CopilotAudit"> | string | null
+    suggestion?: JsonNullableFilter<"CopilotAudit">
+    accepted?: BoolFilter<"CopilotAudit"> | boolean
+    error?: StringNullableFilter<"CopilotAudit"> | string | null
+    createdAt?: DateTimeFilter<"CopilotAudit"> | Date | string
+  }
+
   export type EventCreateWithoutRsvpsInput = {
     id?: string
     title: string
@@ -11845,6 +13656,7 @@ export namespace Prisma {
     embeddingModel?: string | null
     comments?: CommentCreateNestedManyWithoutEventInput
     notifications?: NotificationCreateNestedManyWithoutEventInput
+    copilotAudits?: CopilotAuditCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutRsvpsInput = {
@@ -11866,6 +13678,7 @@ export namespace Prisma {
     embeddingModel?: string | null
     comments?: CommentUncheckedCreateNestedManyWithoutEventInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutEventInput
+    copilotAudits?: CopilotAuditUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutRsvpsInput = {
@@ -11903,6 +13716,7 @@ export namespace Prisma {
     embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     comments?: CommentUpdateManyWithoutEventNestedInput
     notifications?: NotificationUpdateManyWithoutEventNestedInput
+    copilotAudits?: CopilotAuditUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutRsvpsInput = {
@@ -11924,6 +13738,7 @@ export namespace Prisma {
     embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     comments?: CommentUncheckedUpdateManyWithoutEventNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutEventNestedInput
+    copilotAudits?: CopilotAuditUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type EventCreateWithoutCommentsInput = {
@@ -11945,6 +13760,7 @@ export namespace Prisma {
     embeddingModel?: string | null
     rsvps?: RSVPCreateNestedManyWithoutEventInput
     notifications?: NotificationCreateNestedManyWithoutEventInput
+    copilotAudits?: CopilotAuditCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutCommentsInput = {
@@ -11966,6 +13782,7 @@ export namespace Prisma {
     embeddingModel?: string | null
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutEventInput
+    copilotAudits?: CopilotAuditUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutCommentsInput = {
@@ -12003,6 +13820,7 @@ export namespace Prisma {
     embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
     notifications?: NotificationUpdateManyWithoutEventNestedInput
+    copilotAudits?: CopilotAuditUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutCommentsInput = {
@@ -12024,6 +13842,7 @@ export namespace Prisma {
     embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutEventNestedInput
+    copilotAudits?: CopilotAuditUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type EventCreateWithoutNotificationsInput = {
@@ -12045,6 +13864,7 @@ export namespace Prisma {
     embeddingModel?: string | null
     rsvps?: RSVPCreateNestedManyWithoutEventInput
     comments?: CommentCreateNestedManyWithoutEventInput
+    copilotAudits?: CopilotAuditCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutNotificationsInput = {
@@ -12066,6 +13886,7 @@ export namespace Prisma {
     embeddingModel?: string | null
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
     comments?: CommentUncheckedCreateNestedManyWithoutEventInput
+    copilotAudits?: CopilotAuditUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutNotificationsInput = {
@@ -12103,6 +13924,7 @@ export namespace Prisma {
     embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
     comments?: CommentUpdateManyWithoutEventNestedInput
+    copilotAudits?: CopilotAuditUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutNotificationsInput = {
@@ -12124,6 +13946,111 @@ export namespace Prisma {
     embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
     comments?: CommentUncheckedUpdateManyWithoutEventNestedInput
+    copilotAudits?: CopilotAuditUncheckedUpdateManyWithoutEventNestedInput
+  }
+
+  export type EventCreateWithoutCopilotAuditsInput = {
+    id?: string
+    title: string
+    description: string
+    date: Date | string
+    timeZone?: string | null
+    location: string
+    maxAttendees?: number | null
+    isPublic?: boolean
+    category?: $Enums.EventCategory
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
+    organizerName?: string | null
+    inviteToken?: string | null
+    embeddedAt?: Date | string | null
+    embeddingModel?: string | null
+    rsvps?: RSVPCreateNestedManyWithoutEventInput
+    comments?: CommentCreateNestedManyWithoutEventInput
+    notifications?: NotificationCreateNestedManyWithoutEventInput
+  }
+
+  export type EventUncheckedCreateWithoutCopilotAuditsInput = {
+    id?: string
+    title: string
+    description: string
+    date: Date | string
+    timeZone?: string | null
+    location: string
+    maxAttendees?: number | null
+    isPublic?: boolean
+    category?: $Enums.EventCategory
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
+    organizerName?: string | null
+    inviteToken?: string | null
+    embeddedAt?: Date | string | null
+    embeddingModel?: string | null
+    rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
+    comments?: CommentUncheckedCreateNestedManyWithoutEventInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutEventInput
+  }
+
+  export type EventCreateOrConnectWithoutCopilotAuditsInput = {
+    where: EventWhereUniqueInput
+    create: XOR<EventCreateWithoutCopilotAuditsInput, EventUncheckedCreateWithoutCopilotAuditsInput>
+  }
+
+  export type EventUpsertWithoutCopilotAuditsInput = {
+    update: XOR<EventUpdateWithoutCopilotAuditsInput, EventUncheckedUpdateWithoutCopilotAuditsInput>
+    create: XOR<EventCreateWithoutCopilotAuditsInput, EventUncheckedCreateWithoutCopilotAuditsInput>
+    where?: EventWhereInput
+  }
+
+  export type EventUpdateToOneWithWhereWithoutCopilotAuditsInput = {
+    where?: EventWhereInput
+    data: XOR<EventUpdateWithoutCopilotAuditsInput, EventUncheckedUpdateWithoutCopilotAuditsInput>
+  }
+
+  export type EventUpdateWithoutCopilotAuditsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    timeZone?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    isPublic?: BoolFieldUpdateOperationsInput | boolean
+    category?: EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizerName?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
+    rsvps?: RSVPUpdateManyWithoutEventNestedInput
+    comments?: CommentUpdateManyWithoutEventNestedInput
+    notifications?: NotificationUpdateManyWithoutEventNestedInput
+  }
+
+  export type EventUncheckedUpdateWithoutCopilotAuditsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    timeZone?: NullableStringFieldUpdateOperationsInput | string | null
+    location?: StringFieldUpdateOperationsInput | string
+    maxAttendees?: NullableIntFieldUpdateOperationsInput | number | null
+    isPublic?: BoolFieldUpdateOperationsInput | boolean
+    category?: EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizerName?: NullableStringFieldUpdateOperationsInput | string | null
+    inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
+    rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutEventNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type RSVPCreateManyEventInput = {
@@ -12155,6 +14082,18 @@ export namespace Prisma {
     title: string
     body?: string | null
     readAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type CopilotAuditCreateManyEventInput = {
+    id?: string
+    userId: string
+    input: JsonNullValueInput | InputJsonValue
+    model: string
+    rawOutput?: string | null
+    suggestion?: NullableJsonNullValueInput | InputJsonValue
+    accepted?: boolean
+    error?: string | null
     createdAt?: Date | string
   }
 
@@ -12251,6 +14190,42 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     body?: NullableStringFieldUpdateOperationsInput | string | null
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CopilotAuditUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    input?: JsonNullValueInput | InputJsonValue
+    model?: StringFieldUpdateOperationsInput | string
+    rawOutput?: NullableStringFieldUpdateOperationsInput | string | null
+    suggestion?: NullableJsonNullValueInput | InputJsonValue
+    accepted?: BoolFieldUpdateOperationsInput | boolean
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CopilotAuditUncheckedUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    input?: JsonNullValueInput | InputJsonValue
+    model?: StringFieldUpdateOperationsInput | string
+    rawOutput?: NullableStringFieldUpdateOperationsInput | string | null
+    suggestion?: NullableJsonNullValueInput | InputJsonValue
+    accepted?: BoolFieldUpdateOperationsInput | boolean
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CopilotAuditUncheckedUpdateManyWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    input?: JsonNullValueInput | InputJsonValue
+    model?: StringFieldUpdateOperationsInput | string
+    rawOutput?: NullableStringFieldUpdateOperationsInput | string | null
+    suggestion?: NullableJsonNullValueInput | InputJsonValue
+    accepted?: BoolFieldUpdateOperationsInput | boolean
+    error?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

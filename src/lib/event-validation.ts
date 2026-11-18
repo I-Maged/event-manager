@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { EventCategory } from '@/generated/prisma';
 import { DEFAULT_CATEGORY, isEventCategory } from '@/lib/categories';
 import { DEFAULT_TIME_ZONE, isValidTimeZone, zonedTimeToUtc } from '@/lib/time';
@@ -89,3 +90,57 @@ export function parseEventForm(
     },
   };
 }
+
+// ---------------------------------------------------------------------------
+// Organizer copilot (description drafting)
+// ---------------------------------------------------------------------------
+
+export type CopilotSuggestion = {
+  title?: string;
+  description?: string;
+  category?: EventCategory;
+  capacity?: number | null;
+};
+
+export type DraftDescriptionInput = {
+  title: string;
+  bullets: string[];
+  category: EventCategory;
+  location?: string;
+  capacityHint?: number | null;
+};
+
+export type DraftDescriptionResult =
+  | { ok: true; suggestion: CopilotSuggestion }
+  | { ok: false; error: string };
+
+const copilotSuggestionSchema = z.object({
+  title: z.string().max(200).optional(),
+  description: z.string().min(1).max(5000).optional(),
+  category: z
+    .enum([
+      'MUSIC',
+      'SPORTS',
+      'TECH',
+      'ARTS',
+      'FOOD',
+      'WELLNESS',
+      'COMMUNITY',
+      'BUSINESS',
+      'EDUCATION',
+      'OTHER',
+    ])
+    .optional(),
+  capacity: z.number().int().min(1).max(100000).nullable().optional(),
+});
+
+export function validateCopilotSuggestion(s: unknown): s is CopilotSuggestion {
+  return copilotSuggestionSchema.safeParse(s).success;
+}
+
+export function parseCopilotSuggestion(s: unknown): CopilotSuggestion | null {
+  const r = copilotSuggestionSchema.safeParse(s);
+  return r.success ? r.data : null;
+}
+
+
