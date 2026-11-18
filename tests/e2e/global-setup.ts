@@ -19,7 +19,6 @@ export default async function globalSetup(): Promise<void> {
 
   const dbDownUrl =
     process.env.TEST_E2E_DB_DOWN_URL ?? 'http://localhost:3201';
-  const dbDownPort = Number(new URL(dbDownUrl).port || 3201);
   mkdirSync(resolve(process.cwd(), 'test-results'), { recursive: true });
   const logPath = resolve(process.cwd(), 'test-results', 'server-dbdown.log');
   const env: Record<string, string> = {};
@@ -34,7 +33,7 @@ export default async function globalSetup(): Promise<void> {
   env.E2E_SKIP_BUILD = '1';
   env.E2E_SERVER_LOG = logPath;
 
-  const child: any = spawn('npx', ['tsx', 'scripts/start-test-app.ts'], {
+  const child = spawn('npx', ['tsx', 'scripts/start-test-app.ts'], {
     cwd: process.cwd(),
     env: env as NodeJS.ProcessEnv,
     detached: false,

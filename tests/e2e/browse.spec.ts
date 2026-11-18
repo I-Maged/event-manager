@@ -127,7 +127,6 @@ test.describe('Browse and discovery', () => {
   });
 
   test('busy card shows Full for a capped event', async ({ page }) => {
-    const roster = readRoster();
     const event = await makeEvent('Full event', { maxAttendees: 1 });
     await prisma.rSVP.create({
       data: {

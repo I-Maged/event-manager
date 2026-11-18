@@ -34,7 +34,7 @@ test.describe('Security', () => {
       triggered = true;
     });
     await page.addInitScript(() => {
-      (window as any).__xss = false;
+      (window as Window & { __xss?: boolean }).__xss = false;
     });
     const roster = readRoster();
     const event = await seedEvent({
@@ -46,7 +46,9 @@ test.describe('Security', () => {
       body: '<img src=x onerror=window.__xss=true>',
     });
     await page.goto(`/events/${event.id}`);
-    const xss = await page.evaluate(() => (window as any).__xss === true);
+    const xss = await page.evaluate(
+      () => (window as Window & { __xss?: boolean }).__xss === true,
+    );
     expect(xss || triggered).toBeFalsy();
   });
 

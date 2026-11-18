@@ -124,9 +124,6 @@ test.describe('Notifications', () => {
 
   test('scoping: another user cannot clear victim unread rows', async ({ browser }) => {
     const roster = readRoster();
-    const victim = (await prisma.user?.findUnique?.({ where: { id: roster.organizer.userId } })) ?? null;
-    void victim;
-    const outsiderRoster = readRoster();
     await seedNotification(roster.organizer.userId, { title: 'Victim notification' });
     const { context, page } = await newRolePage(browser, 'outsider');
     await page.goto('/notifications');

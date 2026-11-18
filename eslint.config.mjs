@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "coverage/**",
     // Generated Prisma client: not hand-edited, and linting it produced ~226
     // errors that drowned out real findings (see implementation_plan.md
     // Appendix B).

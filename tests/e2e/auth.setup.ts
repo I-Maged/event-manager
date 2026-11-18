@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { test as setup } from '@playwright/test';
+import { test as setup, type Browser } from '@playwright/test';
 import { E2E_BASE_URL, E2E_ENABLED, E2E_ROSTER_PATH, E2E_SKIP_REASON } from './support/env';
 
 const DEFAULT_PASSWORD = 'Secret1234!';
@@ -15,7 +15,7 @@ async function sleep(ms: number): Promise<void> {
 }
 
 async function createRole(
-  browser: any,
+  browser: Browser,
   role: string,
   name: string,
 ): Promise<{ email: string; password: string; userId: string }> {

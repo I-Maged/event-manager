@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { E2E_ENABLED, E2E_SKIP_REASON } from './support/env';
 import { storageStatePath } from './support/fixtures';
 import { readRoster } from './support/fixtures';
-import { resetDomainTables, prisma, seedEvent, seedRsvp } from './support/db';
+import { resetDomainTables, seedEvent, seedRsvp } from './support/db';
 
 test.describe('Organizer dashboard', () => {
   test.use({ storageState: storageStatePath('organizer') });

@@ -16,5 +16,5 @@ export async function semanticCommentSearch(eventId: string, query: string, limi
   if (ids.length === 0) return []
   const comments = await prisma.comment.findMany({ where: { id: { in: ids } } })
   const byId = new Map(comments.map((c) => [c.id, c]))
-  return ids.map((id) => byId.get(id)).filter(Boolean)
+  return ids.map((id) => byId.get(id)).filter((c): c is NonNullable<typeof c> => Boolean(c))
 }

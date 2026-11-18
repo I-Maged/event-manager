@@ -26,7 +26,6 @@ function hostOf(value: string | null | undefined): string | null {
 }
 
 const e2eBaseURL = process.env.TEST_E2E_BASE_URL ?? 'http://localhost:3200';
-const e2ePort = Number(new URL(e2eBaseURL).port || 3200);
 
 const dbReady =
   hasTestEnvFile &&

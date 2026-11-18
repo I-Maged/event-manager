@@ -17,6 +17,7 @@ import {
   PAGE_SIZE,
 } from '@/lib/events';
 import { getRecommendedEvents } from '@/lib/ai/recommendations';
+import { semanticEventSearch } from '@/lib/ai/semantic-events';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { prisma } from '@/db';
 
@@ -49,6 +50,7 @@ export default async function EventsPage({
   let total: number
   let page: number
   let pageCount: number
+  let semanticUnavailable = false
 
   if (recommended) {
     const r = await getRecommendedEvents({ userId: myId!, page: params.page, pageSize: PAGE_SIZE })
@@ -59,6 +61,13 @@ export default async function EventsPage({
     try {
       await prisma.aIUsage.create({ data: { userId: myId!, feature: 'recommendations', model: process.env.OPENROUTER_EMBEDDING_MODEL ?? 'nvidia/nemotron-3.5-embed-1b:free' } })
     } catch {}
+  } else if (nlFlag && params.q) {
+    const r = await semanticEventSearch(params, params.page, PAGE_SIZE)
+    events = r.events
+    total = r.total
+    page = r.page
+    pageCount = r.pageCount
+    semanticUnavailable = r.semanticUnavailable
   } else {
     const r = await getPublicEventsPage(params)
     events = r.events
@@ -109,6 +118,11 @@ export default async function EventsPage({
       {nlFlag && (
         <div className="card p-3 text-sm text-muted">
           Showing results interpreted from your AI search. Adjust filters as needed.
+        </div>
+      )}
+      {nlFlag && semanticUnavailable && (
+        <div className="card p-3 text-sm text-amber-600">
+          Semantic search is temporarily unavailable; showing text matches only.
         </div>
       )}
 
