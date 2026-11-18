@@ -7,6 +7,7 @@ import { auth } from '@/lib/auth/server';
 import { parseEventForm } from '@/lib/event-validation';
 import { resolveOrganizerName } from '@/lib/events';
 import { enforceRateLimit } from '@/lib/rate-limit';
+import { embedEventNow } from '@/lib/ai/embeddings';
 
 export async function createEvent(
   _prevState: { error: string } | null,
@@ -29,8 +30,11 @@ export async function createEvent(
       userId,
       organizerName: resolveOrganizerName(session?.user),
     },
-    select: { id: true },
+    select: { id: true, title: true, description: true, category: true, location: true, organizerName: true },
   });
+
+  // Best-effort semantic embedding (non-blocking): never delay redirect.
+  void embedEventNow(event).catch((err) => console.error('event embedding failed', err))
 
   revalidatePath('/events');
   redirect(`/events/${event.id}`);

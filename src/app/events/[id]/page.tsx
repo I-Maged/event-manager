@@ -28,6 +28,7 @@ import {
 import { formatEventDate } from '@/lib/time';
 import { CommentForm } from './comments/CommentForm';
 import { CommentDeleteButton } from './comments/CommentDeleteButton';
+import { CommentSearch } from '@/components/CommentSearch';
 
 export async function generateMetadata({
   params,
@@ -108,6 +109,7 @@ async function CommentSection({ eventId }: { eventId: string }) {
   return (
     <div className="card p-6 space-y-4">
       <h2 className="font-semibold">Comments ({commentCount})</h2>
+      <CommentSearch eventId={eventId} />
       {comments.length === 0 ? (
         <p className="text-sm text-muted">
           No comments yet. Ask a question or share details.

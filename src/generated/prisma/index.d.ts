@@ -39,6 +39,17 @@ export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
  * store because this stack has no Redis. One row per `{scope}:{userId}` key.
  */
 export type RateLimit = $Result.DefaultSelection<Prisma.$RateLimitPayload>
+/**
+ * Model UserTaste
+ * Per-user taste vector for personalized recommendations. Computed as the
+ * weighted average of embeddings of events the user has RSVP'd to.
+ */
+export type UserTaste = $Result.DefaultSelection<Prisma.$UserTastePayload>
+/**
+ * Model AIUsage
+ * Audit/cost log for AI (OpenRouter) calls.
+ */
+export type AIUsage = $Result.DefaultSelection<Prisma.$AIUsagePayload>
 
 /**
  * Enums
@@ -264,6 +275,26 @@ export class PrismaClient<
     * ```
     */
   get rateLimit(): Prisma.RateLimitDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.userTaste`: Exposes CRUD operations for the **UserTaste** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserTastes
+    * const userTastes = await prisma.userTaste.findMany()
+    * ```
+    */
+  get userTaste(): Prisma.UserTasteDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.aIUsage`: Exposes CRUD operations for the **AIUsage** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AIUsages
+    * const aIUsages = await prisma.aIUsage.findMany()
+    * ```
+    */
+  get aIUsage(): Prisma.AIUsageDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -715,7 +746,9 @@ export namespace Prisma {
     RSVP: 'RSVP',
     Comment: 'Comment',
     Notification: 'Notification',
-    RateLimit: 'RateLimit'
+    RateLimit: 'RateLimit',
+    UserTaste: 'UserTaste',
+    AIUsage: 'AIUsage'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -731,7 +764,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "event" | "rSVP" | "comment" | "notification" | "rateLimit"
+      modelProps: "event" | "rSVP" | "comment" | "notification" | "rateLimit" | "userTaste" | "aIUsage"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1105,6 +1138,154 @@ export namespace Prisma {
           }
         }
       }
+      UserTaste: {
+        payload: Prisma.$UserTastePayload<ExtArgs>
+        fields: Prisma.UserTasteFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserTasteFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTastePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserTasteFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTastePayload>
+          }
+          findFirst: {
+            args: Prisma.UserTasteFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTastePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserTasteFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTastePayload>
+          }
+          findMany: {
+            args: Prisma.UserTasteFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTastePayload>[]
+          }
+          create: {
+            args: Prisma.UserTasteCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTastePayload>
+          }
+          createMany: {
+            args: Prisma.UserTasteCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UserTasteCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTastePayload>[]
+          }
+          delete: {
+            args: Prisma.UserTasteDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTastePayload>
+          }
+          update: {
+            args: Prisma.UserTasteUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTastePayload>
+          }
+          deleteMany: {
+            args: Prisma.UserTasteDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserTasteUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UserTasteUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTastePayload>[]
+          }
+          upsert: {
+            args: Prisma.UserTasteUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTastePayload>
+          }
+          aggregate: {
+            args: Prisma.UserTasteAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserTaste>
+          }
+          groupBy: {
+            args: Prisma.UserTasteGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserTasteGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UserTasteCountArgs<ExtArgs>
+            result: $Utils.Optional<UserTasteCountAggregateOutputType> | number
+          }
+        }
+      }
+      AIUsage: {
+        payload: Prisma.$AIUsagePayload<ExtArgs>
+        fields: Prisma.AIUsageFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AIUsageFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIUsagePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AIUsageFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIUsagePayload>
+          }
+          findFirst: {
+            args: Prisma.AIUsageFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIUsagePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AIUsageFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIUsagePayload>
+          }
+          findMany: {
+            args: Prisma.AIUsageFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIUsagePayload>[]
+          }
+          create: {
+            args: Prisma.AIUsageCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIUsagePayload>
+          }
+          createMany: {
+            args: Prisma.AIUsageCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AIUsageCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIUsagePayload>[]
+          }
+          delete: {
+            args: Prisma.AIUsageDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIUsagePayload>
+          }
+          update: {
+            args: Prisma.AIUsageUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIUsagePayload>
+          }
+          deleteMany: {
+            args: Prisma.AIUsageDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AIUsageUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AIUsageUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIUsagePayload>[]
+          }
+          upsert: {
+            args: Prisma.AIUsageUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AIUsagePayload>
+          }
+          aggregate: {
+            args: Prisma.AIUsageAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAIUsage>
+          }
+          groupBy: {
+            args: Prisma.AIUsageGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AIUsageGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AIUsageCountArgs<ExtArgs>
+            result: $Utils.Optional<AIUsageCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1233,6 +1414,8 @@ export namespace Prisma {
     comment?: CommentOmit
     notification?: NotificationOmit
     rateLimit?: RateLimitOmit
+    userTaste?: UserTasteOmit
+    aIUsage?: AIUsageOmit
   }
 
   /* Types for Logging */
@@ -1396,6 +1579,8 @@ export namespace Prisma {
     userId: string | null
     organizerName: string | null
     inviteToken: string | null
+    embeddedAt: Date | null
+    embeddingModel: string | null
   }
 
   export type EventMaxAggregateOutputType = {
@@ -1413,6 +1598,8 @@ export namespace Prisma {
     userId: string | null
     organizerName: string | null
     inviteToken: string | null
+    embeddedAt: Date | null
+    embeddingModel: string | null
   }
 
   export type EventCountAggregateOutputType = {
@@ -1430,6 +1617,8 @@ export namespace Prisma {
     userId: number
     organizerName: number
     inviteToken: number
+    embeddedAt: number
+    embeddingModel: number
     _all: number
   }
 
@@ -1457,6 +1646,8 @@ export namespace Prisma {
     userId?: true
     organizerName?: true
     inviteToken?: true
+    embeddedAt?: true
+    embeddingModel?: true
   }
 
   export type EventMaxAggregateInputType = {
@@ -1474,6 +1665,8 @@ export namespace Prisma {
     userId?: true
     organizerName?: true
     inviteToken?: true
+    embeddedAt?: true
+    embeddingModel?: true
   }
 
   export type EventCountAggregateInputType = {
@@ -1491,6 +1684,8 @@ export namespace Prisma {
     userId?: true
     organizerName?: true
     inviteToken?: true
+    embeddedAt?: true
+    embeddingModel?: true
     _all?: true
   }
 
@@ -1595,6 +1790,8 @@ export namespace Prisma {
     userId: string
     organizerName: string | null
     inviteToken: string | null
+    embeddedAt: Date | null
+    embeddingModel: string | null
     _count: EventCountAggregateOutputType | null
     _avg: EventAvgAggregateOutputType | null
     _sum: EventSumAggregateOutputType | null
@@ -1631,6 +1828,8 @@ export namespace Prisma {
     userId?: boolean
     organizerName?: boolean
     inviteToken?: boolean
+    embeddedAt?: boolean
+    embeddingModel?: boolean
     rsvps?: boolean | Event$rsvpsArgs<ExtArgs>
     comments?: boolean | Event$commentsArgs<ExtArgs>
     notifications?: boolean | Event$notificationsArgs<ExtArgs>
@@ -1652,6 +1851,8 @@ export namespace Prisma {
     userId?: boolean
     organizerName?: boolean
     inviteToken?: boolean
+    embeddedAt?: boolean
+    embeddingModel?: boolean
   }, ExtArgs["result"]["event"]>
 
   export type EventSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -1669,6 +1870,8 @@ export namespace Prisma {
     userId?: boolean
     organizerName?: boolean
     inviteToken?: boolean
+    embeddedAt?: boolean
+    embeddingModel?: boolean
   }, ExtArgs["result"]["event"]>
 
   export type EventSelectScalar = {
@@ -1686,9 +1889,11 @@ export namespace Prisma {
     userId?: boolean
     organizerName?: boolean
     inviteToken?: boolean
+    embeddedAt?: boolean
+    embeddingModel?: boolean
   }
 
-  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "date" | "timeZone" | "location" | "maxAttendees" | "isPublic" | "category" | "createdAt" | "updatedAt" | "userId" | "organizerName" | "inviteToken", ExtArgs["result"]["event"]>
+  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "date" | "timeZone" | "location" | "maxAttendees" | "isPublic" | "category" | "createdAt" | "updatedAt" | "userId" | "organizerName" | "inviteToken" | "embeddedAt" | "embeddingModel", ExtArgs["result"]["event"]>
   export type EventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rsvps?: boolean | Event$rsvpsArgs<ExtArgs>
     comments?: boolean | Event$commentsArgs<ExtArgs>
@@ -1720,6 +1925,8 @@ export namespace Prisma {
       userId: string
       organizerName: string | null
       inviteToken: string | null
+      embeddedAt: Date | null
+      embeddingModel: string | null
     }, ExtArgs["result"]["event"]>
     composites: {}
   }
@@ -2160,6 +2367,8 @@ export namespace Prisma {
     readonly userId: FieldRef<"Event", 'String'>
     readonly organizerName: FieldRef<"Event", 'String'>
     readonly inviteToken: FieldRef<"Event", 'String'>
+    readonly embeddedAt: FieldRef<"Event", 'DateTime'>
+    readonly embeddingModel: FieldRef<"Event", 'String'>
   }
     
 
@@ -3804,6 +4013,7 @@ export namespace Prisma {
     authorName: string | null
     body: string | null
     createdAt: Date | null
+    embeddedAt: Date | null
   }
 
   export type CommentMaxAggregateOutputType = {
@@ -3813,6 +4023,7 @@ export namespace Prisma {
     authorName: string | null
     body: string | null
     createdAt: Date | null
+    embeddedAt: Date | null
   }
 
   export type CommentCountAggregateOutputType = {
@@ -3822,6 +4033,7 @@ export namespace Prisma {
     authorName: number
     body: number
     createdAt: number
+    embeddedAt: number
     _all: number
   }
 
@@ -3833,6 +4045,7 @@ export namespace Prisma {
     authorName?: true
     body?: true
     createdAt?: true
+    embeddedAt?: true
   }
 
   export type CommentMaxAggregateInputType = {
@@ -3842,6 +4055,7 @@ export namespace Prisma {
     authorName?: true
     body?: true
     createdAt?: true
+    embeddedAt?: true
   }
 
   export type CommentCountAggregateInputType = {
@@ -3851,6 +4065,7 @@ export namespace Prisma {
     authorName?: true
     body?: true
     createdAt?: true
+    embeddedAt?: true
     _all?: true
   }
 
@@ -3933,6 +4148,7 @@ export namespace Prisma {
     authorName: string | null
     body: string
     createdAt: Date
+    embeddedAt: Date | null
     _count: CommentCountAggregateOutputType | null
     _min: CommentMinAggregateOutputType | null
     _max: CommentMaxAggregateOutputType | null
@@ -3959,6 +4175,7 @@ export namespace Prisma {
     authorName?: boolean
     body?: boolean
     createdAt?: boolean
+    embeddedAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["comment"]>
 
@@ -3969,6 +4186,7 @@ export namespace Prisma {
     authorName?: boolean
     body?: boolean
     createdAt?: boolean
+    embeddedAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["comment"]>
 
@@ -3979,6 +4197,7 @@ export namespace Prisma {
     authorName?: boolean
     body?: boolean
     createdAt?: boolean
+    embeddedAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["comment"]>
 
@@ -3989,9 +4208,10 @@ export namespace Prisma {
     authorName?: boolean
     body?: boolean
     createdAt?: boolean
+    embeddedAt?: boolean
   }
 
-  export type CommentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventId" | "userId" | "authorName" | "body" | "createdAt", ExtArgs["result"]["comment"]>
+  export type CommentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventId" | "userId" | "authorName" | "body" | "createdAt" | "embeddedAt", ExtArgs["result"]["comment"]>
   export type CommentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventDefaultArgs<ExtArgs>
   }
@@ -4014,6 +4234,7 @@ export namespace Prisma {
       authorName: string | null
       body: string
       createdAt: Date
+      embeddedAt: Date | null
     }, ExtArgs["result"]["comment"]>
     composites: {}
   }
@@ -4444,6 +4665,7 @@ export namespace Prisma {
     readonly authorName: FieldRef<"Comment", 'String'>
     readonly body: FieldRef<"Comment", 'String'>
     readonly createdAt: FieldRef<"Comment", 'DateTime'>
+    readonly embeddedAt: FieldRef<"Comment", 'DateTime'>
   }
     
 
@@ -6993,6 +7215,2104 @@ export namespace Prisma {
 
 
   /**
+   * Model UserTaste
+   */
+
+  export type AggregateUserTaste = {
+    _count: UserTasteCountAggregateOutputType | null
+    _avg: UserTasteAvgAggregateOutputType | null
+    _sum: UserTasteSumAggregateOutputType | null
+    _min: UserTasteMinAggregateOutputType | null
+    _max: UserTasteMaxAggregateOutputType | null
+  }
+
+  export type UserTasteAvgAggregateOutputType = {
+    eventCount: number | null
+  }
+
+  export type UserTasteSumAggregateOutputType = {
+    eventCount: number | null
+  }
+
+  export type UserTasteMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    eventCount: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserTasteMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    eventCount: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserTasteCountAggregateOutputType = {
+    id: number
+    userId: number
+    eventCount: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UserTasteAvgAggregateInputType = {
+    eventCount?: true
+  }
+
+  export type UserTasteSumAggregateInputType = {
+    eventCount?: true
+  }
+
+  export type UserTasteMinAggregateInputType = {
+    id?: true
+    userId?: true
+    eventCount?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserTasteMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    eventCount?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserTasteCountAggregateInputType = {
+    id?: true
+    userId?: true
+    eventCount?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UserTasteAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserTaste to aggregate.
+     */
+    where?: UserTasteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserTastes to fetch.
+     */
+    orderBy?: UserTasteOrderByWithRelationInput | UserTasteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserTasteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserTastes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserTastes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserTastes
+    **/
+    _count?: true | UserTasteCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: UserTasteAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserTasteSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserTasteMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserTasteMaxAggregateInputType
+  }
+
+  export type GetUserTasteAggregateType<T extends UserTasteAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserTaste]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserTaste[P]>
+      : GetScalarType<T[P], AggregateUserTaste[P]>
+  }
+
+
+
+
+  export type UserTasteGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserTasteWhereInput
+    orderBy?: UserTasteOrderByWithAggregationInput | UserTasteOrderByWithAggregationInput[]
+    by: UserTasteScalarFieldEnum[] | UserTasteScalarFieldEnum
+    having?: UserTasteScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserTasteCountAggregateInputType | true
+    _avg?: UserTasteAvgAggregateInputType
+    _sum?: UserTasteSumAggregateInputType
+    _min?: UserTasteMinAggregateInputType
+    _max?: UserTasteMaxAggregateInputType
+  }
+
+  export type UserTasteGroupByOutputType = {
+    id: string
+    userId: string
+    eventCount: number
+    createdAt: Date
+    updatedAt: Date
+    _count: UserTasteCountAggregateOutputType | null
+    _avg: UserTasteAvgAggregateOutputType | null
+    _sum: UserTasteSumAggregateOutputType | null
+    _min: UserTasteMinAggregateOutputType | null
+    _max: UserTasteMaxAggregateOutputType | null
+  }
+
+  type GetUserTasteGroupByPayload<T extends UserTasteGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserTasteGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserTasteGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserTasteGroupByOutputType[P]>
+            : GetScalarType<T[P], UserTasteGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserTasteSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    eventCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["userTaste"]>
+
+  export type UserTasteSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    eventCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["userTaste"]>
+
+  export type UserTasteSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    eventCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["userTaste"]>
+
+  export type UserTasteSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    eventCount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UserTasteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "eventCount" | "createdAt" | "updatedAt", ExtArgs["result"]["userTaste"]>
+
+  export type $UserTastePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserTaste"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      eventCount: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["userTaste"]>
+    composites: {}
+  }
+
+  type UserTasteGetPayload<S extends boolean | null | undefined | UserTasteDefaultArgs> = $Result.GetResult<Prisma.$UserTastePayload, S>
+
+  type UserTasteCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserTasteFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserTasteCountAggregateInputType | true
+    }
+
+  export interface UserTasteDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserTaste'], meta: { name: 'UserTaste' } }
+    /**
+     * Find zero or one UserTaste that matches the filter.
+     * @param {UserTasteFindUniqueArgs} args - Arguments to find a UserTaste
+     * @example
+     * // Get one UserTaste
+     * const userTaste = await prisma.userTaste.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserTasteFindUniqueArgs>(args: SelectSubset<T, UserTasteFindUniqueArgs<ExtArgs>>): Prisma__UserTasteClient<$Result.GetResult<Prisma.$UserTastePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserTaste that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserTasteFindUniqueOrThrowArgs} args - Arguments to find a UserTaste
+     * @example
+     * // Get one UserTaste
+     * const userTaste = await prisma.userTaste.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserTasteFindUniqueOrThrowArgs>(args: SelectSubset<T, UserTasteFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserTasteClient<$Result.GetResult<Prisma.$UserTastePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserTaste that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTasteFindFirstArgs} args - Arguments to find a UserTaste
+     * @example
+     * // Get one UserTaste
+     * const userTaste = await prisma.userTaste.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserTasteFindFirstArgs>(args?: SelectSubset<T, UserTasteFindFirstArgs<ExtArgs>>): Prisma__UserTasteClient<$Result.GetResult<Prisma.$UserTastePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserTaste that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTasteFindFirstOrThrowArgs} args - Arguments to find a UserTaste
+     * @example
+     * // Get one UserTaste
+     * const userTaste = await prisma.userTaste.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserTasteFindFirstOrThrowArgs>(args?: SelectSubset<T, UserTasteFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserTasteClient<$Result.GetResult<Prisma.$UserTastePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserTastes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTasteFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserTastes
+     * const userTastes = await prisma.userTaste.findMany()
+     * 
+     * // Get first 10 UserTastes
+     * const userTastes = await prisma.userTaste.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userTasteWithIdOnly = await prisma.userTaste.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserTasteFindManyArgs>(args?: SelectSubset<T, UserTasteFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserTastePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserTaste.
+     * @param {UserTasteCreateArgs} args - Arguments to create a UserTaste.
+     * @example
+     * // Create one UserTaste
+     * const UserTaste = await prisma.userTaste.create({
+     *   data: {
+     *     // ... data to create a UserTaste
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserTasteCreateArgs>(args: SelectSubset<T, UserTasteCreateArgs<ExtArgs>>): Prisma__UserTasteClient<$Result.GetResult<Prisma.$UserTastePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserTastes.
+     * @param {UserTasteCreateManyArgs} args - Arguments to create many UserTastes.
+     * @example
+     * // Create many UserTastes
+     * const userTaste = await prisma.userTaste.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserTasteCreateManyArgs>(args?: SelectSubset<T, UserTasteCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UserTastes and returns the data saved in the database.
+     * @param {UserTasteCreateManyAndReturnArgs} args - Arguments to create many UserTastes.
+     * @example
+     * // Create many UserTastes
+     * const userTaste = await prisma.userTaste.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UserTastes and only return the `id`
+     * const userTasteWithIdOnly = await prisma.userTaste.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UserTasteCreateManyAndReturnArgs>(args?: SelectSubset<T, UserTasteCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserTastePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UserTaste.
+     * @param {UserTasteDeleteArgs} args - Arguments to delete one UserTaste.
+     * @example
+     * // Delete one UserTaste
+     * const UserTaste = await prisma.userTaste.delete({
+     *   where: {
+     *     // ... filter to delete one UserTaste
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserTasteDeleteArgs>(args: SelectSubset<T, UserTasteDeleteArgs<ExtArgs>>): Prisma__UserTasteClient<$Result.GetResult<Prisma.$UserTastePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserTaste.
+     * @param {UserTasteUpdateArgs} args - Arguments to update one UserTaste.
+     * @example
+     * // Update one UserTaste
+     * const userTaste = await prisma.userTaste.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserTasteUpdateArgs>(args: SelectSubset<T, UserTasteUpdateArgs<ExtArgs>>): Prisma__UserTasteClient<$Result.GetResult<Prisma.$UserTastePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserTastes.
+     * @param {UserTasteDeleteManyArgs} args - Arguments to filter UserTastes to delete.
+     * @example
+     * // Delete a few UserTastes
+     * const { count } = await prisma.userTaste.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserTasteDeleteManyArgs>(args?: SelectSubset<T, UserTasteDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserTastes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTasteUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserTastes
+     * const userTaste = await prisma.userTaste.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserTasteUpdateManyArgs>(args: SelectSubset<T, UserTasteUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserTastes and returns the data updated in the database.
+     * @param {UserTasteUpdateManyAndReturnArgs} args - Arguments to update many UserTastes.
+     * @example
+     * // Update many UserTastes
+     * const userTaste = await prisma.userTaste.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UserTastes and only return the `id`
+     * const userTasteWithIdOnly = await prisma.userTaste.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UserTasteUpdateManyAndReturnArgs>(args: SelectSubset<T, UserTasteUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserTastePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UserTaste.
+     * @param {UserTasteUpsertArgs} args - Arguments to update or create a UserTaste.
+     * @example
+     * // Update or create a UserTaste
+     * const userTaste = await prisma.userTaste.upsert({
+     *   create: {
+     *     // ... data to create a UserTaste
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserTaste we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserTasteUpsertArgs>(args: SelectSubset<T, UserTasteUpsertArgs<ExtArgs>>): Prisma__UserTasteClient<$Result.GetResult<Prisma.$UserTastePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UserTastes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTasteCountArgs} args - Arguments to filter UserTastes to count.
+     * @example
+     * // Count the number of UserTastes
+     * const count = await prisma.userTaste.count({
+     *   where: {
+     *     // ... the filter for the UserTastes we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserTasteCountArgs>(
+      args?: Subset<T, UserTasteCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserTasteCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserTaste.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTasteAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserTasteAggregateArgs>(args: Subset<T, UserTasteAggregateArgs>): Prisma.PrismaPromise<GetUserTasteAggregateType<T>>
+
+    /**
+     * Group by UserTaste.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTasteGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserTasteGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserTasteGroupByArgs['orderBy'] }
+        : { orderBy?: UserTasteGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserTasteGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserTasteGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserTaste model
+   */
+  readonly fields: UserTasteFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserTaste.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserTasteClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserTaste model
+   */
+  interface UserTasteFieldRefs {
+    readonly id: FieldRef<"UserTaste", 'String'>
+    readonly userId: FieldRef<"UserTaste", 'String'>
+    readonly eventCount: FieldRef<"UserTaste", 'Int'>
+    readonly createdAt: FieldRef<"UserTaste", 'DateTime'>
+    readonly updatedAt: FieldRef<"UserTaste", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserTaste findUnique
+   */
+  export type UserTasteFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTaste
+     */
+    select?: UserTasteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTaste
+     */
+    omit?: UserTasteOmit<ExtArgs> | null
+    /**
+     * Filter, which UserTaste to fetch.
+     */
+    where: UserTasteWhereUniqueInput
+  }
+
+  /**
+   * UserTaste findUniqueOrThrow
+   */
+  export type UserTasteFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTaste
+     */
+    select?: UserTasteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTaste
+     */
+    omit?: UserTasteOmit<ExtArgs> | null
+    /**
+     * Filter, which UserTaste to fetch.
+     */
+    where: UserTasteWhereUniqueInput
+  }
+
+  /**
+   * UserTaste findFirst
+   */
+  export type UserTasteFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTaste
+     */
+    select?: UserTasteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTaste
+     */
+    omit?: UserTasteOmit<ExtArgs> | null
+    /**
+     * Filter, which UserTaste to fetch.
+     */
+    where?: UserTasteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserTastes to fetch.
+     */
+    orderBy?: UserTasteOrderByWithRelationInput | UserTasteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserTastes.
+     */
+    cursor?: UserTasteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserTastes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserTastes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserTastes.
+     */
+    distinct?: UserTasteScalarFieldEnum | UserTasteScalarFieldEnum[]
+  }
+
+  /**
+   * UserTaste findFirstOrThrow
+   */
+  export type UserTasteFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTaste
+     */
+    select?: UserTasteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTaste
+     */
+    omit?: UserTasteOmit<ExtArgs> | null
+    /**
+     * Filter, which UserTaste to fetch.
+     */
+    where?: UserTasteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserTastes to fetch.
+     */
+    orderBy?: UserTasteOrderByWithRelationInput | UserTasteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserTastes.
+     */
+    cursor?: UserTasteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserTastes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserTastes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserTastes.
+     */
+    distinct?: UserTasteScalarFieldEnum | UserTasteScalarFieldEnum[]
+  }
+
+  /**
+   * UserTaste findMany
+   */
+  export type UserTasteFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTaste
+     */
+    select?: UserTasteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTaste
+     */
+    omit?: UserTasteOmit<ExtArgs> | null
+    /**
+     * Filter, which UserTastes to fetch.
+     */
+    where?: UserTasteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserTastes to fetch.
+     */
+    orderBy?: UserTasteOrderByWithRelationInput | UserTasteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserTastes.
+     */
+    cursor?: UserTasteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserTastes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserTastes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserTastes.
+     */
+    distinct?: UserTasteScalarFieldEnum | UserTasteScalarFieldEnum[]
+  }
+
+  /**
+   * UserTaste create
+   */
+  export type UserTasteCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTaste
+     */
+    select?: UserTasteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTaste
+     */
+    omit?: UserTasteOmit<ExtArgs> | null
+    /**
+     * The data needed to create a UserTaste.
+     */
+    data: XOR<UserTasteCreateInput, UserTasteUncheckedCreateInput>
+  }
+
+  /**
+   * UserTaste createMany
+   */
+  export type UserTasteCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserTastes.
+     */
+    data: UserTasteCreateManyInput | UserTasteCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UserTaste createManyAndReturn
+   */
+  export type UserTasteCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTaste
+     */
+    select?: UserTasteSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTaste
+     */
+    omit?: UserTasteOmit<ExtArgs> | null
+    /**
+     * The data used to create many UserTastes.
+     */
+    data: UserTasteCreateManyInput | UserTasteCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UserTaste update
+   */
+  export type UserTasteUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTaste
+     */
+    select?: UserTasteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTaste
+     */
+    omit?: UserTasteOmit<ExtArgs> | null
+    /**
+     * The data needed to update a UserTaste.
+     */
+    data: XOR<UserTasteUpdateInput, UserTasteUncheckedUpdateInput>
+    /**
+     * Choose, which UserTaste to update.
+     */
+    where: UserTasteWhereUniqueInput
+  }
+
+  /**
+   * UserTaste updateMany
+   */
+  export type UserTasteUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserTastes.
+     */
+    data: XOR<UserTasteUpdateManyMutationInput, UserTasteUncheckedUpdateManyInput>
+    /**
+     * Filter which UserTastes to update
+     */
+    where?: UserTasteWhereInput
+    /**
+     * Limit how many UserTastes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserTaste updateManyAndReturn
+   */
+  export type UserTasteUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTaste
+     */
+    select?: UserTasteSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTaste
+     */
+    omit?: UserTasteOmit<ExtArgs> | null
+    /**
+     * The data used to update UserTastes.
+     */
+    data: XOR<UserTasteUpdateManyMutationInput, UserTasteUncheckedUpdateManyInput>
+    /**
+     * Filter which UserTastes to update
+     */
+    where?: UserTasteWhereInput
+    /**
+     * Limit how many UserTastes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserTaste upsert
+   */
+  export type UserTasteUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTaste
+     */
+    select?: UserTasteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTaste
+     */
+    omit?: UserTasteOmit<ExtArgs> | null
+    /**
+     * The filter to search for the UserTaste to update in case it exists.
+     */
+    where: UserTasteWhereUniqueInput
+    /**
+     * In case the UserTaste found by the `where` argument doesn't exist, create a new UserTaste with this data.
+     */
+    create: XOR<UserTasteCreateInput, UserTasteUncheckedCreateInput>
+    /**
+     * In case the UserTaste was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserTasteUpdateInput, UserTasteUncheckedUpdateInput>
+  }
+
+  /**
+   * UserTaste delete
+   */
+  export type UserTasteDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTaste
+     */
+    select?: UserTasteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTaste
+     */
+    omit?: UserTasteOmit<ExtArgs> | null
+    /**
+     * Filter which UserTaste to delete.
+     */
+    where: UserTasteWhereUniqueInput
+  }
+
+  /**
+   * UserTaste deleteMany
+   */
+  export type UserTasteDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserTastes to delete
+     */
+    where?: UserTasteWhereInput
+    /**
+     * Limit how many UserTastes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserTaste without action
+   */
+  export type UserTasteDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTaste
+     */
+    select?: UserTasteSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTaste
+     */
+    omit?: UserTasteOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AIUsage
+   */
+
+  export type AggregateAIUsage = {
+    _count: AIUsageCountAggregateOutputType | null
+    _avg: AIUsageAvgAggregateOutputType | null
+    _sum: AIUsageSumAggregateOutputType | null
+    _min: AIUsageMinAggregateOutputType | null
+    _max: AIUsageMaxAggregateOutputType | null
+  }
+
+  export type AIUsageAvgAggregateOutputType = {
+    promptTokens: number | null
+    completionTokens: number | null
+  }
+
+  export type AIUsageSumAggregateOutputType = {
+    promptTokens: number | null
+    completionTokens: number | null
+  }
+
+  export type AIUsageMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    feature: string | null
+    model: string | null
+    promptTokens: number | null
+    completionTokens: number | null
+    createdAt: Date | null
+  }
+
+  export type AIUsageMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    feature: string | null
+    model: string | null
+    promptTokens: number | null
+    completionTokens: number | null
+    createdAt: Date | null
+  }
+
+  export type AIUsageCountAggregateOutputType = {
+    id: number
+    userId: number
+    feature: number
+    model: number
+    promptTokens: number
+    completionTokens: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AIUsageAvgAggregateInputType = {
+    promptTokens?: true
+    completionTokens?: true
+  }
+
+  export type AIUsageSumAggregateInputType = {
+    promptTokens?: true
+    completionTokens?: true
+  }
+
+  export type AIUsageMinAggregateInputType = {
+    id?: true
+    userId?: true
+    feature?: true
+    model?: true
+    promptTokens?: true
+    completionTokens?: true
+    createdAt?: true
+  }
+
+  export type AIUsageMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    feature?: true
+    model?: true
+    promptTokens?: true
+    completionTokens?: true
+    createdAt?: true
+  }
+
+  export type AIUsageCountAggregateInputType = {
+    id?: true
+    userId?: true
+    feature?: true
+    model?: true
+    promptTokens?: true
+    completionTokens?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AIUsageAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AIUsage to aggregate.
+     */
+    where?: AIUsageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AIUsages to fetch.
+     */
+    orderBy?: AIUsageOrderByWithRelationInput | AIUsageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AIUsageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AIUsages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AIUsages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AIUsages
+    **/
+    _count?: true | AIUsageCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AIUsageAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AIUsageSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AIUsageMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AIUsageMaxAggregateInputType
+  }
+
+  export type GetAIUsageAggregateType<T extends AIUsageAggregateArgs> = {
+        [P in keyof T & keyof AggregateAIUsage]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAIUsage[P]>
+      : GetScalarType<T[P], AggregateAIUsage[P]>
+  }
+
+
+
+
+  export type AIUsageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AIUsageWhereInput
+    orderBy?: AIUsageOrderByWithAggregationInput | AIUsageOrderByWithAggregationInput[]
+    by: AIUsageScalarFieldEnum[] | AIUsageScalarFieldEnum
+    having?: AIUsageScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AIUsageCountAggregateInputType | true
+    _avg?: AIUsageAvgAggregateInputType
+    _sum?: AIUsageSumAggregateInputType
+    _min?: AIUsageMinAggregateInputType
+    _max?: AIUsageMaxAggregateInputType
+  }
+
+  export type AIUsageGroupByOutputType = {
+    id: string
+    userId: string | null
+    feature: string
+    model: string
+    promptTokens: number | null
+    completionTokens: number | null
+    createdAt: Date
+    _count: AIUsageCountAggregateOutputType | null
+    _avg: AIUsageAvgAggregateOutputType | null
+    _sum: AIUsageSumAggregateOutputType | null
+    _min: AIUsageMinAggregateOutputType | null
+    _max: AIUsageMaxAggregateOutputType | null
+  }
+
+  type GetAIUsageGroupByPayload<T extends AIUsageGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AIUsageGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AIUsageGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AIUsageGroupByOutputType[P]>
+            : GetScalarType<T[P], AIUsageGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AIUsageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    feature?: boolean
+    model?: boolean
+    promptTokens?: boolean
+    completionTokens?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["aIUsage"]>
+
+  export type AIUsageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    feature?: boolean
+    model?: boolean
+    promptTokens?: boolean
+    completionTokens?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["aIUsage"]>
+
+  export type AIUsageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    feature?: boolean
+    model?: boolean
+    promptTokens?: boolean
+    completionTokens?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["aIUsage"]>
+
+  export type AIUsageSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    feature?: boolean
+    model?: boolean
+    promptTokens?: boolean
+    completionTokens?: boolean
+    createdAt?: boolean
+  }
+
+  export type AIUsageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "feature" | "model" | "promptTokens" | "completionTokens" | "createdAt", ExtArgs["result"]["aIUsage"]>
+
+  export type $AIUsagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AIUsage"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string | null
+      feature: string
+      model: string
+      promptTokens: number | null
+      completionTokens: number | null
+      createdAt: Date
+    }, ExtArgs["result"]["aIUsage"]>
+    composites: {}
+  }
+
+  type AIUsageGetPayload<S extends boolean | null | undefined | AIUsageDefaultArgs> = $Result.GetResult<Prisma.$AIUsagePayload, S>
+
+  type AIUsageCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AIUsageFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AIUsageCountAggregateInputType | true
+    }
+
+  export interface AIUsageDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AIUsage'], meta: { name: 'AIUsage' } }
+    /**
+     * Find zero or one AIUsage that matches the filter.
+     * @param {AIUsageFindUniqueArgs} args - Arguments to find a AIUsage
+     * @example
+     * // Get one AIUsage
+     * const aIUsage = await prisma.aIUsage.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AIUsageFindUniqueArgs>(args: SelectSubset<T, AIUsageFindUniqueArgs<ExtArgs>>): Prisma__AIUsageClient<$Result.GetResult<Prisma.$AIUsagePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AIUsage that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AIUsageFindUniqueOrThrowArgs} args - Arguments to find a AIUsage
+     * @example
+     * // Get one AIUsage
+     * const aIUsage = await prisma.aIUsage.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AIUsageFindUniqueOrThrowArgs>(args: SelectSubset<T, AIUsageFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AIUsageClient<$Result.GetResult<Prisma.$AIUsagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AIUsage that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIUsageFindFirstArgs} args - Arguments to find a AIUsage
+     * @example
+     * // Get one AIUsage
+     * const aIUsage = await prisma.aIUsage.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AIUsageFindFirstArgs>(args?: SelectSubset<T, AIUsageFindFirstArgs<ExtArgs>>): Prisma__AIUsageClient<$Result.GetResult<Prisma.$AIUsagePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AIUsage that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIUsageFindFirstOrThrowArgs} args - Arguments to find a AIUsage
+     * @example
+     * // Get one AIUsage
+     * const aIUsage = await prisma.aIUsage.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AIUsageFindFirstOrThrowArgs>(args?: SelectSubset<T, AIUsageFindFirstOrThrowArgs<ExtArgs>>): Prisma__AIUsageClient<$Result.GetResult<Prisma.$AIUsagePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AIUsages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIUsageFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AIUsages
+     * const aIUsages = await prisma.aIUsage.findMany()
+     * 
+     * // Get first 10 AIUsages
+     * const aIUsages = await prisma.aIUsage.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const aIUsageWithIdOnly = await prisma.aIUsage.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AIUsageFindManyArgs>(args?: SelectSubset<T, AIUsageFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AIUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AIUsage.
+     * @param {AIUsageCreateArgs} args - Arguments to create a AIUsage.
+     * @example
+     * // Create one AIUsage
+     * const AIUsage = await prisma.aIUsage.create({
+     *   data: {
+     *     // ... data to create a AIUsage
+     *   }
+     * })
+     * 
+     */
+    create<T extends AIUsageCreateArgs>(args: SelectSubset<T, AIUsageCreateArgs<ExtArgs>>): Prisma__AIUsageClient<$Result.GetResult<Prisma.$AIUsagePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AIUsages.
+     * @param {AIUsageCreateManyArgs} args - Arguments to create many AIUsages.
+     * @example
+     * // Create many AIUsages
+     * const aIUsage = await prisma.aIUsage.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AIUsageCreateManyArgs>(args?: SelectSubset<T, AIUsageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AIUsages and returns the data saved in the database.
+     * @param {AIUsageCreateManyAndReturnArgs} args - Arguments to create many AIUsages.
+     * @example
+     * // Create many AIUsages
+     * const aIUsage = await prisma.aIUsage.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AIUsages and only return the `id`
+     * const aIUsageWithIdOnly = await prisma.aIUsage.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AIUsageCreateManyAndReturnArgs>(args?: SelectSubset<T, AIUsageCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AIUsagePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AIUsage.
+     * @param {AIUsageDeleteArgs} args - Arguments to delete one AIUsage.
+     * @example
+     * // Delete one AIUsage
+     * const AIUsage = await prisma.aIUsage.delete({
+     *   where: {
+     *     // ... filter to delete one AIUsage
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AIUsageDeleteArgs>(args: SelectSubset<T, AIUsageDeleteArgs<ExtArgs>>): Prisma__AIUsageClient<$Result.GetResult<Prisma.$AIUsagePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AIUsage.
+     * @param {AIUsageUpdateArgs} args - Arguments to update one AIUsage.
+     * @example
+     * // Update one AIUsage
+     * const aIUsage = await prisma.aIUsage.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AIUsageUpdateArgs>(args: SelectSubset<T, AIUsageUpdateArgs<ExtArgs>>): Prisma__AIUsageClient<$Result.GetResult<Prisma.$AIUsagePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AIUsages.
+     * @param {AIUsageDeleteManyArgs} args - Arguments to filter AIUsages to delete.
+     * @example
+     * // Delete a few AIUsages
+     * const { count } = await prisma.aIUsage.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AIUsageDeleteManyArgs>(args?: SelectSubset<T, AIUsageDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AIUsages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIUsageUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AIUsages
+     * const aIUsage = await prisma.aIUsage.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AIUsageUpdateManyArgs>(args: SelectSubset<T, AIUsageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AIUsages and returns the data updated in the database.
+     * @param {AIUsageUpdateManyAndReturnArgs} args - Arguments to update many AIUsages.
+     * @example
+     * // Update many AIUsages
+     * const aIUsage = await prisma.aIUsage.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AIUsages and only return the `id`
+     * const aIUsageWithIdOnly = await prisma.aIUsage.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AIUsageUpdateManyAndReturnArgs>(args: SelectSubset<T, AIUsageUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AIUsagePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AIUsage.
+     * @param {AIUsageUpsertArgs} args - Arguments to update or create a AIUsage.
+     * @example
+     * // Update or create a AIUsage
+     * const aIUsage = await prisma.aIUsage.upsert({
+     *   create: {
+     *     // ... data to create a AIUsage
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AIUsage we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AIUsageUpsertArgs>(args: SelectSubset<T, AIUsageUpsertArgs<ExtArgs>>): Prisma__AIUsageClient<$Result.GetResult<Prisma.$AIUsagePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AIUsages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIUsageCountArgs} args - Arguments to filter AIUsages to count.
+     * @example
+     * // Count the number of AIUsages
+     * const count = await prisma.aIUsage.count({
+     *   where: {
+     *     // ... the filter for the AIUsages we want to count
+     *   }
+     * })
+    **/
+    count<T extends AIUsageCountArgs>(
+      args?: Subset<T, AIUsageCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AIUsageCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AIUsage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIUsageAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AIUsageAggregateArgs>(args: Subset<T, AIUsageAggregateArgs>): Prisma.PrismaPromise<GetAIUsageAggregateType<T>>
+
+    /**
+     * Group by AIUsage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AIUsageGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AIUsageGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AIUsageGroupByArgs['orderBy'] }
+        : { orderBy?: AIUsageGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AIUsageGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAIUsageGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AIUsage model
+   */
+  readonly fields: AIUsageFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AIUsage.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AIUsageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AIUsage model
+   */
+  interface AIUsageFieldRefs {
+    readonly id: FieldRef<"AIUsage", 'String'>
+    readonly userId: FieldRef<"AIUsage", 'String'>
+    readonly feature: FieldRef<"AIUsage", 'String'>
+    readonly model: FieldRef<"AIUsage", 'String'>
+    readonly promptTokens: FieldRef<"AIUsage", 'Int'>
+    readonly completionTokens: FieldRef<"AIUsage", 'Int'>
+    readonly createdAt: FieldRef<"AIUsage", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AIUsage findUnique
+   */
+  export type AIUsageFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIUsage
+     */
+    select?: AIUsageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIUsage
+     */
+    omit?: AIUsageOmit<ExtArgs> | null
+    /**
+     * Filter, which AIUsage to fetch.
+     */
+    where: AIUsageWhereUniqueInput
+  }
+
+  /**
+   * AIUsage findUniqueOrThrow
+   */
+  export type AIUsageFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIUsage
+     */
+    select?: AIUsageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIUsage
+     */
+    omit?: AIUsageOmit<ExtArgs> | null
+    /**
+     * Filter, which AIUsage to fetch.
+     */
+    where: AIUsageWhereUniqueInput
+  }
+
+  /**
+   * AIUsage findFirst
+   */
+  export type AIUsageFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIUsage
+     */
+    select?: AIUsageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIUsage
+     */
+    omit?: AIUsageOmit<ExtArgs> | null
+    /**
+     * Filter, which AIUsage to fetch.
+     */
+    where?: AIUsageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AIUsages to fetch.
+     */
+    orderBy?: AIUsageOrderByWithRelationInput | AIUsageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AIUsages.
+     */
+    cursor?: AIUsageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AIUsages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AIUsages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AIUsages.
+     */
+    distinct?: AIUsageScalarFieldEnum | AIUsageScalarFieldEnum[]
+  }
+
+  /**
+   * AIUsage findFirstOrThrow
+   */
+  export type AIUsageFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIUsage
+     */
+    select?: AIUsageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIUsage
+     */
+    omit?: AIUsageOmit<ExtArgs> | null
+    /**
+     * Filter, which AIUsage to fetch.
+     */
+    where?: AIUsageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AIUsages to fetch.
+     */
+    orderBy?: AIUsageOrderByWithRelationInput | AIUsageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AIUsages.
+     */
+    cursor?: AIUsageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AIUsages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AIUsages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AIUsages.
+     */
+    distinct?: AIUsageScalarFieldEnum | AIUsageScalarFieldEnum[]
+  }
+
+  /**
+   * AIUsage findMany
+   */
+  export type AIUsageFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIUsage
+     */
+    select?: AIUsageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIUsage
+     */
+    omit?: AIUsageOmit<ExtArgs> | null
+    /**
+     * Filter, which AIUsages to fetch.
+     */
+    where?: AIUsageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AIUsages to fetch.
+     */
+    orderBy?: AIUsageOrderByWithRelationInput | AIUsageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AIUsages.
+     */
+    cursor?: AIUsageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AIUsages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AIUsages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AIUsages.
+     */
+    distinct?: AIUsageScalarFieldEnum | AIUsageScalarFieldEnum[]
+  }
+
+  /**
+   * AIUsage create
+   */
+  export type AIUsageCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIUsage
+     */
+    select?: AIUsageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIUsage
+     */
+    omit?: AIUsageOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AIUsage.
+     */
+    data: XOR<AIUsageCreateInput, AIUsageUncheckedCreateInput>
+  }
+
+  /**
+   * AIUsage createMany
+   */
+  export type AIUsageCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AIUsages.
+     */
+    data: AIUsageCreateManyInput | AIUsageCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AIUsage createManyAndReturn
+   */
+  export type AIUsageCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIUsage
+     */
+    select?: AIUsageSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIUsage
+     */
+    omit?: AIUsageOmit<ExtArgs> | null
+    /**
+     * The data used to create many AIUsages.
+     */
+    data: AIUsageCreateManyInput | AIUsageCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AIUsage update
+   */
+  export type AIUsageUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIUsage
+     */
+    select?: AIUsageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIUsage
+     */
+    omit?: AIUsageOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AIUsage.
+     */
+    data: XOR<AIUsageUpdateInput, AIUsageUncheckedUpdateInput>
+    /**
+     * Choose, which AIUsage to update.
+     */
+    where: AIUsageWhereUniqueInput
+  }
+
+  /**
+   * AIUsage updateMany
+   */
+  export type AIUsageUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AIUsages.
+     */
+    data: XOR<AIUsageUpdateManyMutationInput, AIUsageUncheckedUpdateManyInput>
+    /**
+     * Filter which AIUsages to update
+     */
+    where?: AIUsageWhereInput
+    /**
+     * Limit how many AIUsages to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AIUsage updateManyAndReturn
+   */
+  export type AIUsageUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIUsage
+     */
+    select?: AIUsageSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIUsage
+     */
+    omit?: AIUsageOmit<ExtArgs> | null
+    /**
+     * The data used to update AIUsages.
+     */
+    data: XOR<AIUsageUpdateManyMutationInput, AIUsageUncheckedUpdateManyInput>
+    /**
+     * Filter which AIUsages to update
+     */
+    where?: AIUsageWhereInput
+    /**
+     * Limit how many AIUsages to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AIUsage upsert
+   */
+  export type AIUsageUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIUsage
+     */
+    select?: AIUsageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIUsage
+     */
+    omit?: AIUsageOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AIUsage to update in case it exists.
+     */
+    where: AIUsageWhereUniqueInput
+    /**
+     * In case the AIUsage found by the `where` argument doesn't exist, create a new AIUsage with this data.
+     */
+    create: XOR<AIUsageCreateInput, AIUsageUncheckedCreateInput>
+    /**
+     * In case the AIUsage was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AIUsageUpdateInput, AIUsageUncheckedUpdateInput>
+  }
+
+  /**
+   * AIUsage delete
+   */
+  export type AIUsageDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIUsage
+     */
+    select?: AIUsageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIUsage
+     */
+    omit?: AIUsageOmit<ExtArgs> | null
+    /**
+     * Filter which AIUsage to delete.
+     */
+    where: AIUsageWhereUniqueInput
+  }
+
+  /**
+   * AIUsage deleteMany
+   */
+  export type AIUsageDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AIUsages to delete
+     */
+    where?: AIUsageWhereInput
+    /**
+     * Limit how many AIUsages to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AIUsage without action
+   */
+  export type AIUsageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AIUsage
+     */
+    select?: AIUsageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AIUsage
+     */
+    omit?: AIUsageOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -7020,7 +9340,9 @@ export namespace Prisma {
     updatedAt: 'updatedAt',
     userId: 'userId',
     organizerName: 'organizerName',
-    inviteToken: 'inviteToken'
+    inviteToken: 'inviteToken',
+    embeddedAt: 'embeddedAt',
+    embeddingModel: 'embeddingModel'
   };
 
   export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
@@ -7049,7 +9371,8 @@ export namespace Prisma {
     userId: 'userId',
     authorName: 'authorName',
     body: 'body',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    embeddedAt: 'embeddedAt'
   };
 
   export type CommentScalarFieldEnum = (typeof CommentScalarFieldEnum)[keyof typeof CommentScalarFieldEnum]
@@ -7076,6 +9399,30 @@ export namespace Prisma {
   };
 
   export type RateLimitScalarFieldEnum = (typeof RateLimitScalarFieldEnum)[keyof typeof RateLimitScalarFieldEnum]
+
+
+  export const UserTasteScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    eventCount: 'eventCount',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UserTasteScalarFieldEnum = (typeof UserTasteScalarFieldEnum)[keyof typeof UserTasteScalarFieldEnum]
+
+
+  export const AIUsageScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    feature: 'feature',
+    model: 'model',
+    promptTokens: 'promptTokens',
+    completionTokens: 'completionTokens',
+    createdAt: 'createdAt'
+  };
+
+  export type AIUsageScalarFieldEnum = (typeof AIUsageScalarFieldEnum)[keyof typeof AIUsageScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -7233,6 +9580,8 @@ export namespace Prisma {
     userId?: StringFilter<"Event"> | string
     organizerName?: StringNullableFilter<"Event"> | string | null
     inviteToken?: StringNullableFilter<"Event"> | string | null
+    embeddedAt?: DateTimeNullableFilter<"Event"> | Date | string | null
+    embeddingModel?: StringNullableFilter<"Event"> | string | null
     rsvps?: RSVPListRelationFilter
     comments?: CommentListRelationFilter
     notifications?: NotificationListRelationFilter
@@ -7253,6 +9602,8 @@ export namespace Prisma {
     userId?: SortOrder
     organizerName?: SortOrderInput | SortOrder
     inviteToken?: SortOrderInput | SortOrder
+    embeddedAt?: SortOrderInput | SortOrder
+    embeddingModel?: SortOrderInput | SortOrder
     rsvps?: RSVPOrderByRelationAggregateInput
     comments?: CommentOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
@@ -7276,6 +9627,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     userId?: StringFilter<"Event"> | string
     organizerName?: StringNullableFilter<"Event"> | string | null
+    embeddedAt?: DateTimeNullableFilter<"Event"> | Date | string | null
+    embeddingModel?: StringNullableFilter<"Event"> | string | null
     rsvps?: RSVPListRelationFilter
     comments?: CommentListRelationFilter
     notifications?: NotificationListRelationFilter
@@ -7296,6 +9649,8 @@ export namespace Prisma {
     userId?: SortOrder
     organizerName?: SortOrderInput | SortOrder
     inviteToken?: SortOrderInput | SortOrder
+    embeddedAt?: SortOrderInput | SortOrder
+    embeddingModel?: SortOrderInput | SortOrder
     _count?: EventCountOrderByAggregateInput
     _avg?: EventAvgOrderByAggregateInput
     _max?: EventMaxOrderByAggregateInput
@@ -7321,6 +9676,8 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Event"> | string
     organizerName?: StringNullableWithAggregatesFilter<"Event"> | string | null
     inviteToken?: StringNullableWithAggregatesFilter<"Event"> | string | null
+    embeddedAt?: DateTimeNullableWithAggregatesFilter<"Event"> | Date | string | null
+    embeddingModel?: StringNullableWithAggregatesFilter<"Event"> | string | null
   }
 
   export type RSVPWhereInput = {
@@ -7419,6 +9776,7 @@ export namespace Prisma {
     authorName?: StringNullableFilter<"Comment"> | string | null
     body?: StringFilter<"Comment"> | string
     createdAt?: DateTimeFilter<"Comment"> | Date | string
+    embeddedAt?: DateTimeNullableFilter<"Comment"> | Date | string | null
     event?: XOR<EventScalarRelationFilter, EventWhereInput>
   }
 
@@ -7429,6 +9787,7 @@ export namespace Prisma {
     authorName?: SortOrderInput | SortOrder
     body?: SortOrder
     createdAt?: SortOrder
+    embeddedAt?: SortOrderInput | SortOrder
     event?: EventOrderByWithRelationInput
   }
 
@@ -7442,6 +9801,7 @@ export namespace Prisma {
     authorName?: StringNullableFilter<"Comment"> | string | null
     body?: StringFilter<"Comment"> | string
     createdAt?: DateTimeFilter<"Comment"> | Date | string
+    embeddedAt?: DateTimeNullableFilter<"Comment"> | Date | string | null
     event?: XOR<EventScalarRelationFilter, EventWhereInput>
   }, "id">
 
@@ -7452,6 +9812,7 @@ export namespace Prisma {
     authorName?: SortOrderInput | SortOrder
     body?: SortOrder
     createdAt?: SortOrder
+    embeddedAt?: SortOrderInput | SortOrder
     _count?: CommentCountOrderByAggregateInput
     _max?: CommentMaxOrderByAggregateInput
     _min?: CommentMinOrderByAggregateInput
@@ -7467,6 +9828,7 @@ export namespace Prisma {
     authorName?: StringNullableWithAggregatesFilter<"Comment"> | string | null
     body?: StringWithAggregatesFilter<"Comment"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Comment"> | Date | string
+    embeddedAt?: DateTimeNullableWithAggregatesFilter<"Comment"> | Date | string | null
   }
 
   export type NotificationWhereInput = {
@@ -7583,6 +9945,124 @@ export namespace Prisma {
     windowStart?: DateTimeWithAggregatesFilter<"RateLimit"> | Date | string
   }
 
+  export type UserTasteWhereInput = {
+    AND?: UserTasteWhereInput | UserTasteWhereInput[]
+    OR?: UserTasteWhereInput[]
+    NOT?: UserTasteWhereInput | UserTasteWhereInput[]
+    id?: StringFilter<"UserTaste"> | string
+    userId?: StringFilter<"UserTaste"> | string
+    eventCount?: IntFilter<"UserTaste"> | number
+    createdAt?: DateTimeFilter<"UserTaste"> | Date | string
+    updatedAt?: DateTimeFilter<"UserTaste"> | Date | string
+  }
+
+  export type UserTasteOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserTasteWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    AND?: UserTasteWhereInput | UserTasteWhereInput[]
+    OR?: UserTasteWhereInput[]
+    NOT?: UserTasteWhereInput | UserTasteWhereInput[]
+    eventCount?: IntFilter<"UserTaste"> | number
+    createdAt?: DateTimeFilter<"UserTaste"> | Date | string
+    updatedAt?: DateTimeFilter<"UserTaste"> | Date | string
+  }, "id" | "userId">
+
+  export type UserTasteOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UserTasteCountOrderByAggregateInput
+    _avg?: UserTasteAvgOrderByAggregateInput
+    _max?: UserTasteMaxOrderByAggregateInput
+    _min?: UserTasteMinOrderByAggregateInput
+    _sum?: UserTasteSumOrderByAggregateInput
+  }
+
+  export type UserTasteScalarWhereWithAggregatesInput = {
+    AND?: UserTasteScalarWhereWithAggregatesInput | UserTasteScalarWhereWithAggregatesInput[]
+    OR?: UserTasteScalarWhereWithAggregatesInput[]
+    NOT?: UserTasteScalarWhereWithAggregatesInput | UserTasteScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"UserTaste"> | string
+    userId?: StringWithAggregatesFilter<"UserTaste"> | string
+    eventCount?: IntWithAggregatesFilter<"UserTaste"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"UserTaste"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UserTaste"> | Date | string
+  }
+
+  export type AIUsageWhereInput = {
+    AND?: AIUsageWhereInput | AIUsageWhereInput[]
+    OR?: AIUsageWhereInput[]
+    NOT?: AIUsageWhereInput | AIUsageWhereInput[]
+    id?: StringFilter<"AIUsage"> | string
+    userId?: StringNullableFilter<"AIUsage"> | string | null
+    feature?: StringFilter<"AIUsage"> | string
+    model?: StringFilter<"AIUsage"> | string
+    promptTokens?: IntNullableFilter<"AIUsage"> | number | null
+    completionTokens?: IntNullableFilter<"AIUsage"> | number | null
+    createdAt?: DateTimeFilter<"AIUsage"> | Date | string
+  }
+
+  export type AIUsageOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    feature?: SortOrder
+    model?: SortOrder
+    promptTokens?: SortOrderInput | SortOrder
+    completionTokens?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AIUsageWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AIUsageWhereInput | AIUsageWhereInput[]
+    OR?: AIUsageWhereInput[]
+    NOT?: AIUsageWhereInput | AIUsageWhereInput[]
+    userId?: StringNullableFilter<"AIUsage"> | string | null
+    feature?: StringFilter<"AIUsage"> | string
+    model?: StringFilter<"AIUsage"> | string
+    promptTokens?: IntNullableFilter<"AIUsage"> | number | null
+    completionTokens?: IntNullableFilter<"AIUsage"> | number | null
+    createdAt?: DateTimeFilter<"AIUsage"> | Date | string
+  }, "id">
+
+  export type AIUsageOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    feature?: SortOrder
+    model?: SortOrder
+    promptTokens?: SortOrderInput | SortOrder
+    completionTokens?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: AIUsageCountOrderByAggregateInput
+    _avg?: AIUsageAvgOrderByAggregateInput
+    _max?: AIUsageMaxOrderByAggregateInput
+    _min?: AIUsageMinOrderByAggregateInput
+    _sum?: AIUsageSumOrderByAggregateInput
+  }
+
+  export type AIUsageScalarWhereWithAggregatesInput = {
+    AND?: AIUsageScalarWhereWithAggregatesInput | AIUsageScalarWhereWithAggregatesInput[]
+    OR?: AIUsageScalarWhereWithAggregatesInput[]
+    NOT?: AIUsageScalarWhereWithAggregatesInput | AIUsageScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AIUsage"> | string
+    userId?: StringNullableWithAggregatesFilter<"AIUsage"> | string | null
+    feature?: StringWithAggregatesFilter<"AIUsage"> | string
+    model?: StringWithAggregatesFilter<"AIUsage"> | string
+    promptTokens?: IntNullableWithAggregatesFilter<"AIUsage"> | number | null
+    completionTokens?: IntNullableWithAggregatesFilter<"AIUsage"> | number | null
+    createdAt?: DateTimeWithAggregatesFilter<"AIUsage"> | Date | string
+  }
+
   export type EventCreateInput = {
     id?: string
     title: string
@@ -7598,6 +10078,8 @@ export namespace Prisma {
     userId: string
     organizerName?: string | null
     inviteToken?: string | null
+    embeddedAt?: Date | string | null
+    embeddingModel?: string | null
     rsvps?: RSVPCreateNestedManyWithoutEventInput
     comments?: CommentCreateNestedManyWithoutEventInput
     notifications?: NotificationCreateNestedManyWithoutEventInput
@@ -7618,6 +10100,8 @@ export namespace Prisma {
     userId: string
     organizerName?: string | null
     inviteToken?: string | null
+    embeddedAt?: Date | string | null
+    embeddingModel?: string | null
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
     comments?: CommentUncheckedCreateNestedManyWithoutEventInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutEventInput
@@ -7638,6 +10122,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
     comments?: CommentUpdateManyWithoutEventNestedInput
     notifications?: NotificationUpdateManyWithoutEventNestedInput
@@ -7658,6 +10144,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
     comments?: CommentUncheckedUpdateManyWithoutEventNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutEventNestedInput
@@ -7678,6 +10166,8 @@ export namespace Prisma {
     userId: string
     organizerName?: string | null
     inviteToken?: string | null
+    embeddedAt?: Date | string | null
+    embeddingModel?: string | null
   }
 
   export type EventUpdateManyMutationInput = {
@@ -7695,6 +10185,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type EventUncheckedUpdateManyInput = {
@@ -7712,6 +10204,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type RSVPCreateInput = {
@@ -7817,6 +10311,7 @@ export namespace Prisma {
     authorName?: string | null
     body: string
     createdAt?: Date | string
+    embeddedAt?: Date | string | null
     event: EventCreateNestedOneWithoutCommentsInput
   }
 
@@ -7827,6 +10322,7 @@ export namespace Prisma {
     authorName?: string | null
     body: string
     createdAt?: Date | string
+    embeddedAt?: Date | string | null
   }
 
   export type CommentUpdateInput = {
@@ -7835,6 +10331,7 @@ export namespace Prisma {
     authorName?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     event?: EventUpdateOneRequiredWithoutCommentsNestedInput
   }
 
@@ -7845,6 +10342,7 @@ export namespace Prisma {
     authorName?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type CommentCreateManyInput = {
@@ -7854,6 +10352,7 @@ export namespace Prisma {
     authorName?: string | null
     body: string
     createdAt?: Date | string
+    embeddedAt?: Date | string | null
   }
 
   export type CommentUpdateManyMutationInput = {
@@ -7862,6 +10361,7 @@ export namespace Prisma {
     authorName?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type CommentUncheckedUpdateManyInput = {
@@ -7871,6 +10371,7 @@ export namespace Prisma {
     authorName?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type NotificationCreateInput = {
@@ -7991,6 +10492,132 @@ export namespace Prisma {
     windowStart?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type UserTasteCreateInput = {
+    id?: string
+    userId: string
+    eventCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserTasteUncheckedCreateInput = {
+    id?: string
+    userId: string
+    eventCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserTasteUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    eventCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserTasteUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    eventCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserTasteCreateManyInput = {
+    id?: string
+    userId: string
+    eventCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserTasteUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    eventCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserTasteUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    eventCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIUsageCreateInput = {
+    id?: string
+    userId?: string | null
+    feature: string
+    model: string
+    promptTokens?: number | null
+    completionTokens?: number | null
+    createdAt?: Date | string
+  }
+
+  export type AIUsageUncheckedCreateInput = {
+    id?: string
+    userId?: string | null
+    feature: string
+    model: string
+    promptTokens?: number | null
+    completionTokens?: number | null
+    createdAt?: Date | string
+  }
+
+  export type AIUsageUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    feature?: StringFieldUpdateOperationsInput | string
+    model?: StringFieldUpdateOperationsInput | string
+    promptTokens?: NullableIntFieldUpdateOperationsInput | number | null
+    completionTokens?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIUsageUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    feature?: StringFieldUpdateOperationsInput | string
+    model?: StringFieldUpdateOperationsInput | string
+    promptTokens?: NullableIntFieldUpdateOperationsInput | number | null
+    completionTokens?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIUsageCreateManyInput = {
+    id?: string
+    userId?: string | null
+    feature: string
+    model: string
+    promptTokens?: number | null
+    completionTokens?: number | null
+    createdAt?: Date | string
+  }
+
+  export type AIUsageUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    feature?: StringFieldUpdateOperationsInput | string
+    model?: StringFieldUpdateOperationsInput | string
+    promptTokens?: NullableIntFieldUpdateOperationsInput | number | null
+    completionTokens?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AIUsageUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    feature?: StringFieldUpdateOperationsInput | string
+    model?: StringFieldUpdateOperationsInput | string
+    promptTokens?: NullableIntFieldUpdateOperationsInput | number | null
+    completionTokens?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -8055,6 +10682,17 @@ export namespace Prisma {
     not?: NestedEnumEventCategoryFilter<$PrismaModel> | $Enums.EventCategory
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type RSVPListRelationFilter = {
     every?: RSVPWhereInput
     some?: RSVPWhereInput
@@ -8105,6 +10743,8 @@ export namespace Prisma {
     userId?: SortOrder
     organizerName?: SortOrder
     inviteToken?: SortOrder
+    embeddedAt?: SortOrder
+    embeddingModel?: SortOrder
   }
 
   export type EventAvgOrderByAggregateInput = {
@@ -8126,6 +10766,8 @@ export namespace Prisma {
     userId?: SortOrder
     organizerName?: SortOrder
     inviteToken?: SortOrder
+    embeddedAt?: SortOrder
+    embeddingModel?: SortOrder
   }
 
   export type EventMinOrderByAggregateInput = {
@@ -8143,6 +10785,8 @@ export namespace Prisma {
     userId?: SortOrder
     organizerName?: SortOrder
     inviteToken?: SortOrder
+    embeddedAt?: SortOrder
+    embeddingModel?: SortOrder
   }
 
   export type EventSumOrderByAggregateInput = {
@@ -8233,14 +10877,7 @@ export namespace Prisma {
     _max?: NestedEnumEventCategoryFilter<$PrismaModel>
   }
 
-  export type EnumRSVPStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumRSVPStatusFilter<$PrismaModel> | $Enums.RSVPStatus
-  }
-
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
     notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -8248,7 +10885,17 @@ export namespace Prisma {
     lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type EnumRSVPStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRSVPStatusFilter<$PrismaModel> | $Enums.RSVPStatus
   }
 
   export type EventScalarRelationFilter = {
@@ -8313,20 +10960,6 @@ export namespace Prisma {
     _max?: NestedEnumRSVPStatusFilter<$PrismaModel>
   }
 
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
   export type CommentCountOrderByAggregateInput = {
     id?: SortOrder
     eventId?: SortOrder
@@ -8334,6 +10967,7 @@ export namespace Prisma {
     authorName?: SortOrder
     body?: SortOrder
     createdAt?: SortOrder
+    embeddedAt?: SortOrder
   }
 
   export type CommentMaxOrderByAggregateInput = {
@@ -8343,6 +10977,7 @@ export namespace Prisma {
     authorName?: SortOrder
     body?: SortOrder
     createdAt?: SortOrder
+    embeddedAt?: SortOrder
   }
 
   export type CommentMinOrderByAggregateInput = {
@@ -8352,6 +10987,7 @@ export namespace Prisma {
     authorName?: SortOrder
     body?: SortOrder
     createdAt?: SortOrder
+    embeddedAt?: SortOrder
   }
 
   export type EnumNotificationTypeFilter<$PrismaModel = never> = {
@@ -8462,6 +11098,78 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
+  export type UserTasteCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserTasteAvgOrderByAggregateInput = {
+    eventCount?: SortOrder
+  }
+
+  export type UserTasteMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserTasteMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserTasteSumOrderByAggregateInput = {
+    eventCount?: SortOrder
+  }
+
+  export type AIUsageCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    feature?: SortOrder
+    model?: SortOrder
+    promptTokens?: SortOrder
+    completionTokens?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AIUsageAvgOrderByAggregateInput = {
+    promptTokens?: SortOrder
+    completionTokens?: SortOrder
+  }
+
+  export type AIUsageMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    feature?: SortOrder
+    model?: SortOrder
+    promptTokens?: SortOrder
+    completionTokens?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AIUsageMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    feature?: SortOrder
+    model?: SortOrder
+    promptTokens?: SortOrder
+    completionTokens?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AIUsageSumOrderByAggregateInput = {
+    promptTokens?: SortOrder
+    completionTokens?: SortOrder
+  }
+
   export type RSVPCreateNestedManyWithoutEventInput = {
     create?: XOR<RSVPCreateWithoutEventInput, RSVPUncheckedCreateWithoutEventInput> | RSVPCreateWithoutEventInput[] | RSVPUncheckedCreateWithoutEventInput[]
     connectOrCreate?: RSVPCreateOrConnectWithoutEventInput | RSVPCreateOrConnectWithoutEventInput[]
@@ -8530,6 +11238,10 @@ export namespace Prisma {
 
   export type EnumEventCategoryFieldUpdateOperationsInput = {
     set?: $Enums.EventCategory
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
   }
 
   export type RSVPUpdateManyWithoutEventNestedInput = {
@@ -8624,10 +11336,6 @@ export namespace Prisma {
 
   export type EnumRSVPStatusFieldUpdateOperationsInput = {
     set?: $Enums.RSVPStatus
-  }
-
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
   }
 
   export type EventUpdateOneRequiredWithoutRsvpsNestedInput = {
@@ -8742,6 +11450,17 @@ export namespace Prisma {
     not?: NestedEnumEventCategoryFilter<$PrismaModel> | $Enums.EventCategory
   }
 
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -8846,34 +11565,6 @@ export namespace Prisma {
     _max?: NestedEnumEventCategoryFilter<$PrismaModel>
   }
 
-  export type NestedEnumRSVPStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumRSVPStatusFilter<$PrismaModel> | $Enums.RSVPStatus
-  }
-
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
-  export type NestedEnumRSVPStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumRSVPStatusWithAggregatesFilter<$PrismaModel> | $Enums.RSVPStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumRSVPStatusFilter<$PrismaModel>
-    _max?: NestedEnumRSVPStatusFilter<$PrismaModel>
-  }
-
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -8886,6 +11577,23 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumRSVPStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRSVPStatusFilter<$PrismaModel> | $Enums.RSVPStatus
+  }
+
+  export type NestedEnumRSVPStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RSVPStatus | EnumRSVPStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RSVPStatus[] | ListEnumRSVPStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRSVPStatusWithAggregatesFilter<$PrismaModel> | $Enums.RSVPStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRSVPStatusFilter<$PrismaModel>
+    _max?: NestedEnumRSVPStatusFilter<$PrismaModel>
   }
 
   export type NestedEnumNotificationTypeFilter<$PrismaModel = never> = {
@@ -8974,6 +11682,7 @@ export namespace Prisma {
     authorName?: string | null
     body: string
     createdAt?: Date | string
+    embeddedAt?: Date | string | null
   }
 
   export type CommentUncheckedCreateWithoutEventInput = {
@@ -8982,6 +11691,7 @@ export namespace Prisma {
     authorName?: string | null
     body: string
     createdAt?: Date | string
+    embeddedAt?: Date | string | null
   }
 
   export type CommentCreateOrConnectWithoutEventInput = {
@@ -9083,6 +11793,7 @@ export namespace Prisma {
     authorName?: StringNullableFilter<"Comment"> | string | null
     body?: StringFilter<"Comment"> | string
     createdAt?: DateTimeFilter<"Comment"> | Date | string
+    embeddedAt?: DateTimeNullableFilter<"Comment"> | Date | string | null
   }
 
   export type NotificationUpsertWithWhereUniqueWithoutEventInput = {
@@ -9130,6 +11841,8 @@ export namespace Prisma {
     userId: string
     organizerName?: string | null
     inviteToken?: string | null
+    embeddedAt?: Date | string | null
+    embeddingModel?: string | null
     comments?: CommentCreateNestedManyWithoutEventInput
     notifications?: NotificationCreateNestedManyWithoutEventInput
   }
@@ -9149,6 +11862,8 @@ export namespace Prisma {
     userId: string
     organizerName?: string | null
     inviteToken?: string | null
+    embeddedAt?: Date | string | null
+    embeddingModel?: string | null
     comments?: CommentUncheckedCreateNestedManyWithoutEventInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutEventInput
   }
@@ -9184,6 +11899,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     comments?: CommentUpdateManyWithoutEventNestedInput
     notifications?: NotificationUpdateManyWithoutEventNestedInput
   }
@@ -9203,6 +11920,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     comments?: CommentUncheckedUpdateManyWithoutEventNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutEventNestedInput
   }
@@ -9222,6 +11941,8 @@ export namespace Prisma {
     userId: string
     organizerName?: string | null
     inviteToken?: string | null
+    embeddedAt?: Date | string | null
+    embeddingModel?: string | null
     rsvps?: RSVPCreateNestedManyWithoutEventInput
     notifications?: NotificationCreateNestedManyWithoutEventInput
   }
@@ -9241,6 +11962,8 @@ export namespace Prisma {
     userId: string
     organizerName?: string | null
     inviteToken?: string | null
+    embeddedAt?: Date | string | null
+    embeddingModel?: string | null
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutEventInput
   }
@@ -9276,6 +11999,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
     notifications?: NotificationUpdateManyWithoutEventNestedInput
   }
@@ -9295,6 +12020,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutEventNestedInput
   }
@@ -9314,6 +12041,8 @@ export namespace Prisma {
     userId: string
     organizerName?: string | null
     inviteToken?: string | null
+    embeddedAt?: Date | string | null
+    embeddingModel?: string | null
     rsvps?: RSVPCreateNestedManyWithoutEventInput
     comments?: CommentCreateNestedManyWithoutEventInput
   }
@@ -9333,6 +12062,8 @@ export namespace Prisma {
     userId: string
     organizerName?: string | null
     inviteToken?: string | null
+    embeddedAt?: Date | string | null
+    embeddingModel?: string | null
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
     comments?: CommentUncheckedCreateNestedManyWithoutEventInput
   }
@@ -9368,6 +12099,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
     comments?: CommentUpdateManyWithoutEventNestedInput
   }
@@ -9387,6 +12120,8 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     organizerName?: NullableStringFieldUpdateOperationsInput | string | null
     inviteToken?: NullableStringFieldUpdateOperationsInput | string | null
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    embeddingModel?: NullableStringFieldUpdateOperationsInput | string | null
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
     comments?: CommentUncheckedUpdateManyWithoutEventNestedInput
   }
@@ -9410,6 +12145,7 @@ export namespace Prisma {
     authorName?: string | null
     body: string
     createdAt?: Date | string
+    embeddedAt?: Date | string | null
   }
 
   export type NotificationCreateManyEventInput = {
@@ -9467,6 +12203,7 @@ export namespace Prisma {
     authorName?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type CommentUncheckedUpdateWithoutEventInput = {
@@ -9475,6 +12212,7 @@ export namespace Prisma {
     authorName?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type CommentUncheckedUpdateManyWithoutEventInput = {
@@ -9483,6 +12221,7 @@ export namespace Prisma {
     authorName?: NullableStringFieldUpdateOperationsInput | string | null
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    embeddedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type NotificationUpdateWithoutEventInput = {

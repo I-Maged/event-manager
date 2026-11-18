@@ -43,6 +43,12 @@ model Event {
   // /invite/[token] can resolve the event in one lookup.
   inviteToken String? @unique
 
+  // Semantic embedding of title+description+category+location (OpenRouter
+  // Nemotron). Null until generated. Untyped vector to stay model-agnostic.
+  embedding    Unsupported("vector")?
+  embeddedAt   DateTime?
+  embeddingModel String?
+
   rsvps RSVP[]
   comments Comment[]
   notifications Notification[]
@@ -117,6 +123,10 @@ model Comment {
   body      String
   createdAt DateTime @default(now())
 
+  // Semantic embedding of the comment body.
+  embedding    Unsupported("vector")?
+  embeddedAt   DateTime?
+
   @@index([eventId, createdAt])
 }
 
@@ -151,4 +161,29 @@ model RateLimit {
   windowStart DateTime @default(now()) @db.Timestamptz(3)
 
   @@index([windowStart])
+}
+
+/// Per-user taste vector for personalized recommendations. Computed as the
+/// weighted average of embeddings of events the user has RSVP'd to.
+model UserTaste {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  embedding Unsupported("vector")?
+  eventCount Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Audit/cost log for AI (OpenRouter) calls.
+model AIUsage {
+  id               String   @id @default(cuid())
+  userId           String?
+  feature          String
+  model            String
+  promptTokens     Int?
+  completionTokens Int?
+  createdAt        DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([feature, createdAt])
 }

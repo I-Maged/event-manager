@@ -64,6 +64,7 @@ export function EventCard({ event, going, isMine }: Props) {
       <p className="text-xs text-muted">
         {going} going
         {event.maxAttendees != null && ` · cap ${event.maxAttendees}`}
+        {!event.embeddedAt && ' · embedding pending'}
       </p>
     </li>
   );
