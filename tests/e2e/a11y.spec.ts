@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 import { E2E_ENABLED, E2E_SKIP_REASON } from './support/env';
 import { storageStatePath } from './support/fixtures';
 import { readRoster } from './support/fixtures';
-import { resetDomainTables, prisma, seedEvent } from './support/db';
+import { resetDomainTables, seedEvent } from './support/db';
 
 test.describe('Accessibility', () => {
   test.skip(!E2E_ENABLED, E2E_SKIP_REASON);

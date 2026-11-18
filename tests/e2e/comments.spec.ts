@@ -75,7 +75,6 @@ test.describe('Comments', () => {
   });
 
   test('organizer can delete another user’s comment', async ({ page }) => {
-    const roster = readRoster();
     const event = await createEvent();
     await seedComment(event.id, 'other-commenter', { authorName: 'Other commenter', body: 'Organizer can delete this' });
     await page.goto(`/events/${event.id}`);
@@ -123,16 +122,17 @@ test.describe('Comments', () => {
       triggered = true;
     });
     await page.addInitScript(() => {
-      (window as any).__xss = false;
+      (window as Window & { __xss?: boolean }).__xss = false;
     });
-    const roster = readRoster();
     const event = await createEvent();
     await seedComment(event.id, 'xss-author', {
       authorName: '<img src=x onerror=window.__xss=true>',
       body: 'XSS author body',
     });
     await page.goto(`/events/${event.id}`);
-    const xss = await page.evaluate(() => (window as any).__xss === true);
+    const xss = await page.evaluate(
+      () => (window as Window & { __xss?: boolean }).__xss === true,
+    );
     expect(xss || triggered).toBeFalsy();
   });
 });

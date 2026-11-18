@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { E2E_ENABLED, E2E_SKIP_REASON } from './support/env';
 import { storageStatePath } from './support/fixtures';
 import { readRoster } from './support/fixtures';
-import { resetDomainTables, prisma, seedEvent, seedRsvp } from './support/db';
+import { resetDomainTables, prisma, seedEvent } from './support/db';
 import { newRolePage } from './support/context';
 
 test.describe('RSVP and waitlist', () => {
@@ -36,7 +36,6 @@ test.describe('RSVP and waitlist', () => {
   });
 
   test('full event shows the wishlist CTA', async ({ page }) => {
-    const roster = readRoster();
     const event = await createEvent(1);
     await prisma.rSVP.create({
       data: {
@@ -51,7 +50,6 @@ test.describe('RSVP and waitlist', () => {
   });
 
   test('joining the wishlist shows the queue position', async ({ page }) => {
-    const roster = readRoster();
     const event = await createEvent(1);
     await prisma.rSVP.create({
       data: {
@@ -139,8 +137,8 @@ test.describe('RSVP and waitlist', () => {
     }).toBe(2);
 
     const rsvps = await prisma.rSVP.findMany({ where: { eventId: event.id } });
-    const going = rsvps.filter((r: any) => r.status === 'GOING');
-    const waitlisted = rsvps.filter((r: any) => r.status === 'WAITLISTED');
+    const going = rsvps.filter((r) => r.status === 'GOING');
+    const waitlisted = rsvps.filter((r) => r.status === 'WAITLISTED');
     expect(going.length).toBe(1);
     expect(waitlisted.length).toBe(1);
 

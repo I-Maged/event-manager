@@ -15,7 +15,7 @@ function headers() {
 }
 
 export function embeddingModel() {
-  return process.env.OPENROUTER_EMBEDDING_MODEL ?? 'nvidia/nemotron-3.5-embed-1b:free'
+  return process.env.OPENROUTER_EMBEDDING_MODEL ?? 'nvidia/nemotron-3-embed-1b:free'
 }
 
 export function chatModel() {
@@ -39,7 +39,7 @@ export async function embedTexts(inputs: string[]): Promise<number[][]> {
   let lastErr: unknown
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const res = await fetchWithTimeout(`${OPENROUTER_BASE}/embeddings`, init, 20_000)
+      const res = await fetchWithTimeout(`${OPENROUTER_BASE}/embeddings`, init, 15_000)
       if (!res.ok) {
         const text = await res.text().catch(() => '')
         if (res.status >= 500 && attempt === 0) {
@@ -78,7 +78,7 @@ export async function chatComplete(messages: ChatMessage[], opts?: { json?: bool
       temperature: opts?.temperature ?? 0.2,
       ...(opts?.json ? { response_format: { type: 'json_object' } } : {}),
     }),
-  }, 20_000)
+  }, 15_000)
   if (!res.ok) {
     const text = await res.text().catch(() => '')
     throw new Error(`OpenRouter chat failed (${res.status}): ${text.slice(0, 300)}`)

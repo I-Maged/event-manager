@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { E2E_ENABLED, E2E_SKIP_REASON } from './support/env';
 import { storageStatePath } from './support/fixtures';
 import { readRoster } from './support/fixtures';
@@ -13,7 +13,7 @@ test.describe('Private events and invites', () => {
     await resetDomainTables();
   });
 
-  async function createPrivateEvent(page: any) {
+  async function createPrivateEvent(page: Page) {
     await page.goto('/events/new');
     await page.getByLabel('Title').fill('Private event');
     await page.getByLabel('Description').fill('Private details');

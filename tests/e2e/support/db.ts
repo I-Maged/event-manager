@@ -1,9 +1,10 @@
 import { config as loadEnv } from 'dotenv';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { PrismaClient } from '../../../src/generated/prisma';
+import { PrismaClient, type EventCategory } from '../../../src/generated/prisma';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import { E2E_ENABLED, E2E_ROSTER_PATH } from './env';
+import { assertTestDatabaseSafety } from '../../support/env';
 
 const testEnvPath = resolve(process.cwd(), '.env.test');
 if (existsSync(testEnvPath)) {
@@ -19,7 +20,6 @@ function ensureClient(): PrismaClient {
   if (!E2E_DB_AVAILABLE) {
     throw new Error('DB is not available: E2E is not enabled.');
   }
-  const { assertTestDatabaseSafety } = require('../../support/env');
   assertTestDatabaseSafety();
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error('DATABASE_URL is not set.');
@@ -28,16 +28,16 @@ function ensureClient(): PrismaClient {
   return cachedClient;
 }
 
-const proxy: any = new Proxy(
+const proxy = new Proxy(
   {},
   {
     get(_target, prop) {
-      return (ensureClient() as any)[prop];
+      return Reflect.get(ensureClient(), prop);
     },
   },
 );
 
-export const prisma = proxy;
+export const prisma = proxy as PrismaClient;
 
 const DOMAIN_TABLES = [
   '"Notification"',
@@ -83,7 +83,7 @@ export type SeedEventOptions = {
   location?: string;
   maxAttendees?: number | null;
   isPublic?: boolean;
-  category?: any;
+  category?: EventCategory;
   userId?: string;
   organizerName?: string | null;
   inviteToken?: string | null;
@@ -91,7 +91,7 @@ export type SeedEventOptions = {
 
 export async function seedEvent(
   overrides: SeedEventOptions = {},
-): Promise<any> {
+): Promise<Awaited<ReturnType<PrismaClient['event']['create']>>> {
   const roster = readRoster();
   return prisma.event.create({
     data: {
@@ -120,7 +120,7 @@ export async function seedRsvp(
   eventId: string,
   userId: string,
   overrides: Record<string, unknown> = {},
-): Promise<any> {
+): Promise<Awaited<ReturnType<PrismaClient['rSVP']['create']>>> {
   return prisma.rSVP.create({
     data: {
       eventId,
@@ -136,7 +136,7 @@ export async function seedComment(
   eventId: string,
   userId: string,
   overrides: Record<string, unknown> = {},
-): Promise<any> {
+): Promise<Awaited<ReturnType<PrismaClient['comment']['create']>>> {
   return prisma.comment.create({
     data: {
       eventId,
@@ -151,7 +151,7 @@ export async function seedComment(
 export async function seedNotification(
   userId: string,
   overrides: Record<string, unknown> = {},
-): Promise<any> {
+): Promise<Awaited<ReturnType<PrismaClient['notification']['create']>>> {
   return prisma.notification.create({
     data: {
       userId,

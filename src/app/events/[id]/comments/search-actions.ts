@@ -22,7 +22,7 @@ export async function searchComments(eventId: string, query: string) {
         data: { userId: userId ?? undefined, feature: 'comment-search', model: process.env.OPENROUTER_EMBEDDING_MODEL ?? 'nvidia/nemotron-3.5-embed-1b:free' },
       })
     } catch {}
-    return { ok: true as const, comments: comments.map((c: any) => ({ id: c.id, body: c.body, authorName: c.authorName, createdAt: c.createdAt })) }
+    return { ok: true as const, comments: comments.map((c) => ({ id: c.id, body: c.body, authorName: c.authorName, createdAt: c.createdAt })) }
   } catch (err) {
     console.error('comment search failed', err)
     return { ok: false as const, error: 'Search failed.', comments: [] }

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { E2E_ENABLED, E2E_SKIP_REASON } from './support/env';
 import { storageStatePath } from './support/fixtures';
 import { readRoster } from './support/fixtures';
@@ -17,7 +17,7 @@ test.describe('Events', () => {
     return d.toISOString().slice(0, 16);
   }
 
-  async function createEvent(page: any, overrides: Record<string, string> = {}) {
+  async function createEvent(page: Page, overrides: Record<string, string> = {}) {
     await page.goto('/events/new');
     await page.getByLabel('Title').fill(overrides.title ?? 'Created event');
     await page.getByLabel('Description').fill('Description text');
