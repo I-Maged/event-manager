@@ -157,7 +157,7 @@ export async function upsertRsvpCore(
   status: SettableStatus,
   attendeeName?: string | null,
 ): Promise<UpsertRsvpOutcome> {
-  return prisma.$transaction(
+  const result = await prisma.$transaction(
     async (tx) => {
       // Must be the first statement: everything below is a read-then-write
       // sequence that is only correct while this event is locked.
@@ -240,6 +240,12 @@ export async function upsertRsvpCore(
     // extends the queue wait; `timeout` still bounds the transaction itself.
     { timeout: 15_000, maxWait: 15_000 },
   );
+  if (result.ok) {
+    void import('./ai/taste')
+      .then((m) => m.recomputeUserTaste(userId))
+      .catch((err) => console.error('taste recompute failed', err))
+  }
+  return result
 }
 
 /**
@@ -251,7 +257,7 @@ export async function cancelRsvpCore(
   userId: string,
   eventId: string,
 ): Promise<CancelRsvpOutcome> {
-  return prisma.$transaction(
+  const result = await prisma.$transaction(
     async (tx) => {
       // Same per-event serialization as upsertRsvpCore: the delete and the
       // promotion that follows it must not interleave with another writer.
@@ -296,4 +302,10 @@ export async function cancelRsvpCore(
     },
     { timeout: 15_000, maxWait: 15_000 },
   );
+  if (result.ok) {
+    void import('./ai/taste')
+      .then((m) => m.recomputeUserTaste(userId))
+      .catch((err) => console.error('taste recompute failed', err))
+  }
+  return result
 }

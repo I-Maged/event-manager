@@ -12,7 +12,9 @@ export type RateLimitScope =
   | 'eventEdit'
   | 'eventCreate'
   | 'commentDelete'
-  | 'checkIn';
+  | 'checkIn'
+  | 'nlSearch'
+  | 'recommendation';
 
 /**
  * Per-user budgets for the actions that write (or fan out notifications).
@@ -35,6 +37,8 @@ export const RATE_LIMITS: Record<
   eventCreate: { limit: 10, windowMs: 60 * 60_000 },
   commentDelete: { limit: 30, windowMs: 60_000 },
   checkIn: { limit: 60, windowMs: 60_000 },
+  nlSearch: { limit: 20, windowMs: 60 * 60_000 },
+  recommendation: { limit: 30, windowMs: 60_000 },
 };
 
 /**

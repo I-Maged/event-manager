@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { auth } from '@/lib/auth/server';
 import { EventCard } from '@/components/EventCard';
 import { EventFilters } from '@/components/EventFilters';
+import { NaturalLanguageSearch } from '@/components/NaturalLanguageSearch';
 import { Pagination } from '@/components/Pagination';
 import {
   hasNarrowingFilters,
@@ -15,6 +16,9 @@ import {
   getPublicEventsPage,
   PAGE_SIZE,
 } from '@/lib/events';
+import { getRecommendedEvents } from '@/lib/ai/recommendations';
+import { enforceRateLimit } from '@/lib/rate-limit';
+import { prisma } from '@/db';
 
 export const metadata = {
   title: 'Browse events | EventPlanner',
@@ -28,12 +32,40 @@ export default async function EventsPage({
 }: {
   searchParams: Promise<RawSearchParams>;
 }) {
-  const params = parseEventListParams(await searchParams);
+  const raw = await searchParams
+  const params = parseEventListParams(raw)
+  const view = (Array.isArray(raw.view) ? raw.view[0] : raw.view) === 'recommended' ? 'recommended' : 'browse'
+  const nlFlag = (Array.isArray(raw.nl) ? raw.nl[0] : raw.nl) === '1'
 
-  const { data: session } = await auth.getSession();
-  const myId = session?.user?.id ?? null;
+  const { data: session } = await auth.getSession()
+  const myId = session?.user?.id ?? null
 
-  const { events, total, page, pageCount } = await getPublicEventsPage(params);
+  let recommended = view === 'recommended' && !!myId
+  if (recommended && myId) {
+    const limited = await enforceRateLimit('recommendation', myId)
+    if (limited) recommended = false
+  }
+  let events: Awaited<ReturnType<typeof getPublicEventsPage>>['events']
+  let total: number
+  let page: number
+  let pageCount: number
+
+  if (recommended) {
+    const r = await getRecommendedEvents({ userId: myId!, page: params.page, pageSize: PAGE_SIZE })
+    events = r.events
+    total = r.total
+    page = params.page
+    pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
+    try {
+      await prisma.aIUsage.create({ data: { userId: myId!, feature: 'recommendations', model: process.env.OPENROUTER_EMBEDDING_MODEL ?? 'nvidia/nemotron-3.5-embed-1b:free' } })
+    } catch {}
+  } else {
+    const r = await getPublicEventsPage(params)
+    events = r.events
+    total = r.total
+    page = r.page
+    pageCount = r.pageCount
+  }
 
   const [goingCounts, categoryCounts, organizerName] = await Promise.all([
     getGoingCounts(events.map((event) => event.id)),
@@ -54,6 +86,31 @@ export default async function EventsPage({
           Create event
         </Link>
       </div>
+
+      <NaturalLanguageSearch />
+
+      <div className="flex gap-2">
+        <Link
+          href="/events"
+          className={`btn-secondary text-sm ${view === 'browse' ? 'ring-2 ring-primary' : ''}`}
+        >
+          Browse
+        </Link>
+        {myId ? (
+          <Link
+            href="/events?view=recommended"
+            className={`btn-secondary text-sm ${view === 'recommended' ? 'ring-2 ring-primary' : ''}`}
+          >
+            For you
+          </Link>
+        ) : null}
+      </div>
+
+      {nlFlag && (
+        <div className="card p-3 text-sm text-muted">
+          Showing results interpreted from your AI search. Adjust filters as needed.
+        </div>
+      )}
 
       <div className="group space-y-6">
         <EventFilters

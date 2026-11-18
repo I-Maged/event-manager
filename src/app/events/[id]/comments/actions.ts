@@ -8,6 +8,7 @@ import { notifyNewComment } from '@/lib/event-notifications';
 import { canViewEvent, resolveOrganizerName } from '@/lib/events';
 import { MAX_COMMENT_LENGTH } from '@/lib/comments';
 import { enforceRateLimit } from '@/lib/rate-limit';
+import { embedCommentNow } from '@/lib/ai/embeddings';
 
 async function requireUser(): Promise<{
   userId: string;
@@ -57,6 +58,8 @@ export async function addComment(
     data: { eventId, userId, authorName, body: trimmed },
     select: { id: true },
   });
+
+  void embedCommentNow(comment.id, trimmed).catch((err) => console.error('comment embedding failed', err))
 
   // Best-effort fan-out: comment succeeds even if notifications fail.
   await notifyNewComment({

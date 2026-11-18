@@ -14,6 +14,7 @@ import {
 import { updateEventCore } from '@/lib/update-event';
 import { notifyPromotions } from '@/lib/rsvp';
 import { enforceRateLimit } from '@/lib/rate-limit';
+import { embedEventNow } from '@/lib/ai/embeddings';
 
 async function requireOrganizer(eventId: string) {
   const { data: session } = await auth.getSession();
@@ -44,6 +45,15 @@ export async function updateEvent(
 
   if (!outcome.ok) return { error: outcome.error };
   const { before, promoted, timeZone } = outcome;
+
+  void embedEventNow({
+    id: eventId,
+    title: parsed.data.title,
+    description: parsed.data.description,
+    category: parsed.data.category,
+    location: parsed.data.location,
+    organizerName,
+  }).catch((err) => console.error('event embedding failed', err))
 
   // Best-effort PROMOTION fan-out for anyone who just got a freed seat.
   if (promoted.length > 0) {

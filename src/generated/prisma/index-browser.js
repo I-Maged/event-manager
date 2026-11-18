@@ -134,7 +134,9 @@ exports.Prisma.EventScalarFieldEnum = {
   updatedAt: 'updatedAt',
   userId: 'userId',
   organizerName: 'organizerName',
-  inviteToken: 'inviteToken'
+  inviteToken: 'inviteToken',
+  embeddedAt: 'embeddedAt',
+  embeddingModel: 'embeddingModel'
 };
 
 exports.Prisma.RSVPScalarFieldEnum = {
@@ -157,7 +159,8 @@ exports.Prisma.CommentScalarFieldEnum = {
   userId: 'userId',
   authorName: 'authorName',
   body: 'body',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  embeddedAt: 'embeddedAt'
 };
 
 exports.Prisma.NotificationScalarFieldEnum = {
@@ -175,6 +178,24 @@ exports.Prisma.RateLimitScalarFieldEnum = {
   key: 'key',
   count: 'count',
   windowStart: 'windowStart'
+};
+
+exports.Prisma.UserTasteScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  eventCount: 'eventCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AIUsageScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  feature: 'feature',
+  model: 'model',
+  promptTokens: 'promptTokens',
+  completionTokens: 'completionTokens',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -224,7 +245,9 @@ exports.Prisma.ModelName = {
   RSVP: 'RSVP',
   Comment: 'Comment',
   Notification: 'Notification',
-  RateLimit: 'RateLimit'
+  RateLimit: 'RateLimit',
+  UserTaste: 'UserTaste',
+  AIUsage: 'AIUsage'
 };
 
 /**
