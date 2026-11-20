@@ -65,6 +65,7 @@ export async function addComment(
   await notifyNewComment({
     eventId,
     eventTitle: event.title,
+    eventCategory: event.category,
     organizerId: event.userId,
     authorId: userId,
     body: trimmed,

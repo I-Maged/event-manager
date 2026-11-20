@@ -7,7 +7,7 @@ export type UpdateEventCoreOutcome =
       ok: true;
       before: Pick<
         Event,
-        'id' | 'title' | 'date' | 'location' | 'timeZone' | 'userId' | 'maxAttendees'
+        'id' | 'title' | 'date' | 'location' | 'timeZone' | 'userId' | 'maxAttendees' | 'category'
       >;
       promoted: string[];
       timeZone: string | null;
@@ -68,6 +68,7 @@ export async function updateEventCore(
           timeZone: true,
           userId: true,
           maxAttendees: true,
+          category: true,
         },
       });
       if (!before) return { ok: false as const, error: 'Event not found.' };

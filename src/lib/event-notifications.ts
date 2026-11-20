@@ -2,6 +2,7 @@ import { prisma } from '@/db';
 import type { Event, RSVPStatus } from '@/generated/prisma';
 import { notifyUsers } from '@/lib/notifications';
 import { formatEventDate } from '@/lib/time';
+import { generateNotificationCopy } from '@/lib/ai/notification-copy';
 
 /**
  * Recipient selection + best-effort fan-out for event-related notifications.
@@ -21,7 +22,9 @@ export const EVENT_HOLDER_STATUSES = [
   'WAITLISTED',
 ] as const satisfies readonly RSVPStatus[];
 
-export type EventChangeSnapshot = Pick<Event, 'title' | 'date' | 'location'>;
+export type EventChangeSnapshot = Pick<Event, 'title' | 'date' | 'location'> & {
+  category?: Event['category'] | null;
+};
 
 /**
  * Opted-in holders of an event, excluding the organizer. Used by both the
@@ -83,13 +86,26 @@ export async function notifyEventUpdated(input: {
       input.organizerId,
     );
     if (recipients.length === 0) return 0;
+    const copy = await generateNotificationCopy({
+      kind: 'EVENT_UPDATED',
+      event: {
+        title: input.after.title,
+        category: input.after.category ?? null,
+        location: input.after.location,
+        date: input.after.date,
+        timeZone: input.timeZone,
+      },
+      changeLines,
+    });
+    const title = copy?.title ?? `Event updated: ${input.after.title}`;
+    const body = copy?.body ?? changeLines.join(' · ');
     await notifyUsers(
       recipients.map((userId) => ({
         userId,
         eventId: input.eventId,
         type: 'EVENT_UPDATED' as const,
-        title: `Event updated: ${input.after.title}`,
-        body: changeLines.join(' · '),
+        title,
+        body,
       })),
     );
     return recipients.length;
@@ -105,7 +121,7 @@ export async function notifyEventUpdated(input: {
 export type CancelledEventSnapshot = Pick<
   Event,
   'title' | 'date' | 'timeZone' | 'location' | 'userId'
->;
+> & { category?: Event['category'] | null };
 
 /**
  * Best-effort EVENT_CANCELLED fan-out. `recipients` must be captured *before*
@@ -119,13 +135,27 @@ export async function notifyEventCancelled(input: {
 }): Promise<number> {
   if (input.recipients.length === 0) return 0;
   try {
+    const copy = await generateNotificationCopy({
+      kind: 'EVENT_CANCELLED',
+      event: {
+        title: input.event.title,
+        category: input.event.category ?? null,
+        location: input.event.location,
+        date: input.event.date,
+        timeZone: input.event.timeZone,
+      },
+    });
+    const title = copy?.title ?? `Event cancelled: ${input.event.title}`;
+    const body =
+      copy?.body ??
+      `${formatEventDate(input.event.date, input.event.timeZone)} at ${input.event.location} will not take place.`;
     await notifyUsers(
       input.recipients.map((userId) => ({
         userId,
         eventId: null,
         type: 'EVENT_CANCELLED' as const,
-        title: `Event cancelled: ${input.event.title}`,
-        body: `${formatEventDate(input.event.date, input.event.timeZone)} at ${input.event.location} will not take place.`,
+        title,
+        body,
       })),
     );
     return input.recipients.length;
@@ -170,6 +200,7 @@ export async function selectCommentRecipients(
 export async function notifyNewComment(input: {
   eventId: string;
   eventTitle: string;
+  eventCategory?: string | null;
   organizerId: string;
   authorId: string;
   body: string;
@@ -181,13 +212,23 @@ export async function notifyNewComment(input: {
       input.authorId,
     );
     if (recipients.length === 0) return 0;
+    const copy = await generateNotificationCopy({
+      kind: 'COMMENT',
+      event: {
+        title: input.eventTitle,
+        category: input.eventCategory ?? null,
+      },
+      commentSnippet: input.body,
+    });
+    const title = copy?.title ?? `New comment on ${input.eventTitle}`;
+    const body = copy?.body ?? input.body.slice(0, 140);
     await notifyUsers(
       recipients.map((userId) => ({
         userId,
         eventId: input.eventId,
         type: 'COMMENT' as const,
-        title: `New comment on ${input.eventTitle}`,
-        body: input.body.slice(0, 140),
+        title,
+        body,
       })),
     );
     return recipients.length;

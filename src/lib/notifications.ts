@@ -1,5 +1,6 @@
 import { prisma } from '@/db';
 import type { NotificationType } from '@/generated/prisma';
+import { formatEventDate } from '@/lib/time';
 
 export type NotificationRow = {
   id: string;
@@ -121,7 +122,7 @@ export const REMINDER_DEDUP_MS = 24 * 60 * 60 * 1000;
 export type ReminderCandidate = {
   id: string;
   notifyOnUpdate: boolean;
-  event: { id: string; title: string; date: Date };
+  event: { id: string; title: string; date: Date; location?: string | null; timeZone?: string | null };
 };
 
 /**
@@ -151,13 +152,19 @@ export async function ensureDueReminders(
         select: { id: true },
       });
       if (recent) continue;
+      const logistics = [
+        formatEventDate(row.event.date, row.event.timeZone),
+        row.event.location,
+      ]
+        .filter(Boolean)
+        .join(' · ');
       await notifyUsers([
         {
           userId,
           eventId: row.event.id,
           type: 'REMINDER',
           title: `Upcoming: ${row.event.title}`,
-          body: 'Your event is coming up soon.',
+          body: logistics ? `${logistics}.` : 'Your event is coming up soon.',
         },
       ]);
     }

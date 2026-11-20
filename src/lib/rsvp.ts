@@ -3,6 +3,7 @@ import type { Prisma, RSVPStatus } from '@/generated/prisma';
 import { notifyUsers } from '@/lib/notifications';
 import { formatEventDate } from '@/lib/time';
 import { findConflictingGoingEvents, type ConflictEvent } from '@/lib/conflicts';
+import { generateNotificationCopy } from '@/lib/ai/notification-copy';
 
 type Tx = Prisma.TransactionClient;
 
@@ -133,13 +134,34 @@ export async function notifyPromotions(
 ): Promise<void> {
   if (promotedUserIds.length === 0) return;
   try {
+    const eventRow = await prisma.event
+      .findUnique({
+        where: { id: eventId },
+        select: { category: true, description: true },
+      })
+      .catch(() => null);
+    const copy = await generateNotificationCopy({
+      kind: 'PROMOTION',
+      event: {
+        title: eventTitle,
+        category: eventRow?.category ?? null,
+        description: eventRow?.description ?? null,
+        location: eventLocation,
+        date: eventDate,
+        timeZone: eventTimeZone ?? null,
+      },
+    });
+    const title = copy?.title ?? `You're in: ${eventTitle}`;
+    const body =
+      copy?.body ??
+      `A spot opened up — ${formatEventDate(eventDate, eventTimeZone)} at ${eventLocation}.`;
     await notifyUsers(
       promotedUserIds.map((userId) => ({
         userId,
         eventId,
         type: 'PROMOTION' as const,
-        title: `You're in: ${eventTitle}`,
-        body: `A spot opened up — ${formatEventDate(eventDate, eventTimeZone)} at ${eventLocation}.`,
+        title,
+        body,
       })),
     );
   } catch (error) {
