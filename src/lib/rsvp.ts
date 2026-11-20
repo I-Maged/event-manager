@@ -2,6 +2,7 @@ import { prisma } from '@/db';
 import type { Prisma, RSVPStatus } from '@/generated/prisma';
 import { notifyUsers } from '@/lib/notifications';
 import { formatEventDate } from '@/lib/time';
+import { findConflictingGoingEvents, type ConflictEvent } from '@/lib/conflicts';
 
 type Tx = Prisma.TransactionClient;
 
@@ -10,7 +11,7 @@ export type SettableStatus = (typeof SETTABLE_STATUSES)[number];
 
 /** Client-facing result shape shared by setRsvp/joinWishlist/acceptInvite. */
 export type RsvpResult =
-  | { ok: true; status: RSVPStatus; waitlistPosition: number | null }
+  | { ok: true; status: RSVPStatus; waitlistPosition: number | null; conflicts?: ConflictEvent[] }
   | { ok: false; error: string };
 
 /**
@@ -28,6 +29,7 @@ export type UpsertRsvpOutcome =
       eventDate: Date;
       eventTimeZone: string | null;
       eventLocation: string;
+      conflicts: ConflictEvent[];
     }
   | { ok: false; error: string };
 
@@ -224,6 +226,11 @@ export async function upsertRsvpCore(
         waitlistPosition = ahead + 1;
       }
 
+      const conflicts =
+        finalStatus === 'GOING'
+          ? await findConflictingGoingEvents(userId, eventId, event.date, tx)
+          : [];
+
       return {
         ok: true as const,
         status: finalStatus,
@@ -233,6 +240,7 @@ export async function upsertRsvpCore(
         eventDate: event.date,
         eventTimeZone: event.timeZone,
         eventLocation: event.location,
+        conflicts,
       };
     },
     // Neon opens a WebSocket per pooled client, so a burst of writers can

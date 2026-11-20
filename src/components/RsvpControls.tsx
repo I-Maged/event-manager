@@ -49,10 +49,12 @@ export function RsvpControls({
   const [pending, setPending] = useState<Pending>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
+  const [conflicts, setConflicts] = useState<{ id: string; title: string; date: Date }[]>([]);
 
-  function applyResult(result: { ok: true; status: RSVPStatus; waitlistPosition: number | null }) {
+  function applyResult(result: { ok: true; status: RSVPStatus; waitlistPosition: number | null; conflicts?: { id: string; title: string; date: Date }[] }) {
     setStatus(result.status);
     setPosition(result.waitlistPosition);
+    setConflicts(result.conflicts ?? []);
     if (result.status === 'WAITLISTED') {
       setMessage(
         result.waitlistPosition != null
@@ -70,6 +72,7 @@ export function RsvpControls({
     setPending(next);
     setMessage(null);
     setIsError(false);
+    setConflicts([]);
     try {
       const result = await setRsvp(eventId, next);
       if (!result.ok) {
@@ -91,6 +94,7 @@ export function RsvpControls({
     setPending('wishlist');
     setMessage(null);
     setIsError(false);
+    setConflicts([]);
     try {
       const result = await joinWishlist(eventId);
       if (!result.ok) {
@@ -123,6 +127,7 @@ export function RsvpControls({
       setStatus(null);
       setPosition(null);
       setPromoted(false);
+      setConflicts([]);
     } catch (thrown) {
       if (isFrameworkControlFlow(thrown)) throw thrown;
       setMessage(GENERIC_ACTION_ERROR);
@@ -267,6 +272,30 @@ export function RsvpControls({
               ? 'Leave wishlist'
               : 'Remove RSVP'}
         </button>
+      )}
+
+      {conflicts.length > 0 && (
+        <div
+          role="status"
+          className="rounded-md px-3 py-2 text-sm text-amber-800 bg-amber-50 border border-amber-200 space-y-1"
+        >
+          <p className="font-medium">
+            Heads up — this overlaps another event you&apos;re going to:
+          </p>
+          <ul className="list-disc pl-5 space-y-0.5">
+            {conflicts.map((c) => (
+              <li key={c.id}>
+                {c.title} — {new Date(c.date).toLocaleString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                })}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {message && (
