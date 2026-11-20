@@ -102,7 +102,7 @@ export async function deleteEvent(formData: FormData) {
   // use eventId:null with the title baked into the text.
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    select: { title: true, date: true, timeZone: true, location: true, userId: true },
+    select: { title: true, date: true, timeZone: true, location: true, userId: true, category: true },
   });
   if (!event) redirect('/events');
   const recipients = await selectEventUpdateRecipients(eventId, event.userId);
