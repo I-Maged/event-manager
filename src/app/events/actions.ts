@@ -88,6 +88,7 @@ async function finishRsvp(
     ok: true,
     status: outcome.status,
     waitlistPosition: outcome.waitlistPosition,
+    conflicts: outcome.conflicts,
   };
 }
 
